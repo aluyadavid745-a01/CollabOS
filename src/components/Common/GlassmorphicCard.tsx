@@ -1,28 +1,23 @@
-import { motion } from 'framer-motion'
+import React from 'react'
+import { cn } from '../../utils/cn'
 
-interface GlassmorphicCardProps {
-  children: React.ReactNode
-  className?: string
+interface GlassmorphicCardProps extends React.HTMLAttributes<HTMLDivElement> {
   hover?: boolean
 }
 
-export const GlassmorphicCard: React.FC<GlassmorphicCardProps> = ({
-  children,
-  className = '',
-  hover = true,
-}) => {
-  return (
-    <motion.div
-      whileHover={hover ? { scale: 1.02, y: -10 } : {}}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className={`
-        glass-effect rounded-2xl border border-white/10 backdrop-blur-xl
-        p-6 transition-all duration-300
-        ${hover && 'hover:border-indigo-500/50 hover:shadow-glow'}
-        ${className}
-      `}
-    >
-      {children}
-    </motion.div>
+const GlassmorphicCard = React.forwardRef<HTMLDivElement, GlassmorphicCardProps>(
+  ({ className, hover = false, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        'glass-effect backdrop-blur-md rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl transition-all duration-300',
+        hover && 'hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/20',
+        className
+      )}
+      {...props}
+    />
   )
-}
+)
+GlassmorphicCard.displayName = 'GlassmorphicCard'
+
+export { GlassmorphicCard }
