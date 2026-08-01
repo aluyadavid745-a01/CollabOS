@@ -1,34 +1,36 @@
 {
-  "name": "collabos-landing",
+  "name": "collabos",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc -b && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "lucide-react": "^0.294.0",
-    "framer-motion": "^10.16.16",
+    "framer-motion": "^10.16.4",
     "gsap": "^3.12.2",
-    "react-countup": "^6.5.0",
-    "swiper": "^11.0.3",
-    "lenis": "^1.1.6"
+    "lucide-react": "^0.263.1",
+    "class-variance-authority": "^0.7.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
-    "@types/gsap": "^3.12.8",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "tailwindcss": "^3.3.6",
-    "postcss": "^8.4.31",
-    "autoprefixer": "^10.4.16",
-    "@tailwindcss/forms": "^0.5.7"
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "tailwindcss": "^3.3.3",
+    "postcss": "^8.4.27",
+    "autoprefixer": "^10.4.14"
   }
 }
