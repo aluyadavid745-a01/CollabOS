@@ -1,48 +1,73 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Check, X } from 'lucide-react'
+import { Check, ChevronDown, X } from 'lucide-react'
 import { Button } from '../Common/Button'
 import { GlassmorphicCard } from '../Common/GlassmorphicCard'
+import type { AuthUser } from '../../pages/AuthPage'
+import { prefetchRoute } from '../../utils/prefetch'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const Pricing: React.FC = () => {
+interface PricingProps {
+  rememberedUser?: AuthUser | null
+}
+
+const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
+  const navigate = useNavigate()
   const sectionRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
+  const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'yearly'>('monthly')
+  const [showAllFaqs, setShowAllFaqs] = React.useState(false)
 
   useEffect(() => {
     if (!sectionRef.current) return
 
-    gsap.from(titleRef.current, {
-      scrollTrigger: {
-        trigger: titleRef.current,
-        start: 'top 80%',
-      },
-      y: 30,
-      opacity: 0,
-      duration: 0.8,
-    })
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        titleRef.current,
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          immediateRender: false,
+        }
+      )
 
-    gsap.from('.pricing-card', {
-      scrollTrigger: {
-        trigger: cardsRef.current,
-        start: 'top 80%',
-      },
-      y: 50,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.2,
-    })
+      gsap.fromTo(
+        '.pricing-card',
+        { y: 50, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: cardsRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.2,
+          immediateRender: false,
+        }
+      )
+    }, sectionRef)
+
+    return () => ctx.revert()
   }, [])
 
   const plans = [
     {
       id: 'starter',
       name: 'Starter',
-      price: '29',
+      monthlyPrice: 29,
+      yearlyPrice: 278,
       description: 'Perfect for small teams',
       features: [
         { name: 'Up to 10 team members', included: true },
@@ -58,7 +83,8 @@ const Pricing: React.FC = () => {
     {
       id: 'pro',
       name: 'Professional',
-      price: '79',
+      monthlyPrice: 79,
+      yearlyPrice: 758,
       description: 'For growing teams',
       features: [
         { name: 'Up to 100 team members', included: true },
@@ -74,7 +100,8 @@ const Pricing: React.FC = () => {
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: 'Custom',
+      monthlyPrice: null,
+      yearlyPrice: null,
       description: 'For large organizations',
       features: [
         { name: 'Unlimited team members', included: true },
@@ -88,6 +115,49 @@ const Pricing: React.FC = () => {
       featured: false,
     },
   ]
+
+  const handlePlanAction = (price: number | null) => {
+    if (rememberedUser) {
+      navigate('/home')
+      return
+    }
+
+    if (price === null) {
+      window.location.href = 'mailto:sales@collabos.dev?subject=CollabOS%20Enterprise%20Plan'
+      return
+    }
+
+    navigate('/get-started')
+  }
+
+  const faqs = [
+    {
+      question: 'Is there a free trial?',
+      answer: 'Yes. Every paid plan includes a 14-day free trial so your team can test CollabOS before choosing a plan.',
+    },
+    {
+      question: 'Can I switch between monthly and yearly billing?',
+      answer: 'Yes. You can move between monthly and yearly billing. Yearly billing gives you the best value with 20% savings.',
+    },
+    {
+      question: 'What happens when I add more teammates?',
+      answer: 'Starter supports up to 10 members, Professional supports up to 100 members, and Enterprise supports unlimited members.',
+    },
+    {
+      question: 'Do plans include video meetings and AI?',
+      answer: 'Professional and Enterprise include unlimited video meetings and AI assistant features. Starter includes core collaboration tools.',
+    },
+    {
+      question: 'Can I cancel anytime?',
+      answer: 'Yes. You can cancel your plan whenever you need. Your workspace data remains available according to your account settings.',
+    },
+    {
+      question: 'Who should use Enterprise?',
+      answer: 'Enterprise is for larger organizations that need advanced security, unlimited storage, custom integrations, and dedicated support.',
+    },
+  ]
+
+  const visibleFaqs = showAllFaqs ? faqs : faqs.slice(0, 3)
 
   return (
     <section
@@ -129,26 +199,49 @@ const Pricing: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-4 p-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm"
           >
-            <button className="px-6 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-semibold text-sm">
+            <button
+              type="button"
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-6 py-2 rounded-full font-semibold text-sm transition-colors ${
+                billingCycle === 'monthly'
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
               Monthly
             </button>
-            <button className="px-6 py-2 text-slate-400 hover:text-white transition-colors font-semibold text-sm">
+            <button
+              type="button"
+              onClick={() => setBillingCycle('yearly')}
+              className={`px-6 py-2 rounded-full font-semibold text-sm transition-colors ${
+                billingCycle === 'yearly'
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
               Yearly
-              <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">Save 20%</span>
+              <span className="ml-2 rounded-full bg-green-500/20 px-2 py-1 text-xs text-green-400">Save 20%</span>
             </button>
           </motion.div>
         </div>
 
         {/* Pricing Cards */}
         <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
-            <motion.div key={plan.id} className="pricing-card h-full">
-              <GlassmorphicCard
-                className={`flex flex-col h-full relative ${
-                  plan.featured ? 'md:scale-105 ring-2 ring-indigo-500' : ''
-                }`}
-                hover={true}
-              >
+          {plans.map((plan) => {
+            const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice
+            const monthlyEquivalent =
+              billingCycle === 'yearly' && plan.yearlyPrice ? Math.round(plan.yearlyPrice / 12) : null
+            const monthlyTotal = plan.monthlyPrice ? plan.monthlyPrice * 12 : null
+            const yearlySavings = monthlyTotal && plan.yearlyPrice ? monthlyTotal - plan.yearlyPrice : null
+
+            return (
+              <motion.div key={plan.id} className="pricing-card h-full">
+                <GlassmorphicCard
+                  className={`flex flex-col h-full relative ${
+                    plan.featured ? 'md:scale-105 ring-2 ring-indigo-500' : ''
+                  }`}
+                  hover={true}
+                >
                 {/* Featured badge */}
                 {plan.featured && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -168,12 +261,22 @@ const Pricing: React.FC = () => {
                 <div className="mb-8">
                   <div className="flex items-baseline">
                     <span className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-                      ${plan.price}
+                      {price === null ? 'Custom' : `$${price}`}
                     </span>
-                    {plan.price !== 'Custom' && (
-                      <span className="text-slate-400 text-sm ml-2">/month</span>
+                    {price !== null && (
+                      <span className="text-slate-400 text-sm ml-2">
+                        /{billingCycle === 'yearly' ? 'year' : 'month'}
+                      </span>
                     )}
                   </div>
+                  {billingCycle === 'yearly' && monthlyEquivalent && yearlySavings && (
+                    <p className="mt-2 text-sm font-semibold text-green-400">
+                      ${monthlyEquivalent}/month equivalent. Save ${yearlySavings}/year.
+                    </p>
+                  )}
+                  {billingCycle === 'monthly' && plan.monthlyPrice && (
+                    <p className="mt-2 text-sm text-slate-500">Switch to yearly and save 20%.</p>
+                  )}
                 </div>
 
                 {/* CTA Button */}
@@ -181,8 +284,15 @@ const Pricing: React.FC = () => {
                   variant={plan.featured ? 'primary' : 'secondary'}
                   size="md"
                   className="w-full mb-8"
+                  onMouseEnter={() => prefetchRoute(rememberedUser ? 'homeDashboard' : 'auth')}
+                  onFocus={() => prefetchRoute(rememberedUser ? 'homeDashboard' : 'auth')}
+                  onClick={() => handlePlanAction(price)}
                 >
-                  {plan.price === 'Custom' ? 'Contact Sales' : 'Get Started'}
+                  {rememberedUser
+                    ? 'Open Workspace'
+                    : price === null
+                      ? 'Contact Sales'
+                      : 'Get Started'}
                 </Button>
 
                 {/* Features List */}
@@ -206,16 +316,38 @@ const Pricing: React.FC = () => {
                 </div>
               </GlassmorphicCard>
             </motion.div>
-          ))}
+            )
+          })}
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-20 text-center">
+        <div className="mt-20">
+          <div className="text-center">
           <h3 className="text-2xl font-bold text-white mb-4">Frequently Asked Questions</h3>
-          <p className="text-slate-400 mb-8">Questions about our pricing? Check out our FAQ.</p>
-          <Button variant="secondary" size="md">
-            View All FAQs
-          </Button>
+          <p className="text-slate-400 mb-8">Answers to the questions teams usually ask before choosing a plan.</p>
+          </div>
+
+          <div className="mx-auto grid max-w-4xl gap-4">
+            {visibleFaqs.map((faq) => (
+              <div key={faq.question} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <h4 className="text-base font-bold text-white">{faq.question}</h4>
+                <p className="mt-2 text-sm leading-6 text-slate-400">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              className="gap-2"
+              onClick={() => setShowAllFaqs((current) => !current)}
+            >
+              {showAllFaqs ? 'Show Less FAQs' : 'View All FAQs'}
+              <ChevronDown className={`h-4 w-4 transition-transform ${showAllFaqs ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
         </div>
       </div>
     </section>

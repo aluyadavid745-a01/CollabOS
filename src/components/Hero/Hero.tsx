@@ -2,9 +2,18 @@ import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ArrowRight, PlayCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../Common/Button'
+import type { AuthMode, AuthUser } from '../../pages/AuthPage'
+import { prefetchRoute } from '../../utils/prefetch'
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  rememberedUser?: AuthUser | null
+  onNavigate: (view: AuthMode | 'home') => void
+}
+
+const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
+  const navigate = useNavigate()
   const heroRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const descRef = useRef<HTMLParagraphElement>(null)
@@ -13,31 +22,35 @@ const Hero: React.FC = () => {
   useEffect(() => {
     if (!heroRef.current) return
 
-    // Title animation
-    gsap.from(titleRef.current, {
-      duration: 0.8,
-      y: 50,
-      opacity: 0,
-      ease: 'power3.out',
-    })
+    const ctx = gsap.context(() => {
+      // Title animation
+      gsap.from(titleRef.current, {
+        duration: 0.8,
+        y: 50,
+        opacity: 0,
+        ease: 'power3.out',
+      })
 
-    // Description animation
-    gsap.from(descRef.current, {
-      duration: 0.8,
-      y: 30,
-      opacity: 0,
-      ease: 'power3.out',
-      delay: 0.2,
-    })
+      // Description animation
+      gsap.from(descRef.current, {
+        duration: 0.8,
+        y: 30,
+        opacity: 0,
+        ease: 'power3.out',
+        delay: 0.2,
+      })
 
-    // CTA animation
-    gsap.from(ctaRef.current, {
-      duration: 0.8,
-      y: 30,
-      opacity: 0,
-      ease: 'power3.out',
-      delay: 0.4,
-    })
+      // CTA animation
+      gsap.from(ctaRef.current, {
+        duration: 0.8,
+        y: 30,
+        opacity: 0,
+        ease: 'power3.out',
+        delay: 0.4,
+      })
+    }, heroRef)
+
+    return () => ctx.revert()
   }, [])
 
   const features = [
@@ -98,8 +111,22 @@ const Hero: React.FC = () => {
             ref={ctaRef}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
           >
-            <Button variant="primary" size="lg" className="group">
-              Start Free Trial
+            <Button
+              variant="primary"
+              size="lg"
+              className="group"
+              onMouseEnter={() => prefetchRoute(rememberedUser ? 'homeDashboard' : 'auth')}
+              onFocus={() => prefetchRoute(rememberedUser ? 'homeDashboard' : 'auth')}
+              onClick={() => {
+                if (rememberedUser) {
+                  navigate('/home')
+                  return
+                }
+
+                onNavigate('signup')
+              }}
+            >
+              {rememberedUser ? 'Open Workspace' : 'Start Free Trial'}
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button variant="secondary" size="lg" className="group">

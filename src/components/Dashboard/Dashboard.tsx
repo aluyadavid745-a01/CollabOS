@@ -14,50 +14,69 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     if (!sectionRef.current) return
 
-    // Title animation
-    gsap.from(titleRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 80%',
-      },
-      y: 30,
-      opacity: 0,
-      duration: 0.8,
-    })
+    const ctx = gsap.context(() => {
+      // Title animation
+      gsap.fromTo(
+        titleRef.current,
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          immediateRender: false,
+        }
+      )
 
-    // Description animation
-    gsap.from(descRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 80%',
-      },
-      y: 20,
-      opacity: 0,
-      duration: 0.8,
-      delay: 0.2,
-    })
+      // Description animation
+      gsap.fromTo(
+        descRef.current,
+        { y: 20, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          delay: 0.2,
+          immediateRender: false,
+        }
+      )
 
-    // Image animation with parallax
-    gsap.from(imageRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 80%',
-      },
-      scale: 0.9,
-      opacity: 0,
-      duration: 1,
-      delay: 0.3,
-    })
+      // Image animation with parallax
+      gsap.fromTo(
+        imageRef.current,
+        { scale: 0.9, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+          },
+          scale: 1,
+          opacity: 1,
+          duration: 1,
+          delay: 0.3,
+          immediateRender: false,
+        }
+      )
 
-    gsap.to(imageRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'center center',
-        scrub: 1,
-      },
-      y: -30,
-      ease: 'none',
-    })
+      gsap.to(imageRef.current, {
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'center center',
+          scrub: 1,
+        },
+        y: -30,
+        ease: 'none',
+      })
+    }, sectionRef)
+
+    return () => ctx.revert()
   }, [])
 
   const features = [

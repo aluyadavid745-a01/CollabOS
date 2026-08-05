@@ -12,13 +12,14 @@
   }
 
   body {
-    @apply bg-slate-950 text-white;
+    @apply bg-slate-950 text-white antialiased;
+    overflow-x: hidden;
   }
 }
 
 @layer components {
   .glass-effect {
-    @apply bg-white/5 backdrop-blur-md border border-white/10;
+    @apply bg-white/5 border border-white/10;
   }
 
   .text-title {
@@ -30,7 +31,7 @@
   }
 
   .animate-blob {
-    animation: blob 7s infinite;
+    animation: none;
   }
 
   .animation-delay-2000 {
@@ -65,5 +66,50 @@
   .animate-gradient {
     background-size: 200% 200%;
     animation: gradient 3s ease infinite;
+  }
+}
+
+@layer utilities {
+  .backdrop-blur-sm,
+  .backdrop-blur-md {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    --tw-backdrop-blur: ;
+  }
+
+  .backdrop-blur-xl {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    --tw-backdrop-blur: ;
+  }
+
+  .blur-2xl {
+    filter: none !important;
+    --tw-blur: ;
+    opacity: 0.18;
+  }
+
+  .blur-3xl {
+    filter: none !important;
+    --tw-blur: ;
+    opacity: 0.16;
+  }
+
+  @media (max-width: 768px) {
+    .blur-2xl,
+    .blur-3xl {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    .animate-blob,
+    .animate-gradient {
+      animation: none;
+    }
   }
 }

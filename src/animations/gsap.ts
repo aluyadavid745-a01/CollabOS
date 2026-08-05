@@ -3,8 +3,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
+type AnimationTarget = string | HTMLElement | HTMLElement[]
+
 export const fadeInUp = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   delay = 0,
   duration = 0.8
 ) => {
@@ -18,7 +20,7 @@ export const fadeInUp = (
 }
 
 export const fadeInDown = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   delay = 0,
   duration = 0.8
 ) => {
@@ -33,7 +35,7 @@ export const fadeInDown = (
 }
 
 export const fadeIn = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   delay = 0,
   duration = 0.6
 ) => {
@@ -46,7 +48,7 @@ export const fadeIn = (
 }
 
 export const scaleIn = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   delay = 0,
   duration = 0.8
 ) => {
@@ -61,7 +63,7 @@ export const scaleIn = (
 }
 
 export const staggerFadeInUp = (
-  elements: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  elements: AnimationTarget,
   delay = 0,
   stagger = 0.1,
   duration = 0.8
@@ -78,7 +80,7 @@ export const staggerFadeInUp = (
 }
 
 export const scrollTriggerAnimation = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   vars: gsap.TweenVars,
   trigger?: string
 ) => {
@@ -95,11 +97,11 @@ export const scrollTriggerAnimation = (
 }
 
 export const parallax = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   speed = 0.5
 ) => {
   gsap.to(element, {
-    y: (i, target) => {
+    y: (_index, target) => {
       return gsap.getProperty(target, 'offsetHeight') as number * speed
     },
     scrollTrigger: {
@@ -112,7 +114,7 @@ export const parallax = (
 }
 
 export const floatingAnimation = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   duration = 4,
   offset = 20
 ) => {
@@ -127,7 +129,7 @@ export const floatingAnimation = (
 }
 
 export const glowAnimation = (
-  element: GSAPTweenVars | HTMLElement[] | HTMLElement | string,
+  element: AnimationTarget,
   intensity = 1
 ) => {
   return gsap.to(element, {

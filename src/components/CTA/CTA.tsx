@@ -1,13 +1,22 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowRight, Zap } from 'lucide-react'
 import { Button } from '../Common/Button'
+import type { AuthMode, AuthUser } from '../../pages/AuthPage'
+import { prefetchRoute } from '../../utils/prefetch'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const CTA: React.FC = () => {
+interface CTAProps {
+  rememberedUser?: AuthUser | null
+  onNavigate: (view: AuthMode | 'home') => void
+}
+
+const CTA: React.FC<CTAProps> = ({ rememberedUser, onNavigate }) => {
+  const navigate = useNavigate()
   const sectionRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const descRef = useRef<HTMLParagraphElement>(null)
@@ -16,37 +25,56 @@ const CTA: React.FC = () => {
   useEffect(() => {
     if (!sectionRef.current) return
 
-    gsap.from(titleRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 80%',
-      },
-      y: 30,
-      opacity: 0,
-      duration: 0.8,
-    })
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        titleRef.current,
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          immediateRender: false,
+        }
+      )
 
-    gsap.from(descRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 80%',
-      },
-      y: 20,
-      opacity: 0,
-      duration: 0.8,
-      delay: 0.2,
-    })
+      gsap.fromTo(
+        descRef.current,
+        { y: 20, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          delay: 0.2,
+          immediateRender: false,
+        }
+      )
 
-    gsap.from(ctaRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 80%',
-      },
-      y: 20,
-      opacity: 0,
-      duration: 0.8,
-      delay: 0.4,
-    })
+      gsap.fromTo(
+        ctaRef.current,
+        { y: 20, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          delay: 0.4,
+          immediateRender: false,
+        }
+      )
+    }, sectionRef)
+
+    return () => ctx.revert()
   }, [])
 
   return (
@@ -99,8 +127,22 @@ const CTA: React.FC = () => {
           ref={ctaRef}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <Button variant="primary" size="lg" className="group">
-            Get Started Free
+          <Button
+            variant="primary"
+            size="lg"
+            className="group"
+            onMouseEnter={() => prefetchRoute(rememberedUser ? 'homeDashboard' : 'auth')}
+            onFocus={() => prefetchRoute(rememberedUser ? 'homeDashboard' : 'auth')}
+            onClick={() => {
+              if (rememberedUser) {
+                navigate('/home')
+                return
+              }
+
+              onNavigate('signup')
+            }}
+          >
+            {rememberedUser ? 'Open Workspace' : 'Get Started Free'}
             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
           <Button variant="secondary" size="lg">

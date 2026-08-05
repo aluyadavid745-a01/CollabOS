@@ -1,22 +1,16 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
-  MessageSquare,
-  CheckSquare,
-  FileText,
-  Video,
-  Zap,
-  Users,
   Shield,
   Rocket,
   Clock,
-  Search,
-  Bell,
   Settings,
 } from 'lucide-react'
 import { GlassmorphicCard } from '../Common/GlassmorphicCard'
+import { featureDetails } from '../../data/features'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -28,72 +22,41 @@ const Features: React.FC = () => {
   useEffect(() => {
     if (!sectionRef.current) return
 
-    gsap.from(titleRef.current, {
-      scrollTrigger: {
-        trigger: titleRef.current,
-        start: 'top 80%',
-      },
-      y: 30,
-      opacity: 0,
-      duration: 0.8,
-    })
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        titleRef.current,
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          immediateRender: false,
+        }
+      )
 
-    gsap.from('.feature-card', {
-      scrollTrigger: {
-        trigger: gridRef.current,
-        start: 'top 80%',
-      },
-      y: 50,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.1,
-    })
+      gsap.fromTo(
+        '.feature-card',
+        { y: 50, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: gridRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.1,
+          immediateRender: false,
+        }
+      )
+    }, sectionRef)
+
+    return () => ctx.revert()
   }, [])
-
-  const features = [
-    {
-      id: 1,
-      icon: MessageSquare,
-      title: 'Instant Messaging',
-      description: 'Real-time team communication with threads, reactions, and rich media support',
-      color: 'from-blue-600 to-cyan-600',
-    },
-    {
-      id: 2,
-      icon: CheckSquare,
-      title: 'Task Management',
-      description: 'Organize work with smart lists, kanban boards, and automated workflows',
-      color: 'from-purple-600 to-pink-600',
-    },
-    {
-      id: 3,
-      icon: FileText,
-      title: 'Document Collaboration',
-      description: 'Create, edit, and share documents with real-time collaboration features',
-      color: 'from-emerald-600 to-teal-600',
-    },
-    {
-      id: 4,
-      icon: Video,
-      title: 'Video Meetings',
-      description: 'HD video conferencing with screen sharing and recording capabilities',
-      color: 'from-rose-600 to-orange-600',
-    },
-    {
-      id: 5,
-      icon: Zap,
-      title: 'AI Assistant',
-      description: 'Smart AI that summarizes conversations and suggests actionable insights',
-      color: 'from-yellow-600 to-amber-600',
-    },
-    {
-      id: 6,
-      icon: Users,
-      title: 'Team Collaboration',
-      description: 'Seamlessly work together with integrated team spaces and workflows',
-      color: 'from-indigo-600 to-blue-600',
-    },
-  ]
 
   return (
     <section
@@ -133,7 +96,7 @@ const Features: React.FC = () => {
 
         {/* Features Grid */}
         <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {features.map((feature) => {
+          {featureDetails.map((feature) => {
             const Icon = feature.icon
             return (
               <GlassmorphicCard key={feature.id} className="feature-card group">
@@ -142,12 +105,14 @@ const Features: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
                 <p className="text-slate-300 text-sm leading-relaxed">{feature.description}</p>
-                <motion.div
-                  className="mt-4 flex items-center gap-2 text-indigo-400 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
-                  whileHover={{ x: 5 }}
-                >
-                  Learn more →
-                </motion.div>
+                <Link to={`/features/${feature.slug}`} className="mt-4 inline-flex">
+                  <motion.span
+                    className="flex items-center gap-2 text-indigo-400 text-sm font-semibold opacity-100 transition-colors hover:text-cyan-300 md:opacity-0 md:group-hover:opacity-100"
+                    whileHover={{ x: 5 }}
+                  >
+                    Learn more →
+                  </motion.span>
+                </Link>
               </GlassmorphicCard>
             )
           })}

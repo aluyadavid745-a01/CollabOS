@@ -11,6 +11,24 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('@firebase/auth') || id.includes('firebase/auth')) return 'firebase-auth'
+          if (id.includes('@firebase/firestore') || id.includes('firebase/firestore')) return 'firebase-firestore'
+          if (id.includes('@firebase/storage') || id.includes('firebase/storage')) return 'firebase-storage'
+          if (id.includes('@firebase/app') || id.includes('firebase/app')) return 'firebase-app'
+          if (id.includes('@firebase') || id.includes('firebase')) return 'firebase-vendor'
+          if (id.includes('@livekit') || id.includes('livekit-client')) return 'livekit'
+          if (id.includes('framer-motion')) return 'motion'
+          if (id.includes('lucide-react')) return 'icons'
+          if (id.includes('react-router-dom')) return 'router'
+          if (id.includes('react') || id.includes('scheduler')) return 'react-vendor'
+          return 'vendor'
+        },
+      },
+    },
   },
 })

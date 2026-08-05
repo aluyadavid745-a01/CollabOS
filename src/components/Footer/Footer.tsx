@@ -5,7 +5,6 @@ import {
   Twitter,
   Linkedin,
   Mail,
-  Globe,
 } from 'lucide-react'
 
 const Footer: React.FC = () => {

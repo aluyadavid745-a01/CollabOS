@@ -1,10 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import LandingPage from './pages/LandingPage.tsx'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App.tsx'
+import { AuthProvider } from './context/AuthContext.tsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <LandingPage />
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
   </React.StrictMode>
 )

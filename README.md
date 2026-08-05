@@ -1,91 +1,109 @@
-# CollabOS Landing Page
+# CollabOS Web App
 
-A premium SaaS landing page for CollabOS, an AI-powered collaboration platform.
+CollabOS is a React/Vite web app for collaboration profiles and website creation. It includes a marketing homepage, Firebase-backed authentication, editable user profiles, and a website builder with AI-assisted drafts, visual editing, code editing, preview, publish, and export flows.
+
+## Core Features
+
+- Landing page with feature, pricing, testimonial, and CTA sections
+- Email/password and Google authentication through Firebase
+- Email verification action handling at `/auth/action`
+- User profile editing with Firebase Storage uploads and local fallback
+- Website dashboard for creating, duplicating, publishing, deleting, and exporting sites
+- AI website builder with instant local drafts and optional Firebase AI refinement
+- Drag-and-drop visual editor with pages, assets, element properties, undo/redo, autosave, and responsive breakpoints
+- Code website builder for custom HTML, CSS, and JavaScript
+- Website preview route for built projects
+- Cookie consent-aware local persistence
 
 ## Tech Stack
 
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Vite** - Build tool
-- **Framer Motion** - Component animations
-- **GSAP** - Advanced scroll animations
-- **Lenis** - Smooth scrolling
-- **Lucide React** - Icons
-- **React CountUp** - Number animations
-- **Swiper** - Carousel
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Firebase Auth, Firestore, Storage, and optional Firebase AI
+- GSAP and Framer Motion
+- Lucide React
 
 ## Getting Started
 
-### Installation
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### Development
+Run the development server:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-### Build
+Build for production:
 
 ```bash
 npm run build
 ```
 
-### Preview
+Run static preview:
 
 ```bash
 npm run preview
 ```
 
+Run checks:
+
+```bash
+npm run type-check
+npm run lint
+npm test
+```
+
+## Environment
+
+Create `.env.local` for Firebase-backed features:
+
+```bash
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
+VITE_FIREBASE_AI_MODEL=gemini-3.5-flash
+```
+
+When Firebase is not configured or unavailable, profile and website data fall back to local browser storage so the app remains usable during local development.
+
+## Firebase Rules
+
+Firestore and Storage rules are included:
+
+- `firestore.rules` restricts user profiles and websites to the authenticated owner.
+- `storage.rules` restricts profile, cover, and project assets to the authenticated owner.
+
+Deploy them with your Firebase project tooling after selecting the correct project.
+
 ## Project Structure
 
-```
+```text
 src/
-├── assets/           # Images, icons, and static files
-├── components/       # Reusable components
-│   ├── Navbar/
-│   ├── Hero/
-│   ├── Features/
-│   ├── Dashboard/
-│   ├── AI/
-│   ├── Collaboration/
-│   ├── Stats/
-│   ├── Testimonials/
-│   ├── Pricing/
-│   ├── FAQ/
-│   ├── CTA/
-│   └── Footer/
-├── hooks/            # Custom React hooks
-├── animations/       # GSAP animation utilities
-├── utils/            # Helper functions
-├── styles/           # Global styles
-└── App.tsx          # Main app component
+  components/         Reusable UI and website-builder components
+  context/            Auth and website-builder state providers
+  data/               Website templates and local AI generation helpers
+  firebase/           Lazy Firebase configuration helpers
+  hooks/              Shared React hooks
+  pages/              Route-level screens
+  services/           Firebase AI integration
+  types/              Shared TypeScript types
+  utils/              Cookies, storage, prefetching, toasts, helpers
+tests/
+  smoke-tests.mjs     Package-free source smoke tests
 ```
 
-## Features
+## Notes
 
-- 🎨 Premium, modern UI design
-- ✨ Smooth GSAP animations
-- 🎭 Framer Motion interactions
-- 📱 Fully responsive
-- ♿ Accessible components
-- ⚡ Optimized performance
-- 🔍 SEO-friendly
-
-## Performance
-
-- Lazy loading of components
-- Image optimization
-- Code splitting
-- Optimized animations
-- Fast bundle size
-
-## License
-
-MIT
+- Firebase modules are lazy-loaded to keep the first page load lighter.
+- Website saves now report whether they landed in Firebase or local storage.
+- Firebase AI failures are surfaced in the AI builder instead of silently falling back.

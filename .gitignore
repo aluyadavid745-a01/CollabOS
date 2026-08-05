@@ -1,7 +1,14 @@
 node_modules
 dist
 dist-ssr
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
 *.local
 .env
 .env.local
 .env.*.local
+appsettings.Development.json
+appsettings.Local.json
+backend/**/bin/
+backend/**/obj/

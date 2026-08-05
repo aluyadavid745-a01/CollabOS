@@ -15,26 +15,40 @@ const Testimonials: React.FC = () => {
   useEffect(() => {
     if (!sectionRef.current) return
 
-    gsap.from(titleRef.current, {
-      scrollTrigger: {
-        trigger: titleRef.current,
-        start: 'top 80%',
-      },
-      y: 30,
-      opacity: 0,
-      duration: 0.8,
-    })
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        titleRef.current,
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          immediateRender: false,
+        }
+      )
 
-    gsap.from('.testimonial-card', {
-      scrollTrigger: {
-        trigger: cardsRef.current,
-        start: 'top 80%',
-      },
-      y: 50,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.15,
-    })
+      gsap.fromTo(
+        '.testimonial-card',
+        { y: 50, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: cardsRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.15,
+          immediateRender: false,
+        }
+      )
+    }, sectionRef)
+
+    return () => ctx.revert()
   }, [])
 
   const testimonials = [
