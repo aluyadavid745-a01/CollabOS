@@ -699,14 +699,6 @@ const MeetingRoomContent = ({
 
   const [recordingNotice, setRecordingNotice] = React.useState('')
 
-  React.useEffect(() => {
-    if (!recording) return
-    const timer = setTimeout(() => {
-      setRecordingNotice('Recording in progress...')
-    }, 3000)
-    return () => clearTimeout(timer)
-  }, [recording])
-
   const toolbarItems: MeetingTool[] = [
     { label: 'Microphone', icon: Mic, active: liveControls?.micEnabled ?? previewMic, onClick: () => void toggleMic() },
     { label: 'Camera', icon: Camera, active: liveControls?.cameraEnabled ?? previewCamera, onClick: () => void toggleCamera() },
