@@ -49,6 +49,40 @@ export const isMeetingApiConfigured = Boolean(apiBaseUrl)
 
 const apiUrl = (path: string) => `${apiBaseUrl}${path}`
 
+export const startRecording = async (roomId: string, authToken?: string): Promise<boolean> => {
+  if (!isMeetingApiConfigured) throw new MeetingApiError('Meeting API is not configured. Set VITE_API_BASE_URL.')
+  if (!authToken) throw new MeetingApiError('You must be signed in to start recording.')
+
+  const response = await fetch(apiUrl('/api/meetings/recording/start'), {
+    method: 'POST',
+    headers: authHeaders(authToken),
+    body: JSON.stringify({ roomId }),
+  })
+
+  if (!response.ok) {
+    throw new MeetingApiError(await readErrorMessage(response, 'Recording start failed'), response.status)
+  }
+
+  return true
+}
+
+export const stopRecording = async (roomId: string, authToken?: string): Promise<boolean> => {
+  if (!isMeetingApiConfigured) throw new MeetingApiError('Meeting API is not configured. Set VITE_API_BASE_URL.')
+  if (!authToken) throw new MeetingApiError('You must be signed in to stop recording.')
+
+  const response = await fetch(apiUrl('/api/meetings/recording/stop'), {
+    method: 'POST',
+    headers: authHeaders(authToken),
+    body: JSON.stringify({ roomId }),
+  })
+
+  if (!response.ok) {
+    throw new MeetingApiError(await readErrorMessage(response, 'Recording stop failed'), response.status)
+  }
+
+  return true
+}
+
 const authHeaders = (authToken?: string) => ({
   'Content-Type': 'application/json',
   ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),

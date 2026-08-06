@@ -29,4 +29,5 @@ export interface MeetingTool {
   active?: boolean
   danger?: boolean
   onClick?: () => void
+  disabled?: boolean
 }

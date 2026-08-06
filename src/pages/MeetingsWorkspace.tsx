@@ -531,6 +531,11 @@ const SidebarPanel = ({
 
   return (
     <div className="space-y-3">
+      {recordingNotice && (
+        <div className="rounded-2xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-100">
+          {recordingNotice}
+        </div>
+      )}
       {['Live captions enabled', 'Poll: ship priority?', 'Notes synced to workspace', 'Recording chapter created'].map((item) => (
         <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-sm font-bold text-slate-200">
           {item}
@@ -582,7 +587,8 @@ const MeetingRoomContent = ({
   const [previewScreen, setPreviewScreen] = React.useState(false)
   const [raisedHand, setRaisedHand] = React.useState(false)
   const [captions, setCaptions] = React.useState(false)
-  const [recording, setRecording] = React.useState(true)
+  const [recording, setRecording] = React.useState(false)
+  const [recordingStatus, setRecordingStatus] = React.useState<'idle' | 'starting' | 'stopping'>('idle')
   const [backgroundBlur, setBackgroundBlur] = React.useState(false)
   const [reaction, setReaction] = React.useState('')
   const [inviteCopied, setInviteCopied] = React.useState(false)
@@ -691,6 +697,16 @@ const MeetingRoomContent = ({
     sendMessage: sendPreviewChatMessage,
   }
 
+  const [recordingNotice, setRecordingNotice] = React.useState('')
+
+  React.useEffect(() => {
+    if (!recording) return
+    const timer = setTimeout(() => {
+      setRecordingNotice('Recording in progress...')
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [recording])
+
   const toolbarItems: MeetingTool[] = [
     { label: 'Microphone', icon: Mic, active: liveControls?.micEnabled ?? previewMic, onClick: () => void toggleMic() },
     { label: 'Camera', icon: Camera, active: liveControls?.cameraEnabled ?? previewCamera, onClick: () => void toggleCamera() },
@@ -702,7 +718,13 @@ const MeetingRoomContent = ({
     { label: 'Raise Hand', icon: Hand, active: raisedHand, onClick: () => setRaisedHand((current) => !current) },
     { label: 'Reactions', icon: Sparkles, active: Boolean(reaction), onClick: () => setReaction('👏') },
     { label: 'Live Captions', icon: Subtitles, active: captions, onClick: () => setCaptions((current) => !current) },
-    { label: 'Recording', icon: CircleDot, active: recording, onClick: () => setRecording((current) => !current) },
+    { 
+      label: recording ? 'Stop Recording' : 'Start Recording', 
+      icon: CircleDot, 
+      active: recording, 
+      onClick: toggleRecording,
+      disabled: recordingStatus !== 'idle'
+    },
     { label: 'Backgrounds', icon: PanelRightOpen, active: backgroundBlur, onClick: () => setBackgroundBlur((current) => !current) },
     { label: 'More', icon: MoreHorizontal, onClick: () => setActiveTab('files') },
   ]
@@ -877,10 +899,36 @@ const ConnectedMeetingRoomContent = ({ liveStatus }: { liveStatus: string }) => 
     [addChatMessage, room.localParticipant.identity, room.localParticipant.name, sendDataMessage]
   )
 
+  const [isRecording, setIsRecording] = React.useState(false)
+  const [recordingStatus, setRecordingStatus] = React.useState<'idle' | 'starting' | 'stopping'>('idle')
+
+  const toggleRecording = async () => {
+    if (recordingStatus !== 'idle') return
+    
+    try {
+      setRecordingStatus(isRecording ? 'stopping' : 'starting')
+      const authToken = await getAuthToken(firebaseUser)
+      
+      if (isRecording) {
+        await stopRecording(room.name, authToken)
+      } else {
+        await startRecording(room.name, authToken)
+      }
+      
+      setIsRecording(!isRecording)
+      setRecordingNotice(isRecording ? 'Recording stopped' : 'Recording started')
+    } catch (error) {
+      setMediaError(error instanceof Error ? error.message : 'Recording operation failed')
+    } finally {
+      setRecordingStatus('idle')
+    }
+  }
+
   const liveControls: LiveMeetingControlsState = {
     micEnabled: local.isMicrophoneEnabled,
     cameraEnabled: local.isCameraEnabled,
     screenShareEnabled: local.isScreenShareEnabled,
+    recording: isRecording,
     mediaError,
     toggleMic: async () => {
       try {
@@ -906,6 +954,7 @@ const ConnectedMeetingRoomContent = ({ liveStatus }: { liveStatus: string }) => 
         setMediaError(error instanceof Error ? error.message : 'Screen sharing could not be started.')
       }
     },
+    toggleRecording,
     leave: () => {
       void room.disconnect()
     },
