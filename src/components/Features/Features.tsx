@@ -64,9 +64,7 @@ const Features: React.FC = () => {
       className="py-20 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 relative overflow-hidden"
       id="features"
     >
-      {/* Background elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-indigo-600/10 to-transparent rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-cyan-600/10 to-transparent rounded-full blur-3xl" />
+      <div className="absolute inset-x-0 top-0 h-px bg-slate-200" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
@@ -75,16 +73,16 @@ const Features: React.FC = () => {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/50 bg-indigo-500/10 backdrop-blur-sm mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm mb-6"
           >
-            <span className="w-2 h-2 bg-indigo-400 rounded-full" />
-            <span className="text-sm font-semibold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+            <span className="text-sm font-semibold">
               Powerful Features
             </span>
           </motion.div>
           <h2
             ref={titleRef}
-            className="text-title text-white mb-6"
+            className="text-title text-slate-950 mb-6"
           >
             Everything You Need in One Platform
           </h2>
@@ -100,14 +98,14 @@ const Features: React.FC = () => {
             const Icon = feature.icon
             return (
               <GlassmorphicCard key={feature.id} className="feature-card group">
-                <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feature.color} mb-4`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className="inline-flex p-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 mb-4">
+                  <Icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                <p className="text-slate-300 text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="text-xl font-semibold text-slate-950 mb-3">{feature.title}</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
                 <Link to={`/features/${feature.slug}`} className="mt-4 inline-flex">
                   <motion.span
-                    className="flex items-center gap-2 text-indigo-400 text-sm font-semibold opacity-100 transition-colors hover:text-cyan-300 md:opacity-0 md:group-hover:opacity-100"
+                    className="flex items-center gap-2 text-slate-700 text-sm font-semibold opacity-100 transition-colors hover:text-slate-950 md:opacity-0 md:group-hover:opacity-100"
                     whileHover={{ x: 5 }}
                   >
                     Learn more →
@@ -133,11 +131,11 @@ const Features: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:border-indigo-500/50 transition-colors"
+                className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition-colors"
               >
-                <Icon className="w-5 h-5 text-indigo-400 mb-2" />
-                <p className="font-semibold text-white text-sm mb-1">{item.label}</p>
-                <p className="text-xs text-slate-400">{item.desc}</p>
+                <Icon className="w-5 h-5 text-slate-600 mb-2" />
+                <p className="font-semibold text-slate-950 text-sm mb-1">{item.label}</p>
+                <p className="text-xs text-slate-500">{item.desc}</p>
               </motion.div>
             )
           })}

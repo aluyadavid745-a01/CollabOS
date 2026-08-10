@@ -1,6 +1,7 @@
 export interface LiveKitMeetingTokenRequest {
   roomName: string
   participantName: string
+  clientSessionId?: string
   metadata?: Record<string, string>
   authToken?: string
 }
@@ -12,6 +13,12 @@ export interface LiveKitMeetingTokenResponse {
   token: string
   serverUrl: string
   expiresAt: string
+}
+
+export interface LiveKitParticipantResponse {
+  identity: string
+  name: string
+  sid: string
 }
 
 export interface CreateMeetingResponse {
@@ -26,6 +33,15 @@ export interface CreateMeetingResponse {
   inviteUrl?: string
   reminderEmail?: string
   reminderSentAt?: string
+}
+
+export interface RecordingResponse {
+  roomId: string
+  recordingId: string
+  status: string
+  startedAt: string
+  stoppedAt?: string
+  message: string
 }
 
 export interface ScheduleMeetingRequest {
@@ -43,13 +59,30 @@ export class MeetingApiError extends Error {
   }
 }
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+const configuredApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/$/, '')
+const apiBaseUrl = configuredApiBaseUrl || (import.meta.env.DEV ? '' : '')
 
-export const isMeetingApiConfigured = Boolean(apiBaseUrl)
+export const isMeetingApiConfigured = Boolean(configuredApiBaseUrl) || import.meta.env.DEV
 
 const apiUrl = (path: string) => `${apiBaseUrl}${path}`
+const meetingSessionStorageKey = 'collabos:meeting-session-id'
 
-export const startRecording = async (roomId: string, authToken?: string): Promise<boolean> => {
+export const getMeetingClientSessionId = () => {
+  if (typeof window === 'undefined') return Math.random().toString(36).slice(2, 14)
+
+  const existing = window.sessionStorage.getItem(meetingSessionStorageKey)
+  if (existing) return existing
+
+  const sessionId =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+      : Math.random().toString(36).slice(2, 18)
+
+  window.sessionStorage.setItem(meetingSessionStorageKey, sessionId)
+  return sessionId
+}
+
+export const startRecording = async (roomId: string, authToken?: string): Promise<RecordingResponse> => {
   if (!isMeetingApiConfigured) throw new MeetingApiError('Meeting API is not configured. Set VITE_API_BASE_URL.')
   if (!authToken) throw new MeetingApiError('You must be signed in to start recording.')
 
@@ -63,10 +96,10 @@ export const startRecording = async (roomId: string, authToken?: string): Promis
     throw new MeetingApiError(await readErrorMessage(response, 'Recording start failed'), response.status)
   }
 
-  return true
+  return response.json() as Promise<RecordingResponse>
 }
 
-export const stopRecording = async (roomId: string, authToken?: string): Promise<boolean> => {
+export const stopRecording = async (roomId: string, authToken?: string): Promise<RecordingResponse> => {
   if (!isMeetingApiConfigured) throw new MeetingApiError('Meeting API is not configured. Set VITE_API_BASE_URL.')
   if (!authToken) throw new MeetingApiError('You must be signed in to stop recording.')
 
@@ -80,7 +113,7 @@ export const stopRecording = async (roomId: string, authToken?: string): Promise
     throw new MeetingApiError(await readErrorMessage(response, 'Recording stop failed'), response.status)
   }
 
-  return true
+  return response.json() as Promise<RecordingResponse>
 }
 
 const authHeaders = (authToken?: string) => ({
@@ -157,6 +190,7 @@ export const requestLiveKitToken = async ({
     body: JSON.stringify({
       roomId: roomName,
       displayName: participantName,
+      clientSessionId: getMeetingClientSessionId(),
       canPublish: true,
       canSubscribe: true,
     }),
@@ -179,6 +213,7 @@ export const joinMeetingRoom = async (request: LiveKitMeetingTokenRequest): Prom
     body: JSON.stringify({
       roomId: request.roomName,
       displayName: request.participantName,
+      clientSessionId: request.clientSessionId,
       canPublish: true,
       canSubscribe: true,
     }),
@@ -189,4 +224,21 @@ export const joinMeetingRoom = async (request: LiveKitMeetingTokenRequest): Prom
   }
 
   return response.json() as Promise<LiveKitMeetingTokenResponse>
+}
+
+export const listMeetingParticipants = async (
+  roomId: string,
+  authToken?: string
+): Promise<LiveKitParticipantResponse[]> => {
+  if (!isMeetingApiConfigured || !authToken) return []
+
+  const response = await fetch(apiUrl(`/api/meetings/${encodeURIComponent(roomId)}/participants`), {
+    headers: authHeaders(authToken),
+  })
+
+  if (!response.ok) {
+    throw new MeetingApiError(await readErrorMessage(response, 'Meeting participant lookup failed'), response.status)
+  }
+
+  return response.json() as Promise<LiveKitParticipantResponse[]>
 }

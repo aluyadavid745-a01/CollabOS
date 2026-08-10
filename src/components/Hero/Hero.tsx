@@ -62,14 +62,9 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
   return (
     <section
       ref={heroRef}
-      className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
+      className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 pt-20"
     >
-      {/* Animated background gradients */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-600/30 to-transparent rounded-full blur-3xl animate-blob" />
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-gradient-to-l from-cyan-600/30 to-transparent rounded-full blur-3xl animate-blob animation-delay-4000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-b from-indigo-600/20 to-transparent rounded-full blur-3xl" />
-      </div>
+      <div className="absolute inset-x-0 top-0 h-px bg-slate-200" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 relative z-10">
         <div className="text-center">
@@ -78,10 +73,10 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/50 bg-indigo-500/10 backdrop-blur-sm mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm mb-8"
           >
-            <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse" />
-            <span className="text-sm font-semibold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+            <span className="text-sm font-semibold">
               Welcome to the Future of Work
             </span>
           </motion.div>
@@ -92,7 +87,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
             className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
           >
             The Operating System for
-            <span className="block bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent animate-gradient">
+            <span className="block text-slate-700">
               Modern Teams
             </span>
           </h1>
@@ -100,7 +95,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
           {/* Description */}
           <p
             ref={descRef}
-            className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed"
+            className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed"
           >
             Unified messaging, task management, documents, and video—all in one beautiful
             workspace. Empower your team to collaborate smarter, not harder.
@@ -145,7 +140,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
             {features.map((feature, index) => (
               <span
                 key={index}
-                className="px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-sm text-slate-300 hover:border-indigo-500/50 transition-colors"
+                className="px-4 py-2 rounded-full border border-slate-200 bg-white text-sm text-slate-600 shadow-sm transition-colors hover:border-slate-300 hover:text-slate-950"
               >
                 ✓ {feature}
               </span>
@@ -159,17 +154,14 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
             transition={{ duration: 0.8, delay: 1 }}
             className="relative"
           >
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/30 to-cyan-600/30 rounded-2xl blur-3xl" />
-
             {/* Mock Dashboard */}
-            <div className="relative glass-effect backdrop-blur-xl rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
-              <div className="aspect-video bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-white/5 flex items-center justify-center">
+            <div className="relative glass-effect rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70 md:p-8">
+              <div className="aspect-video bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-cyan-600 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 rounded-full bg-slate-950 flex items-center justify-center mx-auto mb-4">
                     <PlayCircle className="w-8 h-8 text-white" />
                   </div>
-                  <p className="text-slate-400 text-sm">Dashboard Preview</p>
+                  <p className="text-slate-500 text-sm">Dashboard Preview</p>
                 </div>
               </div>
             </div>

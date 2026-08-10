@@ -22,8 +22,13 @@ public sealed record ScheduleMeetingRequest(
 public sealed record JoinMeetingRequest(
     string RoomId,
     string? DisplayName,
+    string? ClientSessionId,
     bool CanPublish = true,
     bool CanSubscribe = true
+);
+
+public sealed record RecordingRequest(
+    string RoomId
 );
 
 public sealed record MeetingResponse(
@@ -47,6 +52,21 @@ public sealed record JoinMeetingResponse(
     string Token,
     string ServerUrl,
     DateTimeOffset ExpiresAt
+);
+
+public sealed record LiveKitParticipantResponse(
+    string Identity,
+    string Name,
+    string Sid
+);
+
+public sealed record RecordingResponse(
+    string RoomId,
+    string RecordingId,
+    string Status,
+    DateTimeOffset StartedAt,
+    DateTimeOffset? StoppedAt,
+    string Message
 );
 
 public sealed class MeetingRecord

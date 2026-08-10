@@ -5,7 +5,7 @@ interface MeetingRoomProps {
 }
 
 const MeetingRoom = ({ children }: MeetingRoomProps) => (
-  <main className="flex min-h-screen flex-col bg-slate-950 text-white">
+  <main className="flex min-h-screen flex-col bg-slate-50 text-slate-950">
     {children}
   </main>
 )

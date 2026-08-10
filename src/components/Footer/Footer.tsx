@@ -57,12 +57,7 @@ const Footer: React.FC = () => {
   ]
 
   return (
-    <footer className="relative bg-slate-950 border-t border-white/10">
-      {/* Background gradient */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-b from-indigo-600/10 to-transparent rounded-full blur-3xl" />
-      </div>
-
+    <footer className="relative border-t border-slate-200 bg-white">
       <div className="relative z-10">
         {/* Main Footer Content */}
         <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 py-16 md:py-20">
@@ -76,12 +71,12 @@ const Footer: React.FC = () => {
               className="lg:col-span-1"
             >
               <a href="/" className="flex items-center gap-2 text-xl font-bold mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center">
                   <span className="text-white font-bold">C</span>
                 </div>
-                <span className="text-white">CollabOS</span>
+                <span className="text-slate-950">CollabOS</span>
               </a>
-              <p className="text-sm text-slate-400 mb-6">
+              <p className="text-sm text-slate-500 mb-6">
                 The operating system for modern teams.
               </p>
               <div className="flex gap-4">
@@ -92,7 +87,7 @@ const Footer: React.FC = () => {
                       key={social.label}
                       href={social.href}
                       whileHover={{ scale: 1.1 }}
-                      className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 hover:border-indigo-500/50 flex items-center justify-center text-slate-400 hover:text-indigo-400 transition-colors"
+                      className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-950 transition-colors"
                       aria-label={social.label}
                     >
                       <Icon className="w-5 h-5" />
@@ -110,13 +105,13 @@ const Footer: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: (index + 1) * 0.1 }}
               >
-                <h4 className="font-semibold text-white mb-4">{group.section}</h4>
+                <h4 className="font-semibold text-slate-950 mb-4">{group.section}</h4>
                 <ul className="space-y-3">
                   {group.links.map((link) => (
                     <li key={link.label}>
                       <a
                         href={link.href}
-                        className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                        className="text-sm text-slate-500 hover:text-slate-950 transition-colors"
                       >
                         {link.label}
                       </a>
@@ -128,7 +123,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-white/10 mb-8" />
+          <div className="border-t border-slate-200 mb-8" />
 
           {/* Bottom Footer */}
           <motion.div
@@ -137,17 +132,17 @@ const Footer: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="flex flex-col md:flex-row justify-between items-center gap-4"
           >
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-500">
               © {currentYear} CollabOS. All rights reserved.
             </p>
-            <div className="flex items-center gap-6 text-sm text-slate-400">
-              <a href="#" className="hover:text-indigo-400 transition-colors">
+            <div className="flex items-center gap-6 text-sm text-slate-500">
+              <a href="#" className="hover:text-slate-950 transition-colors">
                 Status
               </a>
-              <a href="#" className="hover:text-indigo-400 transition-colors">
+              <a href="#" className="hover:text-slate-950 transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="hover:text-indigo-400 transition-colors">
+              <a href="#" className="hover:text-slate-950 transition-colors">
                 Terms of Service
               </a>
             </div>

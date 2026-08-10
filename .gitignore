@@ -1,4 +1,5 @@
 node_modules
+.DS_Store
 dist
 dist-ssr
 *.tsbuildinfo
@@ -12,3 +13,4 @@ appsettings.Development.json
 appsettings.Local.json
 backend/**/bin/
 backend/**/obj/
+.aider*

@@ -115,14 +115,14 @@ const Navbar: React.FC<NavbarProps> = ({
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-slate-900/80 backdrop-blur-md border-b border-white/10 py-3'
-          : 'bg-transparent py-6'
+          ? 'border-b border-slate-200 bg-white/95 py-3 shadow-sm'
+          : 'bg-white/80 py-6'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 text-xl font-bold group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-600 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-indigo-500/50 transition-shadow">
+        <a href="/" className="flex items-center gap-2 text-xl font-bold text-slate-950 group">
+          <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center transition-colors group-hover:bg-slate-800">
             <span className="text-white font-bold">C</span>
           </div>
           <span>CollabOS</span>
@@ -134,10 +134,10 @@ const Navbar: React.FC<NavbarProps> = ({
             <a
               key={link.label}
               href={link.href}
-              className="text-sm text-slate-300 hover:text-white transition-colors relative group"
+              className="text-sm text-slate-600 hover:text-slate-950 transition-colors relative group"
             >
               {link.label}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-600 to-cyan-600 group-hover:w-full transition-all duration-300" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-slate-950 group-hover:w-full transition-all duration-300" />
             </a>
           ))}
         </div>
@@ -165,7 +165,7 @@ const Navbar: React.FC<NavbarProps> = ({
               {isAccountOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-3 w-56 overflow-hidden rounded-lg border border-white/10 bg-slate-950/95 py-2 shadow-xl shadow-black/30 backdrop-blur-md"
+                  className="absolute right-0 mt-3 w-56 overflow-hidden rounded-lg border border-slate-200 bg-white py-2 shadow-xl shadow-slate-200/60"
                 >
                   <button
                     type="button"
@@ -173,9 +173,9 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleProfile}
                     onMouseEnter={() => prefetchRoute('profile')}
                     onFocus={() => prefetchRoute('profile')}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <UserCircle className="w-4 h-4 text-indigo-300" />
+                    <UserCircle className="w-4 h-4 text-slate-500" />
                     My profile
                   </button>
                   <button
@@ -184,9 +184,9 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleCustomizeProfile}
                     onMouseEnter={warmEditProfile}
                     onFocus={warmEditProfile}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <UserCog className="w-4 h-4 text-indigo-300" />
+                    <UserCog className="w-4 h-4 text-slate-500" />
                     Customize profile
                   </button>
                   <button
@@ -195,7 +195,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleTeamWorkspace}
                     onMouseEnter={warmTeamWorkspace}
                     onFocus={warmTeamWorkspace}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
                     <MessageSquare className="w-4 h-4 text-emerald-300" />
                     Team Workspace
@@ -206,9 +206,9 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleWebsiteBuilder}
                     onMouseEnter={warmWebsiteBuilder}
                     onFocus={warmWebsiteBuilder}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <Globe2 className="w-4 h-4 text-cyan-300" />
+                    <Globe2 className="w-4 h-4 text-slate-500" />
                     Website Builder
                   </button>
                   <button
@@ -217,7 +217,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleMeetings}
                     onMouseEnter={warmMeetings}
                     onFocus={warmMeetings}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
@@ -226,16 +226,16 @@ const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     role="menuitem"
                     onClick={handleChangePassword}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <KeyRound className="w-4 h-4 text-cyan-300" />
+                    <KeyRound className="w-4 h-4 text-slate-500" />
                     Change password
                   </button>
                   <button
                     type="button"
                     role="menuitem"
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
                     <LogOut className="w-4 h-4 text-red-300" />
                     Log out
@@ -260,7 +260,7 @@ const Navbar: React.FC<NavbarProps> = ({
           onClick={() => setIsOpen(!isOpen)}
           onMouseEnter={() => prefetchRoutes(['auth', 'profile', 'websiteDashboard'])}
           onFocus={() => prefetchRoutes(['auth', 'profile', 'websiteDashboard'])}
-          className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+          className="md:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
           aria-label="Toggle menu"
         >
           {isOpen ? (
@@ -279,7 +279,7 @@ const Navbar: React.FC<NavbarProps> = ({
           height: isOpen ? 'auto' : 0,
         }}
         transition={{ duration: 0.3 }}
-        className="md:hidden overflow-hidden border-t border-white/10 bg-slate-900/50 backdrop-blur-md"
+        className="md:hidden overflow-hidden border-t border-slate-200 bg-white shadow-sm"
       >
         <div className="px-4 py-4 space-y-3">
           {navLinks.map((link) => (
@@ -287,7 +287,7 @@ const Navbar: React.FC<NavbarProps> = ({
               key={link.label}
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              className="block px-4 py-2 text-slate-600 hover:text-slate-950 hover:bg-slate-50 rounded-lg transition-colors"
             >
               {link.label}
             </a>
@@ -308,16 +308,16 @@ const Navbar: React.FC<NavbarProps> = ({
                 />
               </Button>
               {isAccountOpen && (
-                <div role="menu" className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                <div role="menu" className="overflow-hidden rounded-lg border border-slate-200 bg-white">
                   <button
                     type="button"
                     role="menuitem"
                     onClick={handleProfile}
                     onMouseEnter={() => prefetchRoute('profile')}
                     onFocus={() => prefetchRoute('profile')}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <UserCircle className="w-4 h-4 text-indigo-300" />
+                    <UserCircle className="w-4 h-4 text-slate-500" />
                     My profile
                   </button>
                   <button
@@ -326,9 +326,9 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleCustomizeProfile}
                     onMouseEnter={warmEditProfile}
                     onFocus={warmEditProfile}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <UserCog className="w-4 h-4 text-indigo-300" />
+                    <UserCog className="w-4 h-4 text-slate-500" />
                     Customize profile
                   </button>
                   <button
@@ -337,7 +337,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleTeamWorkspace}
                     onMouseEnter={warmTeamWorkspace}
                     onFocus={warmTeamWorkspace}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
                     <MessageSquare className="w-4 h-4 text-emerald-300" />
                     Team Workspace
@@ -348,9 +348,9 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleWebsiteBuilder}
                     onMouseEnter={warmWebsiteBuilder}
                     onFocus={warmWebsiteBuilder}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <Globe2 className="w-4 h-4 text-cyan-300" />
+                    <Globe2 className="w-4 h-4 text-slate-500" />
                     Website Builder
                   </button>
                   <button
@@ -359,7 +359,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={handleMeetings}
                     onMouseEnter={warmMeetings}
                     onFocus={warmMeetings}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
@@ -368,16 +368,16 @@ const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     role="menuitem"
                     onClick={handleChangePassword}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
-                    <KeyRound className="w-4 h-4 text-cyan-300" />
+                    <KeyRound className="w-4 h-4 text-slate-500" />
                     Change password
                   </button>
                   <button
                     type="button"
                     role="menuitem"
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
                     <LogOut className="w-4 h-4 text-red-300" />
                     Log out
@@ -419,15 +419,15 @@ const Navbar: React.FC<NavbarProps> = ({
       </motion.div>
 
       {isLogoutModalOpen && (
-        <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-950 p-6 text-white shadow-2xl shadow-black/50">
+        <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/50 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl shadow-slate-900/20">
             <div className="mb-5 flex items-start gap-4">
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-red-500/10 text-red-300">
                 <AlertTriangle className="h-6 w-6" />
               </div>
               <div>
                 <h2 className="text-xl font-bold">Log out of CollabOS?</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   You will leave this workspace on this device. You can sign in again anytime.
                 </p>
               </div>
@@ -440,7 +440,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <Button
                 type="button"
                 onClick={confirmLogout}
-                className="bg-gradient-to-r from-red-600 to-rose-600 hover:shadow-red-500/30"
+                className="bg-red-600 hover:bg-red-700"
               >
                 Log out
               </Button>

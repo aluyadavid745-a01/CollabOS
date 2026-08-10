@@ -165,9 +165,7 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
       className="py-20 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 relative overflow-hidden"
       id="pricing"
     >
-      {/* Background elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-cyan-600/10 to-transparent rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-600/10 to-transparent rounded-full blur-3xl" />
+      <div className="absolute inset-x-0 top-0 h-px bg-slate-200" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
@@ -176,14 +174,14 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/50 bg-indigo-500/10 backdrop-blur-sm mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm mb-6"
           >
-            <span className="w-2 h-2 bg-indigo-400 rounded-full" />
-            <span className="text-sm font-semibold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+            <span className="text-sm font-semibold">
               Simple Pricing
             </span>
           </motion.div>
-          <h2 ref={titleRef} className="text-title text-white mb-6">
+          <h2 ref={titleRef} className="text-title text-slate-950 mb-6">
             Plans for Every Team
           </h2>
           <p className="text-body max-w-2xl mx-auto">
@@ -197,15 +195,15 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-4 p-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm"
+            className="inline-flex items-center gap-4 p-2 rounded-full border border-slate-200 bg-white shadow-sm"
           >
             <button
               type="button"
               onClick={() => setBillingCycle('monthly')}
               className={`px-6 py-2 rounded-full font-semibold text-sm transition-colors ${
                 billingCycle === 'monthly'
-                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-slate-950 text-white'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Monthly
@@ -215,8 +213,8 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
               onClick={() => setBillingCycle('yearly')}
               className={`px-6 py-2 rounded-full font-semibold text-sm transition-colors ${
                 billingCycle === 'yearly'
-                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-slate-950 text-white'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Yearly
@@ -238,14 +236,14 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
               <motion.div key={plan.id} className="pricing-card h-full">
                 <GlassmorphicCard
                   className={`flex flex-col h-full relative ${
-                    plan.featured ? 'md:scale-105 ring-2 ring-indigo-500' : ''
+                    plan.featured ? 'md:scale-105 ring-2 ring-slate-950' : ''
                   }`}
                   hover={true}
                 >
                 {/* Featured badge */}
                 {plan.featured && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white text-xs font-bold">
+                    <span className="px-4 py-1 rounded-full bg-slate-950 text-white text-xs font-bold">
                       MOST POPULAR
                     </span>
                   </div>
@@ -253,18 +251,18 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
 
                 {/* Plan Header */}
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <p className="text-slate-400 text-sm">{plan.description}</p>
+                  <h3 className="text-2xl font-bold text-slate-950 mb-2">{plan.name}</h3>
+                  <p className="text-slate-500 text-sm">{plan.description}</p>
                 </div>
 
                 {/* Pricing */}
                 <div className="mb-8">
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                    <span className="text-4xl font-bold text-slate-950">
                       {price === null ? 'Custom' : `$${price}`}
                     </span>
                     {price !== null && (
-                      <span className="text-slate-400 text-sm ml-2">
+                      <span className="text-slate-500 text-sm ml-2">
                         /{billingCycle === 'yearly' ? 'year' : 'month'}
                       </span>
                     )}
@@ -306,7 +304,7 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
                       )}
                       <span
                         className={`text-sm ${
-                          feature.included ? 'text-slate-300' : 'text-slate-500'
+                          feature.included ? 'text-slate-700' : 'text-slate-400'
                         }`}
                       >
                         {feature.name}
@@ -323,15 +321,15 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
         {/* FAQ Section */}
         <div className="mt-20">
           <div className="text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">Frequently Asked Questions</h3>
-          <p className="text-slate-400 mb-8">Answers to the questions teams usually ask before choosing a plan.</p>
+          <h3 className="text-2xl font-bold text-slate-950 mb-4">Frequently Asked Questions</h3>
+          <p className="text-slate-500 mb-8">Answers to the questions teams usually ask before choosing a plan.</p>
           </div>
 
           <div className="mx-auto grid max-w-4xl gap-4">
             {visibleFaqs.map((faq) => (
-              <div key={faq.question} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <h4 className="text-base font-bold text-white">{faq.question}</h4>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{faq.answer}</p>
+              <div key={faq.question} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h4 className="text-base font-bold text-slate-950">{faq.question}</h4>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{faq.answer}</p>
               </div>
             ))}
           </div>

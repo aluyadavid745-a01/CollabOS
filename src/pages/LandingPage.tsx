@@ -40,7 +40,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white"
+      className="min-h-screen bg-slate-50 text-slate-950"
     >
       {/* Fixed Navbar */}
       <Navbar

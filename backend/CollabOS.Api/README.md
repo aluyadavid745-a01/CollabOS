@@ -2,6 +2,14 @@
 
 ASP.NET Core API for issuing LiveKit Cloud meeting tokens.
 
+The API loads backend variables from `backend/CollabOS.Api/.env.local` on startup, so you do not need to export them manually in the terminal each time.
+
+Create the local file from the example:
+
+```bash
+cp backend/CollabOS.Api/.env.example backend/CollabOS.Api/.env.local
+```
+
 Required backend environment variables:
 
 ```bash
@@ -19,6 +27,12 @@ SMTP_FROM=your-email@gmail.com
 ```
 
 Do not put `LIVEKIT_API_SECRET` in the React app or commit it to source control.
+
+From the app root, start the backend with:
+
+```bash
+npm run dev:api
+```
 
 Endpoints:
 

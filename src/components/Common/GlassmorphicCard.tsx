@@ -10,8 +10,8 @@ const GlassmorphicCard = React.forwardRef<HTMLDivElement, GlassmorphicCardProps>
     <div
       ref={ref}
       className={cn(
-        'glass-effect backdrop-blur-md rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl transition-all duration-300',
-        hover && 'hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/20',
+        'glass-effect rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 md:p-8',
+        hover && 'hover:border-slate-300 hover:shadow-md',
         className
       )}
       {...props}

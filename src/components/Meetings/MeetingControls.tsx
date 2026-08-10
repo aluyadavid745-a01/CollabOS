@@ -4,11 +4,11 @@ import type { MeetingTool } from './types'
 
 interface MeetingControlsProps {
   tools: MeetingTool[]
-  onLeave: () => void
+  onLeave: () => Promise<void> | void
 }
 
 const MeetingControls = ({ tools, onLeave }: MeetingControlsProps) => (
-  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.07] p-3 shadow-2xl shadow-black/40">
+  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-3xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-200/70">
     {tools.map((item) => {
       const Icon = item.icon
       return (
@@ -19,13 +19,16 @@ const MeetingControls = ({ tools, onLeave }: MeetingControlsProps) => (
           whileTap={{ scale: 0.96 }}
           title={item.label}
           onClick={item.onClick}
+          disabled={item.disabled}
           aria-pressed={item.active}
           className={`grid h-11 w-11 place-items-center rounded-2xl border transition-colors ${
-            item.danger
-              ? 'border-red-300/30 bg-red-500/15 text-red-100 hover:bg-red-500/25'
+            item.disabled
+              ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+              : item.danger
+              ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
               : item.active
-                ? 'border-cyan-300/50 bg-cyan-300 text-slate-950'
-                : 'border-white/10 bg-slate-950/70 text-slate-200 hover:border-cyan-300/50 hover:text-cyan-200'
+                ? 'border-slate-950 bg-slate-950 text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
           }`}
         >
           <Icon className="h-5 w-5" />
@@ -35,7 +38,7 @@ const MeetingControls = ({ tools, onLeave }: MeetingControlsProps) => (
     <button
       type="button"
       onClick={onLeave}
-      className="ml-1 inline-flex h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 px-4 text-sm font-black text-white shadow-lg shadow-red-950/40"
+      className="ml-1 inline-flex h-11 items-center gap-2 rounded-2xl bg-red-600 px-4 text-sm font-black text-white shadow-sm hover:bg-red-700"
     >
       <PhoneOff className="h-5 w-5" />
       Leave

@@ -328,17 +328,12 @@ const AuthPage: React.FC<AuthPageProps> = ({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-gradient-to-r from-indigo-600/20 to-cyan-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-l from-cyan-600/20 to-emerald-600/10 rounded-full blur-3xl" />
-      </div>
-
+    <main className="min-h-screen bg-slate-50 text-slate-950">
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 lg:px-16 py-8">
         <button
           type="button"
           onClick={() => onNavigate('home')}
-          className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors mb-10"
+          className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-950 transition-colors mb-10"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to CollabOS
@@ -346,9 +341,9 @@ const AuthPage: React.FC<AuthPageProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-12 items-center min-h-[calc(100vh-140px)]">
           <section>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/50 bg-indigo-500/10 backdrop-blur-sm mb-6">
-              <Sparkles className="w-4 h-4 text-indigo-300" />
-              <span className="text-sm font-semibold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm mb-6">
+              <Sparkles className="w-4 h-4 text-slate-600" />
+              <span className="text-sm font-semibold">
                 {isSignup
                   ? 'Start your secure workspace'
                   : hasCreatedAccountReady
@@ -362,7 +357,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
               {isSignup ? 'Create your CollabOS workspace' : 'Sign in to your workspace'}
             </h1>
-            <p className="text-lg md:text-xl text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl leading-relaxed">
               {isSignup
                 ? 'Set up your team hub for messaging, projects, documents, and meetings. Verification keeps every workspace protected from day one.'
                 : hasCreatedAccountReady
@@ -378,22 +373,22 @@ const AuthPage: React.FC<AuthPageProps> = ({
               ].map((item) => {
                 const Icon = item.icon
                 return (
-                  <div key={item.label} className="glass-effect rounded-xl p-4 border border-white/10">
-                    <Icon className="w-5 h-5 text-cyan-300 mb-3" />
-                    <p className="text-sm font-semibold text-white">{item.label}</p>
+                  <div key={item.label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <Icon className="w-5 h-5 text-slate-600 mb-3" />
+                    <p className="text-sm font-semibold text-slate-900">{item.label}</p>
                   </div>
                 )
               })}
             </div>
           </section>
 
-          <section className="glass-effect rounded-2xl border border-white/10 shadow-2xl p-6 md:p-8">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70 md:p-8">
             <div className="flex items-center justify-between gap-4 mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-2xl font-bold text-slate-950">
                   {step === 'verify' ? 'Check your email' : isSignup ? 'Get started' : 'Sign in'}
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-slate-500 mt-1">
                   {step === 'verify'
                     ? `Verification link sent to ${form.email}`
                     : hasCreatedAccountReady
@@ -403,7 +398,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                       : 'Use your work email to continue'}
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-slate-950 text-white flex items-center justify-center">
                 {step === 'verify' ? (
                   <ShieldCheck className="w-6 h-6" />
                 ) : (
@@ -418,68 +413,83 @@ const AuthPage: React.FC<AuthPageProps> = ({
                   type="button"
                   onClick={continueWithGoogle}
                   disabled={submitting}
-                  className="flex w-full items-center justify-center gap-3 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white transition-colors hover:border-cyan-400/50 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-white text-sm font-black text-slate-950">
-                      G
-                    </span>
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06L5.84 9.9C6.71 7.3 9.14 5.38 12 5.38z"
+                      />
+                    </svg>
                   )}
                   {submitting ? 'Opening Google...' : 'Continue with Google'}
                 </button>
 
                 <div className="flex items-center gap-3">
-                  <span className="h-px flex-1 bg-white/10" />
+                  <span className="h-px flex-1 bg-slate-200" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">or</span>
-                  <span className="h-px flex-1 bg-white/10" />
+                  <span className="h-px flex-1 bg-slate-200" />
                 </div>
 
                 {isSignup && (
                   <label className="block">
-                    <span className="text-sm font-semibold text-slate-200">Full name</span>
+                    <span className="text-sm font-semibold text-slate-700">Full name</span>
                     <input
                       value={form.name}
                       onChange={updateForm('name')}
-                      className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 outline-none focus:border-cyan-400"
+                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 placeholder:text-slate-400 outline-none focus:border-slate-500"
                       placeholder="Ada Johnson"
                     />
                   </label>
                 )}
 
                 <label className="block">
-                  <span className="text-sm font-semibold text-slate-200">Work email</span>
+                  <span className="text-sm font-semibold text-slate-700">Work email</span>
                   <input
                     type="email"
                     value={form.email}
                     onChange={updateForm('email')}
-                    className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 outline-none focus:border-cyan-400"
+                    className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 placeholder:text-slate-400 outline-none focus:border-slate-500"
                     placeholder="you@company.com"
                   />
                 </label>
 
                 {isSignup && (
                   <label className="block">
-                    <span className="text-sm font-semibold text-slate-200">Workspace name</span>
+                    <span className="text-sm font-semibold text-slate-700">Workspace name</span>
                     <input
                       value={form.workspace}
                       onChange={updateForm('workspace')}
-                      className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 outline-none focus:border-cyan-400"
+                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 placeholder:text-slate-400 outline-none focus:border-slate-500"
                       placeholder="Acme Product Team"
                     />
                   </label>
                 )}
 
                 <label className="block">
-                  <span className="flex items-center justify-between gap-3 text-sm font-semibold text-slate-200">
+                  <span className="flex items-center justify-between gap-3 text-sm font-semibold text-slate-700">
                     Password
                     {!isSignup && (
                       <button
                         type="button"
                         onClick={sendPasswordReset}
                         disabled={submitting}
-                        className="text-xs font-bold text-cyan-300 transition-colors hover:text-cyan-200 disabled:opacity-60"
+                        className="text-xs font-bold text-slate-600 transition-colors hover:text-slate-950 disabled:opacity-60"
                       >
                         Forgot password?
                       </button>
@@ -490,13 +500,13 @@ const AuthPage: React.FC<AuthPageProps> = ({
                       type={showPassword ? 'text' : 'password'}
                       value={form.password}
                       onChange={updateForm('password')}
-                      className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 pr-12 text-white placeholder:text-slate-500 outline-none focus:border-cyan-400"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 pr-12 text-slate-950 placeholder:text-slate-400 outline-none focus:border-slate-500"
                       placeholder="Enter password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((current) => !current)}
-                      className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+                      className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -504,8 +514,8 @@ const AuthPage: React.FC<AuthPageProps> = ({
                   </div>
                 </label>
 
-                {notice && <p className="text-sm text-cyan-200">{notice}</p>}
-                {error && <p className="text-sm text-red-300">{error}</p>}
+                {notice && <p className="text-sm text-emerald-700">{notice}</p>}
+                {error && <p className="text-sm text-red-600">{error}</p>}
 
                 <Button type="submit" size="lg" className="w-full" disabled={submitting}>
                   {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
@@ -518,8 +528,8 @@ const AuthPage: React.FC<AuthPageProps> = ({
               </form>
             ) : (
               <div className="space-y-5">
-                <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 p-4">
-                  <div className="flex items-center gap-3 text-cyan-100">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                  <div className="flex items-center gap-3 text-emerald-800">
                     <CheckCircle2 className="w-5 h-5" />
                     <p className="text-sm font-semibold">
                       Firebase sent a verification link to {form.email}. Open the email, verify, then sign in. If it is not in your inbox, check Spam or Promotions.
@@ -527,8 +537,8 @@ const AuthPage: React.FC<AuthPageProps> = ({
                   </div>
                 </div>
 
-                {notice && <p className="text-sm text-cyan-200">{notice}</p>}
-                {error && <p className="text-sm text-red-300">{error}</p>}
+                {notice && <p className="text-sm text-emerald-700">{notice}</p>}
+                {error && <p className="text-sm text-red-600">{error}</p>}
 
                 <Button type="button" size="lg" className="w-full" onClick={() => onNavigate('signin')}>
                   I verified. Go to sign in
@@ -537,18 +547,18 @@ const AuthPage: React.FC<AuthPageProps> = ({
                   type="button"
                   onClick={resendVerification}
                   disabled={submitting}
-                  className="w-full text-sm text-cyan-300 hover:text-cyan-200 transition-colors"
+                  className="w-full text-sm text-slate-600 hover:text-slate-950 transition-colors"
                 >
                   {submitting ? 'Sending...' : 'Send verification email again'}
                 </button>
               </div>
             )}
 
-            <div className="mt-8 pt-6 border-t border-white/10 text-center">
+            <div className="mt-8 pt-6 border-t border-slate-200 text-center">
               <button
                 type="button"
                 onClick={switchMode}
-                className="text-sm text-slate-300 hover:text-white transition-colors"
+                className="text-sm text-slate-600 hover:text-slate-950 transition-colors"
               >
                 {isSignup ? 'Already have an account? Sign in' : 'New to CollabOS? Get started'}
               </button>

@@ -65,9 +65,9 @@ const statusTone: Record<PresenceState, string> = {
 }
 
 const shellButton =
-  'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-300 transition-colors hover:bg-white/10 hover:text-white'
+  'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950'
 
-const glassPanel = 'border border-white/10 bg-white/[0.07] shadow-2xl shadow-black/20 backdrop-blur-xl'
+const glassPanel = 'border border-slate-200 bg-white shadow-2xl shadow-slate-200/70 '
 
 const CreateWorkspaceModal = ({
   onClose,
@@ -91,53 +91,53 @@ const CreateWorkspaceModal = ({
   const [defaultLanguage, setDefaultLanguage] = React.useState('English')
 
   return (
-    <motion.div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 px-4 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <motion.div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 px-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <motion.form
         onSubmit={(event) => {
           event.preventDefault()
           onCreate({ name, description, category, privacy, theme, defaultLanguage })
         }}
-        className={`w-full max-w-2xl rounded-2xl p-5 text-white ${glassPanel}`}
+        className={`w-full max-w-2xl rounded-2xl p-5 text-slate-950 ${glassPanel}`}
         initial={{ y: 20, scale: 0.98 }}
         animate={{ y: 0, scale: 1 }}
         exit={{ y: 20, scale: 0.98 }}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-wider text-cyan-200">Create workspace</p>
+            <p className="text-xs font-black uppercase tracking-wider text-slate-600">Create workspace</p>
             <h2 className="mt-1 text-2xl font-black">Encrypted team command center</h2>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg border border-white/10 px-3 py-2 text-sm font-bold text-slate-300 hover:bg-white/10">
+          <button type="button" onClick={onClose} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
             Close
           </button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-bold text-slate-300">Workspace name</span>
-            <input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none focus:border-cyan-300" />
+            <span className="text-sm font-bold text-slate-700">Workspace name</span>
+            <input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-300" />
           </label>
           <label className="block">
-            <span className="text-sm font-bold text-slate-300">Category</span>
-            <input value={category} onChange={(event) => setCategory(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none focus:border-cyan-300" />
+            <span className="text-sm font-bold text-slate-700">Category</span>
+            <input value={category} onChange={(event) => setCategory(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-300" />
           </label>
           <label className="block md:col-span-2">
-            <span className="text-sm font-bold text-slate-300">Description</span>
-            <textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none focus:border-cyan-300" />
+            <span className="text-sm font-bold text-slate-700">Description</span>
+            <textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-300" />
           </label>
           <label className="block">
-            <span className="text-sm font-bold text-slate-300">Privacy</span>
-            <select value={privacy} onChange={(event) => setPrivacy(event.target.value as WorkspacePrivacy)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none focus:border-cyan-300">
+            <span className="text-sm font-bold text-slate-700">Privacy</span>
+            <select value={privacy} onChange={(event) => setPrivacy(event.target.value as WorkspacePrivacy)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-300">
               {privacyOptions.map((option) => <option key={option}>{option}</option>)}
             </select>
           </label>
           <label className="block">
-            <span className="text-sm font-bold text-slate-300">Default language</span>
-            <input value={defaultLanguage} onChange={(event) => setDefaultLanguage(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none focus:border-cyan-300" />
+            <span className="text-sm font-bold text-slate-700">Default language</span>
+            <input value={defaultLanguage} onChange={(event) => setDefaultLanguage(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-300" />
           </label>
           <label className="block md:col-span-2">
-            <span className="text-sm font-bold text-slate-300">Workspace theme</span>
-            <input value={theme} onChange={(event) => setTheme(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none focus:border-cyan-300" />
+            <span className="text-sm font-bold text-slate-700">Workspace theme</span>
+            <input value={theme} onChange={(event) => setTheme(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-300" />
           </label>
         </div>
 
@@ -222,11 +222,11 @@ const SecureTeamWorkspace: React.FC = () => {
 
   if (!profile || !activeWorkspace || !activeChannel) {
     return (
-      <main className="grid min-h-screen place-items-center bg-slate-950 px-4 text-center text-white">
+      <main className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center text-slate-950">
         <div>
-          <Lock className="mx-auto mb-4 h-10 w-10 text-cyan-300" />
+          <Lock className="mx-auto mb-4 h-10 w-10 text-slate-600" />
           <h1 className="text-2xl font-black">Opening secure team workspace</h1>
-          <p className="mt-2 text-slate-400">Sign in and complete your profile to start encrypted collaboration.</p>
+          <p className="mt-2 text-slate-600">Sign in and complete your profile to start encrypted collaboration.</p>
         </div>
       </main>
     )
@@ -302,40 +302,39 @@ const SecureTeamWorkspace: React.FC = () => {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#07111f] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.24),transparent_34%),radial-gradient(circle_at_top_right,rgba(244,114,182,0.16),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.88),rgba(12,18,31,0.96))]" />
+    <main className="min-h-screen overflow-hidden bg-slate-50 text-slate-950">
       <div className="relative grid h-screen grid-cols-1 lg:grid-cols-[84px_300px_minmax(0,1fr)_340px]">
-        <aside className="hidden border-r border-white/10 bg-black/25 p-3 backdrop-blur-xl lg:block">
+        <aside className="hidden border-r border-slate-200 bg-white p-3  lg:block">
           <div className="grid gap-3">
             {workspaces.map((workspace) => (
               <button
                 key={workspace.id}
                 type="button"
                 onClick={() => setActiveWorkspaceId(workspace.id)}
-                className={`grid h-14 w-14 place-items-center rounded-2xl border text-lg font-black transition-all ${workspace.id === activeWorkspace.id ? 'border-cyan-300 bg-cyan-300 text-slate-950 shadow-lg shadow-cyan-500/30' : 'border-white/10 bg-white/10 text-white hover:bg-white/15'}`}
+                className={`grid h-14 w-14 place-items-center rounded-2xl border text-lg font-black transition-all ${workspace.id === activeWorkspace.id ? 'border-slate-950 bg-slate-950 text-white shadow-lg shadow-slate-200/70' : 'border-slate-200 bg-slate-100 text-slate-950 hover:bg-slate-200'}`}
                 title={workspace.name}
               >
                 {workspace.logoUrl ? <img src={workspace.logoUrl} alt="" className="h-full w-full rounded-2xl object-cover" /> : workspace.name[0]}
               </button>
             ))}
-            <button type="button" onClick={() => setIsCreating(true)} className="grid h-14 w-14 place-items-center rounded-2xl border border-dashed border-white/20 text-slate-300 hover:border-cyan-300 hover:text-cyan-200" aria-label="Create workspace">
+            <button type="button" onClick={() => setIsCreating(true)} className="grid h-14 w-14 place-items-center rounded-2xl border border-dashed border-slate-300 text-slate-700 hover:border-slate-300 hover:text-slate-600" aria-label="Create workspace">
               <Plus className="h-5 w-5" />
             </button>
           </div>
         </aside>
 
-        <aside className="hidden min-h-0 border-r border-white/10 bg-white/[0.045] backdrop-blur-2xl lg:flex lg:flex-col">
-          <div className="border-b border-white/10 p-4">
+        <aside className="hidden min-h-0 border-r border-slate-200 bg-white  lg:flex lg:flex-col">
+          <div className="border-b border-slate-200 p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate text-lg font-black">{activeWorkspace.name}</p>
-                <p className="mt-1 text-xs font-bold text-cyan-200">{activeWorkspace.privacy} · {activeWorkspace.theme}</p>
+                <p className="mt-1 text-xs font-bold text-slate-600">{activeWorkspace.privacy} · {activeWorkspace.theme}</p>
               </div>
-              <button type="button" className="rounded-lg border border-white/10 p-2 text-slate-300 hover:bg-white/10" aria-label="Workspace menu">
+              <button type="button" className="rounded-lg border border-slate-200 p-2 text-slate-700 hover:bg-slate-100" aria-label="Workspace menu">
                 <ChevronDown className="h-4 w-4" />
               </button>
             </div>
-            <button type="button" onClick={() => setIsCreating(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-slate-200 hover:bg-white/15">
+            <button type="button" onClick={() => setIsCreating(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
               <Plus className="h-4 w-4" />
               New workspace
             </button>
@@ -345,10 +344,10 @@ const SecureTeamWorkspace: React.FC = () => {
             <section>
               <p className="mb-2 px-2 text-xs font-black uppercase tracking-wider text-slate-500">Channels</p>
               {activeWorkspace.channels.map((channel) => (
-                <button key={channel.id} type="button" onClick={() => setActiveChannelId(channel.id)} className={`${shellButton} ${channel.id === activeChannel.id ? 'bg-white/12 text-white' : ''}`}>
-                  {channel.type === 'Voice' ? <Headphones className="h-4 w-4 text-emerald-300" /> : <Hash className="h-4 w-4 text-cyan-300" />}
+                <button key={channel.id} type="button" onClick={() => setActiveChannelId(channel.id)} className={`${shellButton} ${channel.id === activeChannel.id ? 'bg-slate-100 text-slate-950' : ''}`}>
+                  {channel.type === 'Voice' ? <Headphones className="h-4 w-4 text-emerald-300" /> : <Hash className="h-4 w-4 text-slate-600" />}
                   <span className="min-w-0 flex-1 truncate">{channel.name}</span>
-                  {channel.unread > 0 && <span className="rounded-full bg-cyan-300 px-2 py-0.5 text-xs font-black text-slate-950">{channel.unread}</span>}
+                  {channel.unread > 0 && <span className="rounded-full bg-slate-50 px-2 py-0.5 text-xs font-black text-slate-950">{channel.unread}</span>}
                 </button>
               ))}
             </section>
@@ -365,7 +364,7 @@ const SecureTeamWorkspace: React.FC = () => {
                 const Component = Icon as React.ComponentType<{ className?: string }>
                 return (
                   <button key={String(label)} type="button" className={shellButton}>
-                    <Component className="h-4 w-4 text-violet-300" />
+                    <Component className="h-4 w-4 text-slate-600" />
                     {String(label)}
                   </button>
                 )
@@ -376,9 +375,9 @@ const SecureTeamWorkspace: React.FC = () => {
               <p className="mb-2 px-2 text-xs font-black uppercase tracking-wider text-slate-500">Direct messages</p>
               {activeWorkspace.members.filter((member) => member.userId !== profile.uid).map((member) => (
                 <button key={member.userId} type="button" className={shellButton}>
-                  <span className="relative grid h-7 w-7 place-items-center rounded-lg bg-white/10 text-xs font-black">
+                  <span className="relative grid h-7 w-7 place-items-center rounded-lg bg-slate-100 text-xs font-black">
                     {member.displayName[0]}
-                    <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-slate-950 ${statusTone[member.presence]}`} />
+                    <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${statusTone[member.presence]}`} />
                   </span>
                   <span className="min-w-0 truncate">{member.displayName}</span>
                 </button>
@@ -388,22 +387,22 @@ const SecureTeamWorkspace: React.FC = () => {
         </aside>
 
         <section className="flex min-h-0 flex-col">
-          <header className="flex min-h-[76px] items-center justify-between gap-4 border-b border-white/10 bg-black/20 px-4 backdrop-blur-xl md:px-6">
+          <header className="flex min-h-[76px] items-center justify-between gap-4 border-b border-slate-200 bg-white px-4  md:px-6">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <Hash className="h-5 w-5 text-cyan-300" />
+                <Hash className="h-5 w-5 text-slate-600" />
                 <h1 className="truncate text-xl font-black">{activeChannel.name}</h1>
-                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2 py-1 text-xs font-black text-emerald-200">
+                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2 py-1 text-xs font-black text-emerald-700">
                   E2EE
                 </span>
               </div>
-              <p className="mt-1 truncate text-sm text-slate-400">{activeChannel.description}</p>
+              <p className="mt-1 truncate text-sm text-slate-600">{activeChannel.description}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button type="button" className="rounded-xl border border-white/10 p-2 text-slate-300 hover:bg-white/10" aria-label="Search">
+              <button type="button" className="rounded-xl border border-slate-200 p-2 text-slate-700 hover:bg-slate-100" aria-label="Search">
                 <Search className="h-5 w-5" />
               </button>
-              <button type="button" className="rounded-xl border border-white/10 p-2 text-slate-300 hover:bg-white/10" aria-label="Notifications">
+              <button type="button" className="rounded-xl border border-slate-200 p-2 text-slate-700 hover:bg-slate-100" aria-label="Notifications">
                 <Bell className="h-5 w-5" />
               </button>
               <Button type="button" size="sm" onClick={runAiAssistant}>
@@ -414,7 +413,7 @@ const SecureTeamWorkspace: React.FC = () => {
           </header>
 
           {notice && (
-            <motion.div initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mx-4 mt-4 rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-bold text-cyan-100 md:mx-6">
+            <motion.div initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mx-4 mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 md:mx-6">
               {notice}
             </motion.div>
           )}
@@ -426,7 +425,7 @@ const SecureTeamWorkspace: React.FC = () => {
                   <ShieldCheck className="h-8 w-8 text-emerald-300" />
                   <div className="min-w-0 flex-1">
                     <p className="font-black">Secure channel established</p>
-                    <p className="mt-1 text-sm text-slate-400">SignalR-ready channel isolation · key version {activeWorkspace.encryptionKeyId} · presence online</p>
+                    <p className="mt-1 text-sm text-slate-600">SignalR-ready channel isolation · key version {activeWorkspace.encryptionKeyId} · presence online</p>
                   </div>
                   <span className="rounded-full bg-emerald-300 px-3 py-1 text-xs font-black text-slate-950">Protected</span>
                 </div>
@@ -440,10 +439,10 @@ const SecureTeamWorkspace: React.FC = () => {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className={`group rounded-2xl border p-4 ${message.senderUserId === profile.uid ? 'border-cyan-300/20 bg-cyan-300/10' : 'border-white/10 bg-white/[0.06]'}`}
+                    className={`group rounded-2xl border p-4 ${message.senderUserId === profile.uid ? 'border-slate-200 bg-slate-50' : 'border-slate-200 bg-white'}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-cyan-300 to-fuchsia-300 text-sm font-black text-slate-950">
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-sm font-black text-slate-700">
                         {message.senderName[0]}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -452,18 +451,18 @@ const SecureTeamWorkspace: React.FC = () => {
                           <span className="text-xs text-slate-500">{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           {message.pinned && <span className="rounded-full bg-amber-300 px-2 py-0.5 text-xs font-black text-slate-950">Pinned</span>}
                         </div>
-                        <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-100">{message.plainText}</p>
+                        <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">{message.plainText}</p>
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           {message.reactions.map((reaction, index) => (
-                            <span key={`${reaction}-${index}`} className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-xs font-bold">{reaction}</span>
+                            <span key={`${reaction}-${index}`} className="rounded-full border border-slate-200 bg-slate-100 px-2 py-1 text-xs font-bold">{reaction}</span>
                           ))}
-                          <button type="button" onClick={() => reactToMessage(message.id, 'Secure')} className="rounded-full border border-white/10 px-2 py-1 text-xs font-bold text-slate-400 opacity-100 hover:bg-white/10 hover:text-white md:opacity-0 md:group-hover:opacity-100">
+                          <button type="button" onClick={() => reactToMessage(message.id, 'Secure')} className="rounded-full border border-slate-200 px-2 py-1 text-xs font-bold text-slate-600 opacity-100 hover:bg-slate-100 hover:text-slate-950 md:opacity-0 md:group-hover:opacity-100">
                             React
                           </button>
-                          <button type="button" onClick={() => pinMessage(message.id)} className="rounded-full border border-white/10 px-2 py-1 text-xs font-bold text-slate-400 opacity-100 hover:bg-white/10 hover:text-white md:opacity-0 md:group-hover:opacity-100">
+                          <button type="button" onClick={() => pinMessage(message.id)} className="rounded-full border border-slate-200 px-2 py-1 text-xs font-bold text-slate-600 opacity-100 hover:bg-slate-100 hover:text-slate-950 md:opacity-0 md:group-hover:opacity-100">
                             Pin
                           </button>
-                          <span className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-emerald-200">
+                          <span className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-emerald-700">
                             <CheckCheck className="h-3.5 w-3.5" />
                             {message.deliveryStatus}
                           </span>
@@ -473,13 +472,13 @@ const SecureTeamWorkspace: React.FC = () => {
                   </motion.article>
                 ))}
               </AnimatePresence>
-              {typing && <p className="px-2 text-sm font-bold text-cyan-200">CollabOS AI is typing...</p>}
+              {typing && <p className="px-2 text-sm font-bold text-slate-600">CollabOS AI is typing...</p>}
             </div>
           </div>
 
-          <footer className="border-t border-white/10 bg-black/20 p-4 backdrop-blur-xl md:p-6">
-            <div className="mx-auto flex max-w-4xl items-end gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-3">
-              <button type="button" className="rounded-xl p-2 text-slate-300 hover:bg-white/10" aria-label="Attach file">
+          <footer className="border-t border-slate-200 bg-white p-4  md:p-6">
+            <div className="mx-auto flex max-w-4xl items-end gap-3 rounded-2xl border border-slate-200 bg-white p-3">
+              <button type="button" className="rounded-xl p-2 text-slate-700 hover:bg-slate-100" aria-label="Attach file">
                 <Paperclip className="h-5 w-5" />
               </button>
               <textarea
@@ -498,7 +497,7 @@ const SecureTeamWorkspace: React.FC = () => {
                 className="max-h-36 min-h-[44px] flex-1 resize-none bg-transparent px-2 py-3 text-sm outline-none placeholder:text-slate-500"
                 placeholder={`Message #${activeChannel.name}`}
               />
-              <button type="button" className="rounded-xl p-2 text-slate-300 hover:bg-white/10" aria-label="Emoji">
+              <button type="button" className="rounded-xl p-2 text-slate-700 hover:bg-slate-100" aria-label="Emoji">
                 <Smile className="h-5 w-5" />
               </button>
               <Button type="button" onClick={sendMessage} disabled={!draftMessage.trim()}>
@@ -508,14 +507,14 @@ const SecureTeamWorkspace: React.FC = () => {
           </footer>
         </section>
 
-        <aside className="hidden min-h-0 overflow-auto border-l border-white/10 bg-white/[0.045] p-4 backdrop-blur-2xl xl:block">
+        <aside className="hidden min-h-0 overflow-auto border-l border-slate-200 bg-white p-4  xl:block">
           <div className="space-y-4">
             <section className={`rounded-2xl p-4 ${glassPanel}`}>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="font-black">Invitation center</h2>
-                <UserPlus className="h-5 w-5 text-cyan-300" />
+                <UserPlus className="h-5 w-5 text-slate-600" />
               </div>
-              <textarea value={inviteEmails} onChange={(event) => setInviteEmails(event.target.value)} rows={3} className="w-full resize-none rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm outline-none focus:border-cyan-300" />
+              <textarea value={inviteEmails} onChange={(event) => setInviteEmails(event.target.value)} rows={3} className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-300" />
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Button type="button" size="sm" onClick={inviteMembers}>Invite</Button>
                 <Button type="button" size="sm" variant="secondary" onClick={copyInviteLink}>
@@ -523,23 +522,23 @@ const SecureTeamWorkspace: React.FC = () => {
                   Link
                 </Button>
               </div>
-              <p className="mt-3 break-all text-xs text-slate-400">
-                Invite code: <span className="font-bold text-cyan-200">{activeWorkspace.inviteCode}</span>
+              <p className="mt-3 break-all text-xs text-slate-600">
+                Invite code: <span className="font-bold text-slate-600">{activeWorkspace.inviteCode}</span>
               </p>
             </section>
 
             <section className={`rounded-2xl p-4 ${glassPanel}`}>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="font-black">Members</h2>
-                <Users className="h-5 w-5 text-violet-300" />
+                <Users className="h-5 w-5 text-slate-600" />
               </div>
               <div className="space-y-3">
                 {activeWorkspace.members.map((member) => (
-                  <div key={member.userId} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div key={member.userId} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <div className="flex items-center gap-3">
-                      <span className="relative grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-sm font-black">
+                      <span className="relative grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-sm font-black">
                         {member.displayName[0]}
-                        <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-slate-950 ${statusTone[member.presence]}`} />
+                        <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white ${statusTone[member.presence]}`} />
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-bold">{member.displayName}</p>
@@ -551,7 +550,7 @@ const SecureTeamWorkspace: React.FC = () => {
                       <select
                         value={member.presence}
                         onChange={(event) => updateWorkspace(updatePresence(activeWorkspace, member.userId, event.target.value as PresenceState))}
-                        className="mt-3 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 py-2 text-xs font-bold outline-none"
+                        className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-bold outline-none"
                       >
                         {presenceOptions.map((option) => <option key={option}>{option}</option>)}
                       </select>
@@ -559,7 +558,7 @@ const SecureTeamWorkspace: React.FC = () => {
                       <select
                         value={member.role}
                         onChange={(event) => updateWorkspace(updateMemberRole(activeWorkspace, member.userId, event.target.value as TeamRoleName))}
-                        className="mt-3 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 py-2 text-xs font-bold outline-none"
+                        className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-bold outline-none"
                       >
                         {teamRoles.map((role) => <option key={role}>{role}</option>)}
                       </select>
@@ -584,8 +583,8 @@ const SecureTeamWorkspace: React.FC = () => {
                 ].map(([label, Icon, detail]) => {
                   const Component = Icon as React.ComponentType<{ className?: string }>
                   return (
-                    <div key={String(label)} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3">
-                      <Component className="h-4 w-4 text-cyan-300" />
+                    <div key={String(label)} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <Component className="h-4 w-4 text-slate-600" />
                       <div className="min-w-0">
                         <p className="text-sm font-bold">{String(label)}</p>
                         <p className="text-xs text-slate-500">{String(detail)}</p>
@@ -599,17 +598,17 @@ const SecureTeamWorkspace: React.FC = () => {
             <section className={`rounded-2xl p-4 ${glassPanel}`}>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="font-black">Projects & files</h2>
-                <MoreHorizontal className="h-5 w-5 text-slate-400" />
+                <MoreHorizontal className="h-5 w-5 text-slate-600" />
               </div>
               <div className="space-y-2">
                 {activeWorkspace.projects.map((project) => (
-                  <div key={project.id} className="rounded-xl bg-white/[0.05] p-3">
+                  <div key={project.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <p className="text-sm font-bold">{project.name}</p>
-                    <p className="mt-1 text-xs text-cyan-200">{project.status} · {project.owner}</p>
+                    <p className="mt-1 text-xs text-slate-600">{project.status} · {project.owner}</p>
                   </div>
                 ))}
                 {activeWorkspace.files.map((file) => (
-                  <div key={file.id} className="rounded-xl bg-white/[0.05] p-3">
+                  <div key={file.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <p className="text-sm font-bold">{file.name}</p>
                     <p className="mt-1 text-xs text-slate-500">{file.size} · encrypted</p>
                   </div>

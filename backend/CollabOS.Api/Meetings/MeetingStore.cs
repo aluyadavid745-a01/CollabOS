@@ -23,6 +23,15 @@ public sealed class MeetingStore
                 !string.IsNullOrWhiteSpace(meeting.ReminderEmail))
             .ToArray();
 
+    public DateTimeOffset? GetNextPendingReminderAt(DateTimeOffset now) =>
+        _meetings.Values
+            .Where(meeting =>
+                meeting.StartsAt > now &&
+                meeting.ReminderSentAt is null &&
+                !string.IsNullOrWhiteSpace(meeting.ReminderEmail))
+            .Select(meeting => meeting.StartsAt)
+            .Min();
+
     public void MarkReminderSent(string roomId, DateTimeOffset sentAt)
     {
         if (!_meetings.TryGetValue(roomId, out var meeting)) return;

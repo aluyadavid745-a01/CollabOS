@@ -5,16 +5,25 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
-var builder = WebApplication.CreateBuilder(args);
-var authAudience = Environment.GetEnvironmentVariable("AUTH_AUDIENCE");
-var authAuthority = Environment.GetEnvironmentVariable("AUTH_AUTHORITY")
-    ?? (string.IsNullOrWhiteSpace(authAudience) ? null : $"https://securetoken.google.com/{authAudience}");
+DotEnv.Load();
 
+var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions { Args = args });
+builder.WebHost.UseKestrel();
+var port = Environment.GetEnvironmentVariable("PORT");
+var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
+    ?? (!string.IsNullOrWhiteSpace(port) ? $"http://0.0.0.0:{port}" : "http://127.0.0.1:7040");
+builder.WebHost.UseUrls(urls);
+var authAudience = Environment.GetEnvironmentVariable("AUTH_AUDIENCE")
+    ?? Environment.GetEnvironmentVariable("VITE_FIREBASE_PROJECT_ID");
+var authAuthority = AuthConfig.NormalizeFirebaseAuthority(Environment.GetEnvironmentVariable("AUTH_AUTHORITY"), authAudience);
+
+builder.Services.AddRouting();
+builder.Services.AddLogging();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CollabOSFrontend", policy =>
     {
-        var origins = (Environment.GetEnvironmentVariable("COLLABOS_FRONTEND_ORIGINS") ?? "http://localhost:3000")
+        var origins = (Environment.GetEnvironmentVariable("COLLABOS_FRONTEND_ORIGINS") ?? "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173")
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         policy.WithOrigins(origins)
@@ -72,7 +81,10 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("CollabOSFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -93,8 +105,15 @@ var meetings = app.MapGroup("/api/meetings").RequireAuthorization();
 
 meetings.MapPost("/create", async (CreateMeetingRequest request, MeetingService service, HttpContext context) =>
 {
-    var meeting = await service.CreateMeetingAsync(request, context.User);
-    return Results.Created($"/api/meetings/{meeting.RoomId}", meeting);
+    try
+    {
+        var meeting = await service.CreateMeetingAsync(request, context.User);
+        return Results.Created($"/api/meetings/{meeting.RoomId}", meeting);
+    }
+    catch (InvalidOperationException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
 });
 
 meetings.MapPost("/schedule", async (ScheduleMeetingRequest request, MeetingService service, HttpContext context) =>
@@ -108,12 +127,55 @@ meetings.MapPost("/schedule", async (ScheduleMeetingRequest request, MeetingServ
     {
         return Results.BadRequest(error.Message);
     }
+    catch (InvalidOperationException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
 });
 
 meetings.MapPost("/join", async (JoinMeetingRequest request, MeetingService service, HttpContext context) =>
 {
-    var join = await service.JoinMeetingAsync(request, context.User);
-    return Results.Ok(join);
+    try
+    {
+        var join = await service.JoinMeetingAsync(request, context.User);
+        return Results.Ok(join);
+    }
+    catch (InvalidOperationException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
+});
+
+meetings.MapPost("/recording/start", async (RecordingRequest request, MeetingService service, HttpContext context) =>
+{
+    try
+    {
+        return Results.Ok(await service.StartRecordingAsync(request, context.User));
+    }
+    catch (ArgumentException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
+    catch (InvalidOperationException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
+});
+
+meetings.MapPost("/recording/stop", async (RecordingRequest request, MeetingService service, HttpContext context) =>
+{
+    try
+    {
+        return Results.Ok(await service.StopRecordingAsync(request, context.User));
+    }
+    catch (ArgumentException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
+    catch (InvalidOperationException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
 });
 
 meetings.MapGet("/{roomId}", async (string roomId, MeetingService service) =>
@@ -122,10 +184,29 @@ meetings.MapGet("/{roomId}", async (string roomId, MeetingService service) =>
     return meeting is null ? Results.NotFound() : Results.Ok(meeting);
 });
 
+meetings.MapGet("/{roomId}/participants", async (string roomId, MeetingService service) =>
+{
+    try
+    {
+        return Results.Ok(await service.ListLiveKitParticipantsAsync(roomId));
+    }
+    catch (Exception error) when (error is not OperationCanceledException)
+    {
+        return Results.BadRequest(error.Message);
+    }
+});
+
 meetings.MapDelete("/{roomId}", async (string roomId, MeetingService service) =>
 {
-    await service.DeleteMeetingAsync(roomId);
-    return Results.NoContent();
+    try
+    {
+        await service.DeleteMeetingAsync(roomId);
+        return Results.NoContent();
+    }
+    catch (InvalidOperationException error)
+    {
+        return Results.BadRequest(error.Message);
+    }
 });
 
 app.Run();
@@ -160,6 +241,79 @@ internal static class FirebaseSigningKeys
                 : DateTimeOffset.UtcNow.AddHours(1);
 
             return _cachedKeys;
+        }
+    }
+}
+
+internal static class AuthConfig
+{
+    public static string? NormalizeFirebaseAuthority(string? configuredAuthority, string? audience)
+    {
+        if (!string.IsNullOrWhiteSpace(configuredAuthority) && configuredAuthority.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return configuredAuthority.TrimEnd('/');
+        }
+
+        if (!string.IsNullOrWhiteSpace(audience))
+        {
+            return $"https://securetoken.google.com/{audience}";
+        }
+
+        return null;
+    }
+}
+
+internal static class DotEnv
+{
+    private static readonly string[] CandidateFiles = [".env", ".env.local"];
+
+    public static void Load()
+    {
+        foreach (var directory in GetCandidateDirectories())
+        {
+            foreach (var fileName in CandidateFiles)
+            {
+                var path = Path.Combine(directory, fileName);
+                if (File.Exists(path))
+                {
+                    LoadFile(path);
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetCandidateDirectories()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            yield return current.FullName;
+            current = current.Parent;
+        }
+
+        current = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (current is not null)
+        {
+            yield return current.FullName;
+            current = current.Parent;
+        }
+    }
+
+    private static void LoadFile(string path)
+    {
+        foreach (var rawLine in File.ReadAllLines(path))
+        {
+            var line = rawLine.Trim();
+            if (line.Length == 0 || line.StartsWith('#')) continue;
+
+            var separatorIndex = line.IndexOf('=');
+            if (separatorIndex <= 0) continue;
+
+            var key = line[..separatorIndex].Trim();
+            var value = line[(separatorIndex + 1)..].Trim().Trim('"');
+
+            if (string.IsNullOrWhiteSpace(key) || Environment.GetEnvironmentVariable(key) is not null) continue;
+            Environment.SetEnvironmentVariable(key, value);
         }
     }
 }

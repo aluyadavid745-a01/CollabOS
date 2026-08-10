@@ -9,8 +9,10 @@ export interface MeetingParticipant {
   speaking: boolean
   mic: boolean
   camera: boolean
+  screenShare: boolean
   hand: boolean
   cameraTrack?: TrackReferenceOrPlaceholder
+  screenShareTrack?: TrackReferenceOrPlaceholder
 }
 
 export interface MeetingChatMessage {

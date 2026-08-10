@@ -5,6 +5,8 @@ namespace CollabOS.Api.Meetings;
 
 public sealed class MeetingReminderService : BackgroundService
 {
+    private static readonly TimeSpan IdleDelay = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan MaximumDelay = TimeSpan.FromMinutes(5);
     private readonly MeetingStore _store;
     private readonly MeetingEmailSender _emailSender;
     private readonly ILogger<MeetingReminderService> _logger;
@@ -22,24 +24,42 @@ public sealed class MeetingReminderService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
-
-        while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
-            foreach (var meeting in _store.GetDueReminders(DateTimeOffset.UtcNow))
+            await SendDueRemindersAsync(stoppingToken);
+            await DelayUntilNextReminderAsync(stoppingToken);
+        }
+    }
+
+    private async Task SendDueRemindersAsync(CancellationToken stoppingToken)
+    {
+        foreach (var meeting in _store.GetDueReminders(DateTimeOffset.UtcNow))
+        {
+            try
             {
-                try
-                {
-                    await _emailSender.SendReminderAsync(meeting, stoppingToken);
-                    _store.MarkReminderSent(meeting.RoomId, DateTimeOffset.UtcNow);
-                    _logger.LogInformation("Meeting reminder sent for {RoomId}", meeting.RoomId);
-                }
-                catch (Exception error)
-                {
-                    _logger.LogWarning(error, "Could not send meeting reminder for {RoomId}", meeting.RoomId);
-                }
+                await _emailSender.SendReminderAsync(meeting, stoppingToken);
+                _store.MarkReminderSent(meeting.RoomId, DateTimeOffset.UtcNow);
+                _logger.LogInformation("Meeting reminder sent for {RoomId}", meeting.RoomId);
+            }
+            catch (Exception error)
+            {
+                _logger.LogWarning(error, "Could not send meeting reminder for {RoomId}", meeting.RoomId);
             }
         }
+    }
+
+    private async Task DelayUntilNextReminderAsync(CancellationToken stoppingToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var nextReminderAt = _store.GetNextPendingReminderAt(now);
+        var delay = nextReminderAt is null
+            ? IdleDelay
+            : nextReminderAt.Value - now;
+
+        if (delay <= TimeSpan.Zero) return;
+        if (delay > MaximumDelay) delay = MaximumDelay;
+
+        await Task.Delay(delay, stoppingToken);
     }
 }
 

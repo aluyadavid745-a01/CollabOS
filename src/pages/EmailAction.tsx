@@ -91,24 +91,19 @@ const EmailAction: React.FC = () => {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-gradient-to-r from-indigo-600/20 to-cyan-600/10 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-gradient-to-l from-cyan-600/20 to-emerald-600/10 blur-3xl" />
-      </div>
-
+    <main className="min-h-screen bg-slate-50 text-slate-950">
       <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col px-4 py-8 md:px-8">
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="mb-12 inline-flex w-fit items-center gap-2 text-sm text-slate-300 transition-colors hover:text-white"
+          className="mb-12 inline-flex w-fit items-center gap-2 text-sm text-slate-600 transition-colors hover:text-slate-950"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to CollabOS
         </button>
 
-        <section className="my-auto rounded-2xl border border-white/10 bg-white/5 p-6 text-center shadow-2xl shadow-indigo-950/30 backdrop-blur-xl md:p-10">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-cyan-600">
+        <section className="my-auto rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xl shadow-slate-200/70 md:p-10">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-950 text-white">
             {isSuccess ? (
               <Icon className="h-8 w-8" />
             ) : (
@@ -116,9 +111,9 @@ const EmailAction: React.FC = () => {
             )}
           </div>
 
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-500/50 bg-indigo-500/10 px-4 py-2">
-            <MailCheck className="h-4 w-4 text-cyan-300" />
-            <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-sm font-semibold text-transparent">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-slate-700">
+            <MailCheck className="h-4 w-4 text-slate-600" />
+            <span className="text-sm font-semibold">
               Firebase email action
             </span>
           </div>
@@ -126,7 +121,7 @@ const EmailAction: React.FC = () => {
           <h1 className="text-3xl font-bold md:text-5xl">
             {isSuccess ? copy.successTitle : copy.errorTitle}
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-300 md:text-lg">
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600 md:text-lg">
             {message}
           </p>
 

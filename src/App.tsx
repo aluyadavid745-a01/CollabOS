@@ -33,6 +33,8 @@ const RouteShell = ({ label = "Opening..." }: { label?: string }) => (
   </main>
 );
 
+const AUTH_REDIRECT_KEY = "collabos:post-auth-redirect";
+
 function readStoredUser(key: string): AuthUser | null {
   if (!hasCookieConsent()) return null;
   return getJsonCookie<AuthUser>(key);
@@ -43,6 +45,52 @@ function getViewFromPath(pathname: string): AuthMode | "home" {
   if (pathname === "/get-started") return "signup";
   return "home";
 }
+
+function getPostAuthRedirect(state: unknown) {
+  if (!state || typeof state !== "object" || !("from" in state)) return null;
+
+  const from = (state as { from?: unknown }).from;
+  return normalizePostAuthRedirect(from);
+}
+
+function normalizePostAuthRedirect(from: unknown) {
+  if (typeof from !== "string" || !from.startsWith("/") || from.startsWith("//")) return null;
+  if (from === "/signin" || from === "/get-started") return null;
+
+  return from;
+}
+
+function savePendingAuthRedirect(from: string) {
+  if (typeof window === "undefined") return;
+  const redirect = normalizePostAuthRedirect(from);
+  if (!redirect) return;
+
+  try {
+    window.sessionStorage.setItem(AUTH_REDIRECT_KEY, redirect);
+  } catch {
+    // Router state remains the fallback if session storage is unavailable.
+  }
+}
+
+function consumePendingAuthRedirect() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const redirect = normalizePostAuthRedirect(window.sessionStorage.getItem(AUTH_REDIRECT_KEY));
+    window.sessionStorage.removeItem(AUTH_REDIRECT_KEY);
+    return redirect;
+  } catch {
+    return null;
+  }
+}
+
+const AuthRedirect = ({ from }: { from: string }) => {
+  React.useLayoutEffect(() => {
+    savePendingAuthRedirect(from);
+  }, [from]);
+
+  return <Navigate to="/signin" replace state={{ from }} />;
+};
 
 function App() {
   const navigateRouter = useNavigate();
@@ -120,7 +168,7 @@ function App() {
       workspace: nextUser.workspace,
     });
     prefetchRoutes(["profile", "homeDashboard", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview"]);
-    navigate("home");
+    navigateRouter(getPostAuthRedirect(location.state) || consumePendingAuthRedirect() || "/", { replace: true });
   };
 
   const handleSignupVerified = (nextUser: AuthUser) => {
@@ -184,7 +232,7 @@ function App() {
 
   const protectedRoute = (element: React.ReactElement, label: string) => {
     if (authLoading) return <RouteShell label={label} />;
-    if (!firebaseUser) return <Navigate to="/signin" replace state={{ from: location.pathname }} />;
+    if (!firebaseUser) return <AuthRedirect from={`${location.pathname}${location.search}`} />;
     return element;
   };
 

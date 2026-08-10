@@ -14,18 +14,27 @@ const gridClassByMode: Record<RoomMode, string> = {
   pip: 'grid-cols-1 lg:grid-cols-[1fr_280px]',
 }
 
-const VideoGrid = ({ participants, mode }: VideoGridProps) => (
-  <div className={`grid flex-1 gap-4 ${gridClassByMode[mode]}`}>
-    <AnimatePresence>
-      {participants.map((participant, index) => (
-        <ParticipantCard
-          key={participant.id}
-          participant={participant}
-          active={participant.speaking || (mode === 'spotlight' && index === 0)}
-        />
-      ))}
-    </AnimatePresence>
-  </div>
-)
+const VideoGrid = ({ participants, mode }: VideoGridProps) => {
+  const presentingParticipants = participants.filter((participant) => participant.screenShareTrack)
+  const visibleParticipants = presentingParticipants.length
+    ? [...presentingParticipants, ...participants.filter((participant) => !participant.screenShareTrack)]
+    : participants
+  const gridClass = presentingParticipants.length ? 'grid-cols-1 xl:grid-cols-[1.7fr_0.7fr]' : gridClassByMode[mode]
+
+  return (
+    <div className={`grid flex-1 gap-4 ${gridClass}`}>
+      <AnimatePresence>
+        {visibleParticipants.map((participant, index) => (
+          <ParticipantCard
+            key={participant.id}
+            participant={participant}
+            active={participant.speaking || (mode === 'spotlight' && index === 0)}
+            featured={presentingParticipants.length > 0 && index === 0}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 export default VideoGrid

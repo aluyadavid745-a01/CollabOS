@@ -92,8 +92,7 @@ const Dashboard: React.FC = () => {
       className="py-20 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 relative overflow-hidden"
       id="dashboard"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-indigo-900/20 to-slate-900/50" />
+      <div className="absolute inset-0 bg-white" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -107,19 +106,19 @@ const Dashboard: React.FC = () => {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/50 bg-indigo-500/10 backdrop-blur-sm mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-slate-700 shadow-sm mb-6"
             >
-              <span className="w-2 h-2 bg-indigo-400 rounded-full" />
-              <span className="text-sm font-semibold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+              <span className="text-sm font-semibold">
                 Beautiful Dashboard
               </span>
             </motion.div>
 
-            <h2 ref={titleRef} className="text-title text-white mb-6">
+            <h2 ref={titleRef} className="text-title text-slate-950 mb-6">
               See Your Work Like Never Before
             </h2>
 
-            <p ref={descRef} className="text-body text-slate-300 mb-8 leading-relaxed">
+            <p ref={descRef} className="text-body text-slate-600 mb-8 leading-relaxed">
               Our intelligent dashboard gives you instant insights into team performance, project
               progress, and upcoming deadlines. Everything you need to make informed decisions at a
               glance.
@@ -135,7 +134,7 @@ const Dashboard: React.FC = () => {
                   transition={{ delay: index * 0.1 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-slate-950 flex items-center justify-center flex-shrink-0">
                     <svg
                       className="w-4 h-4 text-white"
                       fill="none"
@@ -150,7 +149,7 @@ const Dashboard: React.FC = () => {
                       />
                     </svg>
                   </div>
-                  <span className="text-slate-300">{feature}</span>
+                  <span className="text-slate-700">{feature}</span>
                 </motion.div>
               ))}
             </div>
@@ -166,12 +165,12 @@ const Dashboard: React.FC = () => {
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 + index * 0.1 }}
-                  className="p-4 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm"
+                  className="p-4 rounded-lg border border-slate-200 bg-slate-50"
                 >
-                  <p className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                  <p className="text-2xl font-bold text-slate-950">
                     {stat.number}
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
+                  <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
                 </motion.div>
               ))}
             </div>
@@ -185,11 +184,8 @@ const Dashboard: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="relative"
           >
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-cyan-600/20 rounded-2xl blur-2xl" />
-
             {/* Dashboard Card */}
-            <div className="relative glass-effect backdrop-blur-xl rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+            <div className="relative glass-effect rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70 md:p-8">
               {/* Fake dashboard header */}
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -197,7 +193,7 @@ const Dashboard: React.FC = () => {
                   <div className="w-3 h-3 rounded-full bg-yellow-500" />
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                 </div>
-                <div className="h-2 bg-white/10 rounded w-1/2" />
+                <div className="h-2 bg-slate-200 rounded w-1/2" />
               </div>
 
               {/* Fake dashboard content */}
@@ -208,12 +204,12 @@ const Dashboard: React.FC = () => {
                       key={i}
                       animate={{ opacity: [0.5, 1, 0.5] }}
                       transition={{ duration: 3, repeat: Infinity, delay: i * 0.3 }}
-                      className="h-12 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 rounded-lg border border-white/10"
+                      className="h-12 rounded-lg border border-slate-200 bg-slate-100"
                     />
                   ))}
                 </div>
-                <div className="h-16 bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 rounded-lg border border-white/10" />
-                <div className="h-24 bg-gradient-to-r from-indigo-500/5 to-cyan-500/5 rounded-lg border border-white/10" />
+                <div className="h-16 rounded-lg border border-slate-200 bg-slate-50" />
+                <div className="h-24 rounded-lg border border-slate-200 bg-slate-50" />
               </div>
             </div>
           </motion.div>

@@ -37,15 +37,15 @@ const socialFields: Array<{
   { key: 'website', label: 'Personal website', icon: Globe },
 ]
 
-const panelClass = 'rounded-2xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-indigo-950/20 backdrop-blur-xl'
-const panelTitleClass = 'text-xl font-bold text-white'
-const labelClass = 'text-sm font-bold text-slate-300'
+const panelClass = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'
+const panelTitleClass = 'text-xl font-bold text-slate-950'
+const labelClass = 'text-sm font-bold text-slate-700'
 const inputClass =
-  'mt-2 w-full rounded-lg border border-white/10 bg-slate-950/50 px-4 py-3 text-white outline-none transition-colors placeholder:text-slate-500 focus:border-cyan-400'
-const uploadClass = 'block rounded-xl border border-dashed border-white/15 bg-white/5 p-4'
-const uploadTextClass = 'flex items-center gap-2 font-bold text-slate-100'
+  'mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-slate-500'
+const uploadClass = 'block rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4'
+const uploadTextClass = 'flex items-center gap-2 font-bold text-slate-800'
 const removeButtonClass =
-  'rounded-lg border border-white/10 px-3 py-2 text-sm font-bold text-slate-300 transition-colors hover:border-red-400/50 hover:bg-red-500/10 hover:text-red-300'
+  'rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600'
 
 interface ChipEditorProps {
   label: string
@@ -77,13 +77,13 @@ const ChipEditor: React.FC<ChipEditorProps> = ({ label, items, placeholder, onCh
               addItem()
             }
           }}
-          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-slate-950/50 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none placeholder:text-slate-400 focus:border-slate-500"
           placeholder={placeholder}
         />
         <button
           type="button"
           onClick={addItem}
-          className="grid h-12 w-12 place-items-center rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 text-white transition-transform hover:scale-105"
+          className="grid h-12 w-12 place-items-center rounded-lg bg-slate-950 text-white transition-transform hover:scale-105"
           aria-label={`Add ${label}`}
         >
           <Plus className="h-5 w-5" />
@@ -91,12 +91,12 @@ const ChipEditor: React.FC<ChipEditorProps> = ({ label, items, placeholder, onCh
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {items.map((item) => (
-          <span key={item} className="inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-2 text-sm font-semibold text-indigo-100">
+          <span key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">
             {item}
             <button
               type="button"
               onClick={() => onChange(items.filter((current) => current !== item))}
-              className="text-slate-400 hover:text-red-300"
+              className="text-slate-500 hover:text-red-600"
               aria-label={`Remove ${item}`}
             >
               <X className="h-3.5 w-3.5" />
@@ -191,40 +191,40 @@ const EditProfile: React.FC = () => {
 
   if (loading && !profile) {
     return (
-      <main className="grid min-h-screen place-items-center bg-slate-950 px-4 text-center text-sm font-bold text-cyan-200">
+      <main className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center text-sm font-bold text-slate-700">
         Syncing your profile...
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 px-4 py-8 text-white md:px-8 lg:px-16">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 md:px-8 lg:px-16">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => navigate('/profile')}
-            className="inline-flex items-center gap-2 text-sm font-bold text-slate-300 transition-colors hover:text-cyan-300"
+            className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition-colors hover:text-slate-950"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to profile
           </button>
           {loading && (
-            <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-200">
+            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600">
               Syncing profile...
             </span>
           )}
         </div>
 
         {saveMessage && (
-          <p className="mb-4 rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-sm font-bold text-cyan-100">
+          <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
             {saveMessage}
           </p>
         )}
 
         <form onSubmit={saveDraft} className="grid gap-6 lg:grid-cols-[1fr_420px]">
           <div className="space-y-6">
-            <ProfileHeader profile={draft} onEdit={() => undefined} theme="dark" />
+            <ProfileHeader profile={draft} onEdit={() => undefined} />
 
             <section className={panelClass}>
               <h2 className={panelTitleClass}>Personal information</h2>
@@ -282,7 +282,7 @@ const EditProfile: React.FC = () => {
                 {socialFields.map(({ key, label, icon: SocialIcon }) => {
                   return (
                     <label key={key} className="block">
-                      <span className="flex items-center gap-2 text-sm font-bold text-slate-300">
+                      <span className="flex items-center gap-2 text-sm font-bold text-slate-700">
                         <SocialIcon className="h-4 w-4" />
                         {label}
                       </span>
@@ -312,9 +312,9 @@ const EditProfile: React.FC = () => {
               </div>
               <div className="space-y-4">
                 {draft.projects.map((project, index) => (
-                  <div key={project.id} className="rounded-xl border border-white/10 bg-slate-950/40 p-4">
+                  <div key={project.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <div className="mb-4 flex justify-between gap-3">
-                      <p className="font-bold text-slate-100">Project {index + 1}</p>
+                      <p className="font-bold text-slate-900">Project {index + 1}</p>
                       <button
                         type="button"
                         onClick={() =>
@@ -323,7 +323,7 @@ const EditProfile: React.FC = () => {
                             draft.projects.filter((current) => current.id !== project.id)
                           )
                         }
-                        className="text-slate-400 hover:text-red-300"
+                        className="text-slate-500 hover:text-red-600"
                         aria-label="Remove project"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -406,7 +406,7 @@ const EditProfile: React.FC = () => {
                           type="file"
                           accept="image/*"
                           onChange={(event) => handleProjectImageUpload(project.id, event.target.files?.[0])}
-                          className="mt-3 w-full text-sm text-slate-400"
+                          className="mt-3 w-full text-sm text-slate-500"
                         />
                         {project.imageURL && (
                           <button
@@ -419,7 +419,7 @@ const EditProfile: React.FC = () => {
                                 )
                               )
                             }
-                            className="mt-3 text-sm font-bold text-red-300 hover:text-red-200"
+                            className="mt-3 text-sm font-bold text-red-600 hover:text-red-700"
                           >
                             Remove project image
                           </button>
@@ -445,7 +445,7 @@ const EditProfile: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={(event) => handleImageUpload(event.target.files?.[0], 'profile')}
-                    className="mt-3 w-full text-sm text-slate-400"
+                    className="mt-3 w-full text-sm text-slate-500"
                   />
                 </label>
                 <label className={uploadClass}>
@@ -457,7 +457,7 @@ const EditProfile: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={(event) => handleImageUpload(event.target.files?.[0], 'cover')}
-                    className="mt-3 w-full text-sm text-slate-400"
+                    className="mt-3 w-full text-sm text-slate-500"
                   />
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -494,10 +494,9 @@ const EditProfile: React.FC = () => {
             <PrivacySettings
               settings={draft.privacy}
               onChange={(settings) => updateDraft('privacy', settings)}
-              theme="dark"
             />
 
-            <div className="sticky bottom-4 rounded-2xl border border-white/10 bg-slate-950/80 p-4 shadow-2xl shadow-indigo-950/40 backdrop-blur-xl">
+            <div className="sticky bottom-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl shadow-slate-200/70">
               <Button type="submit" className="w-full" disabled={saving}>
                 {saving ? 'Saving...' : 'Save profile'}
               </Button>

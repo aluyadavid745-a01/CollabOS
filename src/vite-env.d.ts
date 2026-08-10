@@ -19,6 +19,7 @@ declare module 'firebase/auth' {
   export interface Auth {
     currentUser: User | null
   }
+  export interface Persistence {}
   export interface UserCredential {
     user: User
   }
@@ -41,6 +42,8 @@ declare module 'firebase/auth' {
   export function signInWithPopup(auth: Auth, provider: AuthProvider): Promise<UserCredential>
   export function sendEmailVerification(user: User, actionCodeSettings?: ActionCodeSettings): Promise<void>
   export function sendPasswordResetEmail(auth: Auth, email: string): Promise<void>
+  export const inMemoryPersistence: Persistence
+  export function setPersistence(auth: Auth, persistence: Persistence): Promise<void>
   export function signOut(auth: Auth): Promise<void>
   export function updateProfile(user: User, profile: { displayName?: string | null; photoURL?: string | null }): Promise<void>
   export function reload(user: User): Promise<void>

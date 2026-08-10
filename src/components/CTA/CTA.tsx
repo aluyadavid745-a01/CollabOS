@@ -83,11 +83,7 @@ const CTA: React.FC<CTAProps> = ({ rememberedUser, onNavigate }) => {
       className="py-20 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 relative overflow-hidden"
       id="cta"
     >
-      {/* Animated background */}
-      <div className="absolute inset-0">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-600/20 to-cyan-600/20 rounded-full blur-3xl animate-blob" />
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-gradient-to-l from-indigo-600/20 to-cyan-600/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
-      </div>
+      <div className="absolute inset-0 bg-white" />
 
       <div className="max-w-4xl mx-auto relative z-10 text-center">
         {/* Badge */}
@@ -95,10 +91,10 @@ const CTA: React.FC<CTAProps> = ({ rememberedUser, onNavigate }) => {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/50 bg-indigo-500/10 backdrop-blur-sm mb-6"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-slate-700 shadow-sm mb-6"
         >
-          <Zap className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-semibold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+          <Zap className="w-4 h-4 text-slate-600" />
+          <span className="text-sm font-semibold">
             Ready to Transform Your Team?
           </span>
         </motion.div>
@@ -106,10 +102,10 @@ const CTA: React.FC<CTAProps> = ({ rememberedUser, onNavigate }) => {
         {/* Main Headline */}
         <h2
           ref={titleRef}
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-950 mb-6 leading-tight"
         >
           Join 100K+ teams
-          <span className="block bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+          <span className="block text-slate-700">
             already using CollabOS
           </span>
         </h2>
@@ -117,7 +113,7 @@ const CTA: React.FC<CTAProps> = ({ rememberedUser, onNavigate }) => {
         {/* Description */}
         <p
           ref={descRef}
-          className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto"
+          className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto"
         >
           Start your 14-day free trial today. No credit card required. All features included.
         </p>
@@ -155,7 +151,7 @@ const CTA: React.FC<CTAProps> = ({ rememberedUser, onNavigate }) => {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="mt-12 flex flex-col sm:flex-row justify-center items-center gap-8 text-sm text-slate-400"
+          className="mt-12 flex flex-col sm:flex-row justify-center items-center gap-8 text-sm text-slate-500"
         >
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
