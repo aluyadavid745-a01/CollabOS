@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, ChevronDown, Globe2, KeyRound, LogOut, Menu, MessageSquare, UserCircle, UserCog, Video, X } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../Common/Button'
 import type { AuthMode, AuthUser } from '../../pages/AuthPage'
 import { prefetchRoute, prefetchRoutes } from '../../utils/prefetch'
@@ -211,8 +211,8 @@ const Navbar: React.FC<NavbarProps> = ({
                     <Globe2 className="w-4 h-4 text-slate-500" />
                     Website Builder
                   </button>
-                  <button
-                    type="button"
+                  <Link
+                    to="/meetings"
                     role="menuitem"
                     onClick={handleMeetings}
                     onMouseEnter={warmMeetings}
@@ -221,7 +221,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     role="menuitem"
@@ -353,8 +353,8 @@ const Navbar: React.FC<NavbarProps> = ({
                     <Globe2 className="w-4 h-4 text-slate-500" />
                     Website Builder
                   </button>
-                  <button
-                    type="button"
+                  <Link
+                    to="/meetings"
                     role="menuitem"
                     onClick={handleMeetings}
                     onMouseEnter={warmMeetings}
@@ -363,7 +363,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     role="menuitem"
