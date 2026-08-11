@@ -27,6 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const accountMenuRef = React.useRef<HTMLDivElement>(null)
+  const mobileAccountMenuRef = React.useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +40,11 @@ const Navbar: React.FC<NavbarProps> = ({
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
-      if (!accountMenuRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node
+      const isInsideDesktopAccountMenu = accountMenuRef.current?.contains(target)
+      const isInsideMobileAccountMenu = mobileAccountMenuRef.current?.contains(target)
+
+      if (!isInsideDesktopAccountMenu && !isInsideMobileAccountMenu) {
         setIsAccountOpen(false)
       }
     }
@@ -293,7 +298,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </a>
           ))}
           {rememberedUser ? (
-            <div className="pt-4 space-y-2">
+            <div ref={mobileAccountMenuRef} className="pt-4 space-y-2">
               <Button
                 variant="secondary"
                 size="sm"
