@@ -1,15 +1,27 @@
 import React from 'react'
 import { ShieldCheck, UserPlus } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
 import { joinSharedInvite } from '../services/teamChat'
 
+const AUTH_REDIRECT_KEY = 'collabos:post-auth-redirect'
+
 const InviteJoin: React.FC = () => {
+  const location = useLocation()
   const navigate = useNavigate()
   const { token } = useParams()
   const { firebaseUser, profile, loading } = useAuth()
   const [message, setMessage] = React.useState('Validating secure invitation...')
+  const invitePath = `${location.pathname}${location.search}`
+  const openAuth = (path: '/signin' | '/get-started') => {
+    try {
+      window.sessionStorage.setItem(AUTH_REDIRECT_KEY, invitePath)
+    } catch {
+      // Router state remains the fallback when session storage is unavailable.
+    }
+    navigate(path, { state: { from: invitePath } })
+  }
 
   React.useEffect(() => {
     if (loading) return
@@ -61,8 +73,8 @@ const InviteJoin: React.FC = () => {
         <p className="mt-3 text-slate-600">{message}</p>
         {!profile && !loading && (
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <Button type="button" variant="secondary" onClick={() => navigate('/signin')}>Sign in</Button>
-            <Button type="button" onClick={() => navigate('/get-started')}>Create account</Button>
+            <Button type="button" variant="secondary" onClick={() => openAuth('/signin')}>Sign in</Button>
+            <Button type="button" onClick={() => openAuth('/get-started')}>Create account</Button>
           </div>
         )}
       </section>
