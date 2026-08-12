@@ -51,9 +51,9 @@ const InviteJoin: React.FC = () => {
   }, [firebaseUser, loading, navigate, profile, token])
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center text-slate-950">
-      <section className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl shadow-slate-200/70">
-        <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-200/70">
+    <main className="grid min-h-screen place-items-center bg-white px-4 text-center text-slate-950">
+      <section className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
+        <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-950 shadow-sm">
           {profile ? <ShieldCheck className="h-8 w-8" /> : <UserPlus className="h-8 w-8" />}
         </div>
         <p className="text-xs font-black uppercase tracking-wider text-slate-500">CollabOS invitation</p>
