@@ -456,6 +456,9 @@ const SecureTeamWorkspace: React.FC = () => {
                 <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2 py-1 text-xs font-black text-emerald-700">
                   E2EE
                 </span>
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-black text-slate-600">
+                  {activeWorkspace.members.length} members
+                </span>
               </div>
               <p className="mt-1 truncate text-sm text-slate-600">{activeChannel.description}</p>
             </div>
@@ -495,6 +498,30 @@ const SecureTeamWorkspace: React.FC = () => {
                     <p className="mt-1 text-sm text-slate-600">SignalR-ready channel isolation · key version {activeWorkspace.encryptionKeyId} · presence online</p>
                   </div>
                   <span className="rounded-full bg-emerald-300 px-3 py-1 text-xs font-black text-slate-950">Protected</span>
+                </div>
+              </div>
+
+              <div className={`rounded-2xl p-4 ${glassPanel}`}>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-500">Workspace members</p>
+                    <h2 className="mt-1 font-black">{activeWorkspace.members.length} active member{activeWorkspace.members.length === 1 ? '' : 's'}</h2>
+                  </div>
+                  <Users className="h-5 w-5 text-slate-600" />
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {activeWorkspace.members.map((member) => (
+                    <div key={member.userId} className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-sm font-black text-slate-700">
+                        {member.displayName[0]}
+                        <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white ${statusTone[member.presence]}`} />
+                      </span>
+                      <div className="min-w-0 flex-1 text-left">
+                        <p className="truncate text-sm font-black">{member.displayName}</p>
+                        <p className="truncate text-xs font-bold text-slate-500">{member.role}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
