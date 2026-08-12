@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, ChevronDown, Globe2, KeyRound, LogOut, Menu, MessageSquare, UserCircle, UserCog, Video, X } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../Common/Button'
 import type { AuthMode, AuthUser } from '../../pages/AuthPage'
 import { prefetchRoute, prefetchRoutes } from '../../utils/prefetch'
@@ -152,6 +152,7 @@ const Navbar: React.FC<NavbarProps> = ({
           {rememberedUser ? (
             <div className="relative" ref={accountMenuRef}>
               <Button
+                type="button"
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsAccountOpen((current) => !current)}
@@ -216,8 +217,8 @@ const Navbar: React.FC<NavbarProps> = ({
                     <Globe2 className="w-4 h-4 text-slate-500" />
                     Website Builder
                   </button>
-                  <Link
-                    to="/meetings"
+                  <button
+                    type="button"
                     role="menuitem"
                     onClick={handleMeetings}
                     onMouseEnter={warmMeetings}
@@ -226,7 +227,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
-                  </Link>
+                  </button>
                   <button
                     type="button"
                     role="menuitem"
@@ -300,6 +301,7 @@ const Navbar: React.FC<NavbarProps> = ({
           {rememberedUser ? (
             <div ref={mobileAccountMenuRef} className="pt-4 space-y-2">
               <Button
+                type="button"
                 variant="secondary"
                 size="sm"
                 className="w-full gap-2"
@@ -358,8 +360,8 @@ const Navbar: React.FC<NavbarProps> = ({
                     <Globe2 className="w-4 h-4 text-slate-500" />
                     Website Builder
                   </button>
-                  <Link
-                    to="/meetings"
+                  <button
+                    type="button"
                     role="menuitem"
                     onClick={handleMeetings}
                     onMouseEnter={warmMeetings}
@@ -368,7 +370,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
-                  </Link>
+                  </button>
                   <button
                     type="button"
                     role="menuitem"
