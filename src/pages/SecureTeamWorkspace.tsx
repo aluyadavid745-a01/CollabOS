@@ -167,6 +167,7 @@ const SecureTeamWorkspace: React.FC = () => {
   const [syncError, setSyncError] = React.useState('')
   const [typing, setTyping] = React.useState(false)
   const [aiStreaming, setAiStreaming] = React.useState(false)
+  const memberIdsByWorkspaceRef = React.useRef<Record<string, Set<string>>>({})
 
   React.useEffect(() => {
     const nextWorkspaces = listLocalWorkspaces(profile)
@@ -213,10 +214,28 @@ const SecureTeamWorkspace: React.FC = () => {
 
           setSyncError('')
           cacheLocalWorkspace(sharedWorkspace)
-          setWorkspaces((current) => current.map((item) => {
-            const existing = item.id === sharedWorkspace.id ? item : null
-            return existing && JSON.stringify(existing) === JSON.stringify(sharedWorkspace) ? item : item.id === sharedWorkspace.id ? sharedWorkspace : item
-          }))
+          setWorkspaces((current) => {
+            const hasWorkspace = current.some((item) => item.id === sharedWorkspace.id)
+            const nextWorkspaces = hasWorkspace ? current : [sharedWorkspace, ...current]
+
+            return nextWorkspaces.map((item) => {
+              const existing = item.id === sharedWorkspace.id ? item : null
+              if (existing) {
+                const knownMemberIds = memberIdsByWorkspaceRef.current[sharedWorkspace.id] || new Set(existing.members.map((member) => member.userId))
+                const joinedMembers = sharedWorkspace.members.filter((member) => !knownMemberIds.has(member.userId) && member.userId !== profile?.uid)
+                memberIdsByWorkspaceRef.current[sharedWorkspace.id] = new Set(sharedWorkspace.members.map((member) => member.userId))
+
+                if (joinedMembers.length > 0) {
+                  setNotice(
+                    joinedMembers.length === 1
+                      ? `${joinedMembers[0].displayName} joined this workspace.`
+                      : `${joinedMembers.length} teammates joined this workspace.`
+                  )
+                }
+              }
+              return existing && JSON.stringify(existing) === JSON.stringify(sharedWorkspace) ? item : item.id === sharedWorkspace.id ? sharedWorkspace : item
+            })
+          })
         },
         (message) => {
           if (!cancelled) setSyncError(message)
@@ -229,7 +248,7 @@ const SecureTeamWorkspace: React.FC = () => {
       cancelled = true
       unsubscribe?.()
     }
-  }, [activeWorkspaceSyncId])
+  }, [activeWorkspaceSyncId, profile?.uid])
 
   React.useEffect(() => {
     if (!activeWorkspaceSyncId || !firebaseUser) return
