@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ActionCodeSettings, User as FirebaseUser } from 'firebase/auth'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -56,15 +57,28 @@ const getFirebaseErrorMessage = (error: unknown) => {
     return 'The email or password is incorrect.'
   }
   if (code.includes('popup-closed-by-user')) return 'Google sign-in was closed before it finished.'
+  if (code.includes('popup-blocked')) return 'Your browser blocked the Google sign-in popup. Allow popups for this site and try again.'
+  if (code.includes('unauthorized-domain')) {
+    return `Firebase does not allow this hosted domain yet. Add ${window.location.hostname} in Firebase Authentication > Settings > Authorized domains.`
+  }
+  if (code.includes('unauthorized-continue-uri') || code.includes('invalid-continue-uri')) {
+    return `Firebase does not allow this verification link domain yet. Add ${window.location.hostname} in Firebase Authentication > Settings > Authorized domains.`
+  }
   if (code.includes('operation-not-allowed')) {
-    return 'Google sign-in is not enabled yet. Enable Google under Firebase Authentication > Sign-in method.'
+    return 'This Firebase sign-in method is not enabled yet. Enable Email/Password and Google under Firebase Authentication > Sign-in method.'
   }
   if (code.includes('account-exists-with-different-credential')) {
     return 'An account already exists with this email using another sign-in method.'
   }
   if (code.includes('too-many-requests')) return 'Too many attempts. Wait a moment and try again.'
+  if (code.includes('network-request-failed')) return 'Firebase could not reach the network. Check your connection and try again.'
 
   return 'Firebase could not complete that request. Try again.'
+}
+
+const shouldRetryVerificationWithoutContinueUrl = (error: unknown) => {
+  const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : ''
+  return code.includes('unauthorized-continue-uri') || code.includes('invalid-continue-uri') || code.includes('unauthorized-domain')
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({
@@ -129,6 +143,21 @@ const AuthPage: React.FC<AuthPageProps> = ({
     []
   )
 
+  const sendVerificationEmail = React.useCallback(async (
+    sendEmailVerification: (user: FirebaseUser, actionCodeSettings?: ActionCodeSettings) => Promise<void>,
+    user: FirebaseUser
+  ) => {
+    try {
+      await sendEmailVerification(user, actionCodeSettings)
+    } catch (verificationError) {
+      if (!shouldRetryVerificationWithoutContinueUrl(verificationError)) throw verificationError
+      await sendEmailVerification(user)
+      setNotice(
+        `Firebase has not authorized ${window.location.hostname} for email action links yet, so we sent a standard verification email instead.`
+      )
+    }
+  }, [actionCodeSettings])
+
   const submitForm = async (event: React.FormEvent) => {
     event.preventDefault()
     setError('')
@@ -166,7 +195,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
       if (isSignup) {
         const credential = await createUserWithEmailAndPassword(auth, form.email.trim(), form.password)
         await updateProfile(credential.user, { displayName: form.name.trim() })
-        await sendEmailVerification(credential.user, actionCodeSettings)
+        await sendVerificationEmail(sendEmailVerification, credential.user)
         await signOut(auth)
         onSignupVerified({
           name: form.name.trim(),
@@ -185,7 +214,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
       await reload(credential.user)
 
       if (!credential.user.emailVerified) {
-        await sendEmailVerification(credential.user, actionCodeSettings)
+        await sendVerificationEmail(sendEmailVerification, credential.user)
         await signOut(auth)
         setStep('verify')
         setNotice(
@@ -248,7 +277,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
       }
 
       const credential = await signInWithEmailAndPassword(auth, form.email.trim(), form.password)
-      await sendEmailVerification(credential.user, actionCodeSettings)
+      await sendVerificationEmail(sendEmailVerification, credential.user)
       await signOut(auth)
       setNotice(`Verification email sent again to ${form.email.trim()}. If it is not in your inbox, check Spam or Promotions.`)
     } catch (requestError) {
