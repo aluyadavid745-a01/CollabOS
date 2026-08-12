@@ -44,8 +44,9 @@ import {
   cacheLocalMessages,
   cacheLocalWorkspace,
   loadSharedMessages,
-  loadSharedWorkspace,
   saveLocalMessages,
+  subscribeSharedWorkspace,
+  subscribeWorkspaceHub,
   updateMemberRole,
   updatePresence,
 } from '../services/teamChat'
@@ -151,10 +152,11 @@ const CreateWorkspaceModal = ({
 }
 
 const SecureTeamWorkspace: React.FC = () => {
-  const { profile } = useAuth()
+  const { firebaseUser, profile } = useAuth()
   const [workspaces, setWorkspaces] = React.useState<TeamWorkspace[]>(() => listLocalWorkspaces(profile))
   const [activeWorkspaceId, setActiveWorkspaceId] = React.useState(() => workspaces[0]?.id || '')
   const activeWorkspace = workspaces.find((workspace) => workspace.id === activeWorkspaceId) || workspaces[0]
+  const activeWorkspaceSyncId = activeWorkspace?.id || ''
   const [activeChannelId, setActiveChannelId] = React.useState(() => activeWorkspace?.channels[0]?.id || '')
   const activeChannel = activeWorkspace?.channels.find((channel) => channel.id === activeChannelId) || activeWorkspace?.channels[0]
   const [messages, setMessages] = React.useState<TeamMessage[]>([])
@@ -162,6 +164,7 @@ const SecureTeamWorkspace: React.FC = () => {
   const [inviteEmails, setInviteEmails] = React.useState('alex@company.com, sam@company.com')
   const [isCreating, setIsCreating] = React.useState(false)
   const [notice, setNotice] = React.useState('')
+  const [syncError, setSyncError] = React.useState('')
   const [typing, setTyping] = React.useState(false)
   const [aiStreaming, setAiStreaming] = React.useState(false)
 
@@ -198,27 +201,66 @@ const SecureTeamWorkspace: React.FC = () => {
   }, [activeWorkspace, activeChannel])
 
   React.useEffect(() => {
-    if (!activeWorkspace) return
+    if (!activeWorkspaceSyncId) return
 
     let cancelled = false
-    const refreshSharedWorkspace = async () => {
-      const sharedWorkspace = await loadSharedWorkspace(activeWorkspace.id)
-      if (cancelled || !sharedWorkspace) return
+    let unsubscribe: (() => void) | null = null
+    const startSharedWorkspaceListener = async () => {
+      unsubscribe = await subscribeSharedWorkspace(
+        activeWorkspaceSyncId,
+        (sharedWorkspace) => {
+          if (cancelled) return
 
-      cacheLocalWorkspace(sharedWorkspace)
-      setWorkspaces((current) => current.map((item) => {
-        const existing = item.id === sharedWorkspace.id ? item : null
-        return existing && JSON.stringify(existing) === JSON.stringify(sharedWorkspace) ? item : item.id === sharedWorkspace.id ? sharedWorkspace : item
-      }))
+          setSyncError('')
+          cacheLocalWorkspace(sharedWorkspace)
+          setWorkspaces((current) => current.map((item) => {
+            const existing = item.id === sharedWorkspace.id ? item : null
+            return existing && JSON.stringify(existing) === JSON.stringify(sharedWorkspace) ? item : item.id === sharedWorkspace.id ? sharedWorkspace : item
+          }))
+        },
+        (message) => {
+          if (!cancelled) setSyncError(message)
+        },
+      )
     }
 
-    void refreshSharedWorkspace()
-    const intervalId = window.setInterval(refreshSharedWorkspace, 5000)
+    void startSharedWorkspaceListener()
     return () => {
       cancelled = true
-      window.clearInterval(intervalId)
+      unsubscribe?.()
     }
-  }, [activeWorkspace])
+  }, [activeWorkspaceSyncId])
+
+  React.useEffect(() => {
+    if (!activeWorkspaceSyncId || !firebaseUser) return
+
+    let cancelled = false
+    let unsubscribe: (() => void) | null = null
+    const startWorkspaceHub = async () => {
+      const authToken = await firebaseUser.getIdToken().catch(() => undefined)
+      if (cancelled) return
+
+      unsubscribe = await subscribeWorkspaceHub(
+        activeWorkspaceSyncId,
+        authToken,
+        (event) => {
+          if (cancelled) return
+          if (event.type === 'member.joined') {
+            setNotice('A teammate joined this workspace.')
+          }
+        },
+        (message) => {
+          if (!cancelled) setSyncError(`Workspace hub unavailable: ${message}`)
+        },
+      )
+    }
+
+    void startWorkspaceHub()
+    return () => {
+      cancelled = true
+      unsubscribe?.()
+    }
+  }, [activeWorkspaceSyncId, firebaseUser])
 
   if (!profile || !activeWorkspace || !activeChannel) {
     return (
@@ -415,6 +457,12 @@ const SecureTeamWorkspace: React.FC = () => {
           {notice && (
             <motion.div initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mx-4 mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 md:mx-6">
               {notice}
+            </motion.div>
+          )}
+
+          {syncError && (
+            <motion.div initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mx-4 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900 md:mx-6">
+              {syncError}
             </motion.div>
           )}
 

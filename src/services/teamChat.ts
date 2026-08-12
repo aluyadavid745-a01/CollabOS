@@ -4,7 +4,9 @@ import type { UserProfile } from '../types/profile'
 
 const LOCAL_TEAM_KEY = 'collabos:teamWorkspaces'
 const PORTABLE_INVITE_PREFIX = 'invitepack_'
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '')
+const configuredApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/$/, '')
+const apiBaseUrl = configuredApiBaseUrl || (import.meta.env.DEV ? '' : '')
+const isTeamApiConfigured = Boolean(configuredApiBaseUrl) || import.meta.env.DEV
 
 const readWorkspaces = () => {
   if (typeof window === 'undefined') return []
@@ -242,15 +244,36 @@ export const createLocalWorkspace = (profile: UserProfile, input: {
 const messageKey = (workspaceId: string, channelId: string) => `collabos:teamMessages:${workspaceId}:${channelId}`
 
 const getCloudTeamState = async () => {
-  const [{ getConfiguredAuth, getConfiguredDb, isFirebaseConfigured }, { doc, getDoc, setDoc }] = await Promise.all([
+  const [{ getConfiguredAuth, getConfiguredDb, isFirebaseConfigured }, { doc, getDoc, onSnapshot, runTransaction, setDoc }] = await Promise.all([
     import('../firebase/config'),
     import('firebase/firestore'),
   ])
   const [auth, db] = await Promise.all([getConfiguredAuth(), getConfiguredDb()])
 
   if (!auth?.currentUser || !db || !isFirebaseConfigured) return null
-  return { db, doc, getDoc, setDoc }
+  return { auth, db, doc, getDoc, onSnapshot, runTransaction, setDoc }
 }
+
+const uniqueBy = <Value>(values: Value[], keyFor: (value: Value) => string) => {
+  const seen = new Set<string>()
+  return values.filter((value) => {
+    const key = keyFor(value)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+const mergeWorkspaceRecords = (base: TeamWorkspace, incoming: TeamWorkspace): TeamWorkspace => ({
+  ...base,
+  ...incoming,
+  channels: uniqueBy([...incoming.channels, ...base.channels], (channel) => channel.id),
+  members: uniqueBy([...incoming.members, ...base.members], (member) => member.userId),
+  invites: uniqueBy([...incoming.invites, ...base.invites], (invite) => invite.token),
+  notifications: uniqueBy([...(incoming.notifications || []), ...(base.notifications || [])], (notification) => notification.id),
+  projects: uniqueBy([...(incoming.projects || []), ...(base.projects || [])], (project) => project.id),
+  files: uniqueBy([...(incoming.files || []), ...(base.files || [])], (file) => file.id),
+})
 
 export const loadSharedWorkspace = async (workspaceId: string) => {
   try {
@@ -269,14 +292,122 @@ export const syncSharedWorkspace = async (workspace: TeamWorkspace) => {
     const cloud = await getCloudTeamState()
     if (!cloud) return false
 
-    await cloud.setDoc(
-      cloud.doc(cloud.db, 'teamWorkspaces', workspace.id),
-      { ...workspace, updatedAt: now() },
-      { merge: true },
-    )
+    const workspaceRef = cloud.doc(cloud.db, 'teamWorkspaces', workspace.id)
+    await cloud.runTransaction(cloud.db, async (transaction) => {
+      const snapshot = await transaction.get(workspaceRef)
+      const existing = snapshot.exists() ? (snapshot.data() as unknown as TeamWorkspace) : null
+      const nextWorkspace = existing ? mergeWorkspaceRecords(existing, workspace) : workspace
+      transaction.set(workspaceRef, { ...nextWorkspace, updatedAt: now() }, { merge: true })
+    })
     return true
   } catch {
     return false
+  }
+}
+
+export const notifyWorkspaceMemberJoined = async (workspace: TeamWorkspace, profile: UserProfile, authToken?: string) => {
+  if (!isTeamApiConfigured || !authToken) return false
+
+  try {
+    const signalR = await import('@microsoft/signalr')
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${apiBaseUrl}/Hub/WorkspaceHub`, { accessTokenFactory: () => authToken })
+      .withAutomaticReconnect()
+      .build()
+
+    await connection.start()
+    await connection.invoke('BroadcastWorkspaceUpdate', workspace.id, 'member.joined', {
+      workspaceId: workspace.id,
+      userId: profile.uid,
+      displayName: profile.name,
+      email: profile.email,
+    })
+    await connection.stop()
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const joinWorkspaceApi = async (workspace: TeamWorkspace, token: string, authToken?: string) => {
+  if (!isTeamApiConfigured || !authToken) return false
+
+  try {
+    await apiFetch('/api/workspaces/join', authToken, {
+      method: 'POST',
+      body: JSON.stringify({
+        inviteCode: workspace.inviteCode,
+        invitationToken: token.startsWith('invite_') ? token : null,
+      }),
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const subscribeSharedWorkspace = async (
+  workspaceId: string,
+  onWorkspace: (workspace: TeamWorkspace) => void,
+  onError?: (message: string) => void,
+) => {
+  try {
+    const cloud = await getCloudTeamState()
+    if (!cloud) {
+      onError?.('Cloud workspace sync is unavailable. Other accounts may not see changes until Firebase is configured and you are signed in.')
+      return null
+    }
+
+    return cloud.onSnapshot(
+      cloud.doc(cloud.db, 'teamWorkspaces', workspaceId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          onWorkspace(snapshot.data() as unknown as TeamWorkspace)
+        }
+      },
+      (error) => onError?.(error.message || 'Could not listen for workspace updates.'),
+    )
+  } catch (error) {
+    onError?.(error instanceof Error ? error.message : 'Could not start workspace sync.')
+    return null
+  }
+}
+
+export const subscribeWorkspaceHub = async (
+  workspaceId: string,
+  authToken: string | undefined,
+  onWorkspaceEvent: (event: { type: string; payload: unknown }) => void,
+  onError?: (message: string) => void,
+) => {
+  if (!isTeamApiConfigured || !authToken) return null
+
+  try {
+    const signalR = await import('@microsoft/signalr')
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${apiBaseUrl}/Hub/WorkspaceHub`, { accessTokenFactory: () => authToken })
+      .withAutomaticReconnect()
+      .build()
+
+    connection.on('workspace.updated', (event: { type?: string; payload?: unknown }) => {
+      onWorkspaceEvent({ type: event.type || 'workspace.updated', payload: event.payload })
+    })
+    connection.on('member.joined', (payload: unknown) => {
+      onWorkspaceEvent({ type: 'member.joined', payload })
+    })
+    connection.on('permissions.changed', (payload: unknown) => {
+      onWorkspaceEvent({ type: 'permissions.changed', payload })
+    })
+
+    await connection.start()
+    await connection.invoke('JoinWorkspace', workspaceId)
+
+    return () => {
+      void connection.invoke('LeaveWorkspace', workspaceId).catch(() => undefined)
+      void connection.stop().catch(() => undefined)
+    }
+  } catch (error) {
+    onError?.(error instanceof Error ? error.message : 'Could not connect to workspace realtime hub.')
+    return null
   }
 }
 
@@ -451,6 +582,26 @@ export const joinLocalInvite = (token: string, profile: UserProfile) => {
   return nextWorkspace
 }
 
+export const joinSharedInvite = async (token: string, profile: UserProfile, authToken?: string) => {
+  const workspace = joinLocalInvite(token, profile)
+  if (!workspace) {
+    return { workspace: null, synced: false, error: 'This invitation is invalid, expired, or has been disabled.' }
+  }
+
+  const synced = await syncSharedWorkspace(workspace)
+  if (synced) {
+    void joinWorkspaceApi(workspace, token, authToken)
+    void notifyWorkspaceMemberJoined(workspace, profile, authToken)
+    return { workspace, synced: true, error: '' }
+  }
+
+  return {
+    workspace,
+    synced: false,
+    error: `Joined ${workspace.name} on this device, but the shared workspace record could not be updated. Check Firebase configuration, auth, and Firestore rules.`,
+  }
+}
+
 export const updateMemberRole = (workspace: TeamWorkspace, userId: string, role: TeamRoleName) => {
   const nextWorkspace = {
     ...workspace,
@@ -495,7 +646,7 @@ export const createLocalMessage = async (workspace: TeamWorkspace, channelId: st
 }
 
 export const apiFetch = async <Value>(path: string, token?: string, init?: RequestInit): Promise<Value | null> => {
-  if (!apiBaseUrl || !token) return null
+  if (!isTeamApiConfigured || !token) return null
 
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,

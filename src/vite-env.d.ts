@@ -14,6 +14,7 @@ declare module 'firebase/auth' {
     email: string | null
     emailVerified: boolean
     photoURL: string | null
+    getIdToken(forceRefresh?: boolean): Promise<string>
   }
 
   export interface Auth {
@@ -56,6 +57,13 @@ declare module 'firebase/firestore' {
     exists(): boolean
     data(): Record<string, unknown>
   }
+  export interface FirestoreError {
+    message: string
+  }
+  export interface Transaction {
+    get(reference: DocumentReference): Promise<DocumentSnapshot>
+    set(reference: DocumentReference, data: unknown, options?: { merge?: boolean }): Transaction
+  }
   export interface QuerySnapshot {
     docs: Array<{ data(): Record<string, unknown> }>
   }
@@ -68,6 +76,8 @@ declare module 'firebase/firestore' {
   export function collection(firestore: Firestore, path: string, pathSegment: string, subPath: string): CollectionReference
   export function getDoc(reference: DocumentReference): Promise<DocumentSnapshot>
   export function getDocs(reference: CollectionReference): Promise<QuerySnapshot>
+  export function onSnapshot(reference: DocumentReference, next: (snapshot: DocumentSnapshot) => void, error?: (error: FirestoreError) => void): () => void
+  export function runTransaction<T>(firestore: Firestore, updateFunction: (transaction: Transaction) => Promise<T>): Promise<T>
   export function deleteDoc(reference: DocumentReference): Promise<void>
   export function setDoc(reference: DocumentReference, data: unknown, options?: { merge?: boolean }): Promise<void>
   export function serverTimestamp(): unknown

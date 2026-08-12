@@ -3,12 +3,12 @@ import { ShieldCheck, UserPlus } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
-import { joinLocalInvite, syncSharedWorkspace } from '../services/teamChat'
+import { joinSharedInvite } from '../services/teamChat'
 
 const InviteJoin: React.FC = () => {
   const navigate = useNavigate()
   const { token } = useParams()
-  const { profile, loading } = useAuth()
+  const { firebaseUser, profile, loading } = useAuth()
   const [message, setMessage] = React.useState('Validating secure invitation...')
 
   React.useEffect(() => {
@@ -18,23 +18,29 @@ const InviteJoin: React.FC = () => {
       return
     }
 
-    const workspace = token ? joinLocalInvite(token, profile) : null
-    if (!workspace) {
+    if (!token) {
       setMessage('This invitation is invalid, expired, or has been disabled.')
       return
     }
 
     let cancelled = false
     const finishJoin = async () => {
-      const synced = await syncSharedWorkspace(workspace)
+      const authToken = await firebaseUser?.getIdToken().catch(() => undefined)
+      const result = await joinSharedInvite(token, profile, authToken)
       if (cancelled) return
 
-      setMessage(
-        synced
-          ? `Joined ${workspace.name}. Redirecting to your secure workspace...`
-          : `Joined ${workspace.name} on this device. Cloud sync is unavailable, so other accounts will not see this join yet.`,
-      )
-      const timeoutId = window.setTimeout(() => navigate('/workspace'), synced ? 900 : 1800)
+      if (!result.workspace) {
+        setMessage(result.error)
+        return
+      }
+
+      if (!result.synced) {
+        setMessage(result.error)
+        return
+      }
+
+      setMessage(`Joined ${result.workspace.name}. Redirecting to your secure workspace...`)
+      const timeoutId = window.setTimeout(() => navigate('/workspace'), 900)
       return () => window.clearTimeout(timeoutId)
     }
 
@@ -42,7 +48,7 @@ const InviteJoin: React.FC = () => {
     return () => {
       cancelled = true
     }
-  }, [loading, navigate, profile, token])
+  }, [firebaseUser, loading, navigate, profile, token])
 
   return (
     <main className="grid min-h-screen place-items-center bg-slate-950 px-4 text-center text-white">
