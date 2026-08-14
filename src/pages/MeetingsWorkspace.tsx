@@ -59,6 +59,12 @@ import {
   startBrowserMeetingRecording,
   type BrowserMeetingRecording,
 } from '../services/meetingRecordingFiles'
+import {
+  createMeetingSummary,
+  readMeetingSummaries,
+  saveMeetingSummary,
+  type MeetingSummary,
+} from '../services/meetingSummaries'
 import AIToolsPanel from '../components/Meetings/AIToolsPanel'
 import ChatPanel from '../components/Meetings/ChatPanel'
 import MeetingRoomShell from '../components/Meetings/MeetingRoom'
@@ -125,6 +131,7 @@ type MeetingActivityStore = {
   meetingsScheduled: StoredMeeting[]
   recordings: StoredRecording[]
   actionItems: number
+  summaries: MeetingSummary[]
   updatedAt?: string
 }
 
@@ -134,6 +141,7 @@ const emptyMeetingActivity = (): MeetingActivityStore => ({
   meetingsScheduled: [],
   recordings: [],
   actionItems: 0,
+  summaries: [],
 })
 
 const readMeetingActivity = (): MeetingActivityStore => {
@@ -146,6 +154,7 @@ const readMeetingActivity = (): MeetingActivityStore => {
       ...parsed,
       meetingsScheduled: Array.isArray(parsed?.meetingsScheduled) ? parsed.meetingsScheduled : [],
       recordings: Array.isArray(parsed?.recordings) ? parsed.recordings : [],
+      summaries: readMeetingSummaries(),
     }
   } catch {
     return emptyMeetingActivity()
@@ -263,6 +272,15 @@ const rememberRecordedMeeting = (recording: RecordingResponse, startedAt: string
       savedRecording,
       ...current.recordings.filter((item) => item.recordingId !== recording.recordingId),
     ].slice(0, 20),
+  }))
+}
+
+const rememberMeetingSummary = (summary: MeetingSummary) => {
+  saveMeetingSummary(summary)
+  updateMeetingActivity((current) => ({
+    ...current,
+    summaries: readMeetingSummaries(),
+    actionItems: Math.max(current.actionItems, summary.actionItems.length),
   }))
 }
 
@@ -422,14 +440,17 @@ const MeetingsDashboard = () => {
     const refreshActivity = () => setActivity(readMeetingActivity())
     window.addEventListener('storage', refreshActivity)
     window.addEventListener('collabos:meeting-activity-updated', refreshActivity)
+    window.addEventListener('collabos:meeting-summaries-updated', refreshActivity)
     return () => {
       window.removeEventListener('storage', refreshActivity)
       window.removeEventListener('collabos:meeting-activity-updated', refreshActivity)
+      window.removeEventListener('collabos:meeting-summaries-updated', refreshActivity)
     }
   }, [])
 
   const todayMeetings = activity.meetingsScheduled.filter((meeting) => isToday(meeting.startsAt || meeting.createdAt))
   const upcomingMeetings = activity.meetingsScheduled.filter((meeting) => meeting.startsAt && new Date(meeting.startsAt) > new Date())
+  const openActionItems = activity.summaries.reduce((total, summary) => total + summary.actionItems.filter((item) => item.status === 'open').length, 0)
 
   const startRoom = async () => {
     if (creatingRoom) return
@@ -688,7 +709,7 @@ const MeetingsDashboard = () => {
         <MetricCard label="Upcoming" value={String(upcomingMeetings.length)} icon={CalendarClock} />
         <MetricCard label="Today" value={String(todayMeetings.length)} icon={Activity} />
         <MetricCard label="Recordings" value={String(activity.recordings.length)} icon={Play} />
-        <MetricCard label="Action items" value={String(activity.actionItems)} icon={ClipboardCheck} />
+        <MetricCard label="Action items" value={String(Math.max(activity.actionItems, openActionItems))} icon={ClipboardCheck} />
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.85fr]">
@@ -784,6 +805,66 @@ const MeetingsDashboard = () => {
         </div>
       </section>
 
+      <section className="meeting-reveal mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider text-slate-600">AI meeting recaps</p>
+            <h2 className="mt-1 text-2xl font-black">Summaries and assignments</h2>
+          </div>
+          <ClipboardCheck className="h-6 w-6 text-slate-500" />
+        </div>
+        {activity.summaries.length ? (
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {activity.summaries.slice(0, 4).map((summary) => (
+              <article key={summary.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-black text-slate-950">{summary.title}</h3>
+                    <p className="mt-1 text-xs font-bold text-slate-500">
+                      {summary.durationMinutes ? `${summary.durationMinutes} min | ` : ''}
+                      {summary.participants.length} participant{summary.participants.length === 1 ? '' : 's'} | {new Date(summary.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-black text-slate-600">
+                    {summary.actionItems.length} tasks
+                  </span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-slate-700">{summary.overview}</p>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-500">Decisions</p>
+                    <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                      {summary.decisions.slice(0, 3).map((decision) => (
+                        <li key={decision} className="leading-5">- {decision}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-500">Assignments</p>
+                    {summary.actionItems.length ? (
+                      <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                        {summary.actionItems.slice(0, 3).map((item) => (
+                          <li key={item.id} className="leading-5">
+                            - {item.text}
+                            {item.owner ? ` - ${item.owner}` : ''}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-2 text-sm text-slate-500">No explicit assignments captured.</p>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm font-bold text-slate-500">
+            End a meeting or generate a recap from the Notes tab to save summaries, decisions, assignments, and follow-ups here.
+          </div>
+        )}
+      </section>
+
       <section className="meeting-reveal mt-6 grid gap-6 lg:grid-cols-3">
         <div className="rounded-3xl border border-slate-200 bg-white p-5 lg:col-span-2">
           <h2 className="text-xl font-black">Meeting templates</h2>
@@ -822,8 +903,12 @@ const SidebarPanel = ({
   chatDisabled,
   chatSending,
   recordingNotice,
+  meetingNotes,
+  summaryNotice,
   onSendChat,
   onActivityNotice,
+  onMeetingNotesChange,
+  onCreateSummary,
   onMuteParticipant,
   onMakePresenter,
   onRemoveParticipant,
@@ -834,8 +919,12 @@ const SidebarPanel = ({
   chatDisabled?: boolean
   chatSending?: boolean
   recordingNotice?: string
+  meetingNotes: string
+  summaryNotice?: string
   onSendChat: (message: string) => Promise<void> | void
   onActivityNotice: (message: string) => void
+  onMeetingNotesChange: (notes: string) => void
+  onCreateSummary: () => void
   onMuteParticipant: (participant: MeetingParticipant) => void
   onMakePresenter: (participant: MeetingParticipant) => void
   onRemoveParticipant: (participant: MeetingParticipant) => void
@@ -854,6 +943,8 @@ const SidebarPanel = ({
   if (activeTab === 'ai') {
     return (
       <AIToolsPanel
+        onCreateSummary={onCreateSummary}
+        summaryNotice={summaryNotice}
         onRunAction={(action) => {
           onActivityNotice(`${action} queued`)
           if (action.toLowerCase().includes('task')) {
@@ -874,6 +965,46 @@ const SidebarPanel = ({
 
   if (activeTab === 'files') {
     return <ScreenShare />
+  }
+
+  if (activeTab === 'notes') {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-slate-600">Meeting notes</p>
+              <p className="mt-1 text-sm text-slate-500">Add outcomes, tasks, names, and deadlines.</p>
+            </div>
+            <FileText className="h-5 w-5 text-slate-500" />
+          </div>
+          <textarea
+            value={meetingNotes}
+            onChange={(event) => onMeetingNotesChange(event.target.value)}
+            className="mt-4 h-48 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-900 outline-none focus:border-slate-500"
+            placeholder="Example: Decided to launch the beta next Friday. Assign onboarding email to Sarah by Tuesday."
+          />
+          <button
+            type="button"
+            onClick={onCreateSummary}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
+          >
+            <Sparkles className="h-4 w-4" />
+            Generate recap
+          </button>
+        </div>
+        {summaryNotice && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+            {summaryNotice}
+          </div>
+        )}
+        {recordingNotice && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+            {recordingNotice}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -954,6 +1085,8 @@ const MeetingRoomContent = ({
   const previewBrowserRecordingRef = React.useRef<BrowserMeetingRecording | null>(null)
   const [previewRecordingNotice, setPreviewRecordingNotice] = React.useState('')
   const [previewActivityNotices, setPreviewActivityNotices] = React.useState<MeetingActivityNotice[]>([])
+  const [meetingNotes, setMeetingNotes] = React.useState('')
+  const [summaryNotice, setSummaryNotice] = React.useState('')
   const [mutedParticipantIds, setMutedParticipantIds] = React.useState<string[]>([])
   const [removedParticipantIds, setRemovedParticipantIds] = React.useState<string[]>([])
   const [presenterId, setPresenterId] = React.useState<string | null>(null)
@@ -1128,6 +1261,8 @@ const MeetingRoomContent = ({
   }
 
   const leaveMeeting = async () => {
+    createAndSaveSummary()
+
     if (!liveControls && previewRecording && previewRecordingStartedAt) {
       const stoppedAt = new Date().toISOString()
       const recordingBlob = await previewBrowserRecordingRef.current?.stop()
@@ -1183,6 +1318,25 @@ const MeetingRoomContent = ({
     messages: previewChatMessages,
     disabled: liveStatus !== 'Preview mode',
     sendMessage: sendPreviewChatMessage,
+  }
+
+  function createAndSaveSummary() {
+    const summary = createMeetingSummary({
+      roomId: roomName || 'preview-meeting',
+      title: 'Product Review - Q3 Workspace',
+      participants: activeParticipants.map((participant) => participant.name),
+      chatMessages: chatState.messages,
+      notes: meetingNotes,
+      startedAt: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
+    })
+
+    rememberMeetingSummary(summary)
+    setSummaryNotice(
+      summary.actionItems.length
+        ? `Recap saved with ${summary.actionItems.length} assignment${summary.actionItems.length === 1 ? '' : 's'}.`
+        : 'Recap saved. No explicit assignments were detected.'
+    )
+    pushPreviewNotice('AI meeting recap saved')
   }
 
   const recording = liveControls?.recording ?? previewRecording
@@ -1338,8 +1492,12 @@ const MeetingRoomContent = ({
                 chatDisabled={chatState.disabled}
                 chatSending={chatState.sending}
                 recordingNotice={activeRecordingNotice}
+                meetingNotes={meetingNotes}
+                summaryNotice={summaryNotice}
                 onSendChat={chatState.sendMessage}
                 onActivityNotice={pushActivityNotice}
+                onMeetingNotesChange={setMeetingNotes}
+                onCreateSummary={createAndSaveSummary}
                 onMuteParticipant={muteParticipant}
                 onMakePresenter={makePresenter}
                 onRemoveParticipant={removeParticipant}
