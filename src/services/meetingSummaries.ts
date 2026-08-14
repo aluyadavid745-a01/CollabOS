@@ -4,6 +4,12 @@ export interface MeetingSummaryChatMessage {
   timestamp: number
 }
 
+export interface MeetingSummaryTranscriptEntry {
+  speaker: string
+  text: string
+  timestamp: number
+}
+
 export interface MeetingSummaryActionItem {
   id: string
   text: string
@@ -25,7 +31,7 @@ export interface MeetingSummary {
   decisions: string[]
   actionItems: MeetingSummaryActionItem[]
   followUps: string[]
-  transcriptSource: 'chat-and-notes'
+  transcriptSource: 'chat-notes-transcript'
 }
 
 export interface CreateMeetingSummaryInput {
@@ -33,6 +39,7 @@ export interface CreateMeetingSummaryInput {
   title: string
   participants: string[]
   chatMessages: MeetingSummaryChatMessage[]
+  transcriptEntries?: MeetingSummaryTranscriptEntry[]
   notes: string
   startedAt?: string
   endedAt?: string
@@ -62,10 +69,11 @@ const toSentences = (text: string) =>
     .filter((line) => line.length > 3)
 
 const messageToLine = (message: MeetingSummaryChatMessage) => `${message.author}: ${message.text}`
+const transcriptToLine = (entry: MeetingSummaryTranscriptEntry) => `${entry.speaker}: ${entry.text}`
 
 const getFallbackOverview = (title: string, participants: string[], lineCount: number) => {
   if (lineCount === 0) {
-    return `${title} ended without captured notes or chat. Add meeting notes before leaving to generate a richer recap.`
+    return `${title} ended without captured notes, chat, or transcript. Start live transcript or add meeting notes before leaving to generate a richer recap.`
   }
 
   const participantText = participants.length
@@ -93,19 +101,24 @@ export const createMeetingSummary = ({
   title,
   participants,
   chatMessages,
+  transcriptEntries = [],
   notes,
   startedAt,
   endedAt = new Date().toISOString(),
 }: CreateMeetingSummaryInput): MeetingSummary => {
   const noteLines = toSentences(notes)
+  const transcriptLines = transcriptEntries.map(transcriptToLine).flatMap(toSentences)
   const chatLines = chatMessages.map(messageToLine).flatMap(toSentences)
-  const allLines = [...noteLines, ...chatLines]
+  const allLines = [...noteLines, ...transcriptLines, ...chatLines]
   const decisions = unique(allLines.filter((line) => decisionPattern.test(line))).slice(0, 6)
   const followUps = unique(allLines.filter((line) => followUpPattern.test(line))).slice(0, 6)
   const actionItems = unique(allLines.filter((line) => taskPattern.test(line)))
     .slice(0, 10)
     .map(extractActionItem)
-  const overviewSource = noteLines.find((line) => line.length > 24) || chatLines.find((line) => line.length > 24)
+  const overviewSource =
+    noteLines.find((line) => line.length > 24) ||
+    transcriptLines.find((line) => line.length > 24) ||
+    chatLines.find((line) => line.length > 24)
   const startedTime = startedAt ? new Date(startedAt).getTime() : undefined
   const endedTime = new Date(endedAt).getTime()
   const durationMinutes = startedTime && Number.isFinite(startedTime)
@@ -125,7 +138,7 @@ export const createMeetingSummary = ({
     decisions: decisions.length ? decisions : ['No explicit decisions were captured.'],
     actionItems,
     followUps: followUps.length ? followUps : ['Review the recap and add any missing follow-up before sharing.'],
-    transcriptSource: 'chat-and-notes',
+    transcriptSource: 'chat-notes-transcript',
   }
 }
 

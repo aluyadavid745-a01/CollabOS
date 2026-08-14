@@ -65,6 +65,11 @@ import {
   saveMeetingSummary,
   type MeetingSummary,
 } from '../services/meetingSummaries'
+import {
+  canTranscribeMeetingInBrowser,
+  createMeetingTranscriber,
+  type MeetingTranscriptEntry,
+} from '../services/meetingTranscription'
 import AIToolsPanel from '../components/Meetings/AIToolsPanel'
 import ChatPanel from '../components/Meetings/ChatPanel'
 import MeetingRoomShell from '../components/Meetings/MeetingRoom'
@@ -904,6 +909,9 @@ const SidebarPanel = ({
   chatSending,
   recordingNotice,
   meetingNotes,
+  transcriptEntries,
+  interimTranscript,
+  transcriptNotice,
   summaryNotice,
   onSendChat,
   onActivityNotice,
@@ -920,6 +928,9 @@ const SidebarPanel = ({
   chatSending?: boolean
   recordingNotice?: string
   meetingNotes: string
+  transcriptEntries: MeetingTranscriptEntry[]
+  interimTranscript?: string
+  transcriptNotice?: string
   summaryNotice?: string
   onSendChat: (message: string) => Promise<void> | void
   onActivityNotice: (message: string) => void
@@ -998,6 +1009,35 @@ const SidebarPanel = ({
             {summaryNotice}
           </div>
         )}
+        {transcriptNotice && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-600">
+            {transcriptNotice}
+          </div>
+        )}
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-600">Live transcript</p>
+          <div className="mt-3 max-h-56 space-y-3 overflow-y-auto pr-1">
+            {transcriptEntries.length || interimTranscript ? (
+              <>
+                {transcriptEntries.map((entry) => (
+                  <div key={entry.id} className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-[11px] font-black uppercase tracking-wider text-slate-500">{entry.speaker}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-700">{entry.text}</p>
+                  </div>
+                ))}
+                {interimTranscript && (
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-3 text-sm italic leading-6 text-slate-500">
+                    {interimTranscript}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-sm leading-6 text-slate-500">
+                Press Live Captions in the toolbar to capture spoken transcript for the recap.
+              </p>
+            )}
+          </div>
+        </div>
         {recordingNotice && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
             {recordingNotice}
@@ -1087,6 +1127,10 @@ const MeetingRoomContent = ({
   const [previewActivityNotices, setPreviewActivityNotices] = React.useState<MeetingActivityNotice[]>([])
   const [meetingNotes, setMeetingNotes] = React.useState('')
   const [summaryNotice, setSummaryNotice] = React.useState('')
+  const [transcriptEntries, setTranscriptEntries] = React.useState<MeetingTranscriptEntry[]>([])
+  const [interimTranscript, setInterimTranscript] = React.useState('')
+  const [transcriptNotice, setTranscriptNotice] = React.useState('')
+  const transcriptRef = React.useRef<ReturnType<typeof createMeetingTranscriber> | null>(null)
   const [mutedParticipantIds, setMutedParticipantIds] = React.useState<string[]>([])
   const [removedParticipantIds, setRemovedParticipantIds] = React.useState<string[]>([])
   const [presenterId, setPresenterId] = React.useState<string | null>(null)
@@ -1131,6 +1175,14 @@ const MeetingRoomContent = ({
     const timeoutId = window.setTimeout(() => setReaction(''), 1800)
     return () => window.clearTimeout(timeoutId)
   }, [reaction])
+
+  React.useEffect(
+    () => () => {
+      transcriptRef.current?.stop()
+      transcriptRef.current = null
+    },
+    []
+  )
 
   const formatElapsed = (seconds: number) => {
     const minutes = Math.floor(seconds / 60).toString().padStart(2, '0')
@@ -1244,6 +1296,56 @@ const MeetingRoomContent = ({
     pushPreviewNotice(message)
   }
 
+  const toggleTranscript = () => {
+    if (captions) {
+      transcriptRef.current?.stop()
+      transcriptRef.current = null
+      setCaptions(false)
+      setInterimTranscript('')
+      setTranscriptNotice('Live transcript stopped.')
+      pushActivityNotice('Live transcript stopped')
+      return
+    }
+
+    if (!canTranscribeMeetingInBrowser()) {
+      setTranscriptNotice('Live transcript is not available in this browser. Use Chrome or Edge for speech recognition.')
+      setActiveTab('notes')
+      return
+    }
+
+    try {
+      const transcriber = createMeetingTranscriber({
+        speaker: participantName,
+        onFinalTranscript: (entry) => {
+          setTranscriptEntries((current) => [...current, entry].slice(-120))
+          setInterimTranscript('')
+        },
+        onInterimTranscript: setInterimTranscript,
+        onError: (message) => {
+          setTranscriptNotice(message)
+          setCaptions(false)
+          transcriptRef.current = null
+        },
+        onEnd: () => {
+          setCaptions(false)
+          setInterimTranscript('')
+          transcriptRef.current = null
+        },
+      })
+
+      transcriptRef.current = transcriber
+      transcriber.start()
+      setCaptions(true)
+      setActiveTab('notes')
+      setTranscriptNotice('Live transcript started. Keep this tab open while people speak.')
+      pushActivityNotice('Live transcript started')
+    } catch (error) {
+      setTranscriptNotice(error instanceof Error ? error.message : 'Live transcript could not start.')
+      setCaptions(false)
+      transcriptRef.current = null
+    }
+  }
+
   const muteParticipant = (participant: MeetingParticipant) => {
     setMutedParticipantIds((current) => current.includes(participant.id) ? current : [...current, participant.id])
     pushActivityNotice(`${participant.name} muted`)
@@ -1326,6 +1428,7 @@ const MeetingRoomContent = ({
       title: 'Product Review - Q3 Workspace',
       participants: activeParticipants.map((participant) => participant.name),
       chatMessages: chatState.messages,
+      transcriptEntries,
       notes: meetingNotes,
       startedAt: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
     })
@@ -1354,7 +1457,7 @@ const MeetingRoomContent = ({
     { label: 'Participants', icon: Users, active: activeTab === 'participants', onClick: () => setActiveTab('participants') },
     { label: 'Raise Hand', icon: Hand, active: raisedHand, onClick: () => void toggleRaiseHand() },
     { label: 'Reactions', icon: Sparkles, active: Boolean(reaction), onClick: () => setReaction('👏') },
-    { label: 'Live Captions', icon: Subtitles, active: captions, onClick: () => setCaptions((current) => !current) },
+    { label: captions ? 'Stop Live Transcript' : 'Live Captions', icon: Subtitles, active: captions, onClick: toggleTranscript },
     { 
       label: recording ? 'Stop Recording' : 'Start Recording', 
       icon: CircleDot, 
@@ -1493,6 +1596,9 @@ const MeetingRoomContent = ({
                 chatSending={chatState.sending}
                 recordingNotice={activeRecordingNotice}
                 meetingNotes={meetingNotes}
+                transcriptEntries={transcriptEntries}
+                interimTranscript={interimTranscript}
+                transcriptNotice={transcriptNotice}
                 summaryNotice={summaryNotice}
                 onSendChat={chatState.sendMessage}
                 onActivityNotice={pushActivityNotice}
