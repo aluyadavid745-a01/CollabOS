@@ -103,10 +103,13 @@ const quickActions = [
 
 const chatTopic = 'meeting-chat'
 const meetingEventTopic = 'meeting-events'
+const transcriptTopic = 'meeting-transcript'
 const chatEncoder = new TextEncoder()
 const chatDecoder = new TextDecoder()
 const meetingEventEncoder = new TextEncoder()
 const meetingEventDecoder = new TextDecoder()
+const transcriptEncoder = new TextEncoder()
+const transcriptDecoder = new TextDecoder()
 const meetingActivityStorageKey = 'collabos:meeting-activity'
 
 type StoredMeeting = {
@@ -354,6 +357,22 @@ const parseMeetingEventMessage = (message: ReceivedDataMessage<typeof meetingEve
       participantIdentity: parsed.participantIdentity,
       participantName: parsed.participantName || message.from?.name || message.from?.identity || 'Guest',
       raised: Boolean(parsed.raised),
+      timestamp: typeof parsed.timestamp === 'number' ? parsed.timestamp : Date.now(),
+    }
+  } catch {
+    return null
+  }
+}
+
+const parseTranscriptMessage = (message: ReceivedDataMessage<typeof transcriptTopic>): MeetingTranscriptEntry | null => {
+  try {
+    const parsed = JSON.parse(transcriptDecoder.decode(message.payload)) as Partial<MeetingTranscriptEntry>
+    if (!parsed.id || !parsed.text) return null
+
+    return {
+      id: parsed.id,
+      speaker: parsed.speaker || message.from?.name || message.from?.identity || 'Guest',
+      text: parsed.text,
       timestamp: typeof parsed.timestamp === 'number' ? parsed.timestamp : Date.now(),
     }
   } catch {
@@ -912,6 +931,7 @@ const SidebarPanel = ({
   transcriptEntries,
   interimTranscript,
   transcriptNotice,
+  localSpeakerName,
   summaryNotice,
   onSendChat,
   onActivityNotice,
@@ -931,6 +951,7 @@ const SidebarPanel = ({
   transcriptEntries: MeetingTranscriptEntry[]
   interimTranscript?: string
   transcriptNotice?: string
+  localSpeakerName: string
   summaryNotice?: string
   onSendChat: (message: string) => Promise<void> | void
   onActivityNotice: (message: string) => void
@@ -1021,13 +1042,14 @@ const SidebarPanel = ({
               <>
                 {transcriptEntries.map((entry) => (
                   <div key={entry.id} className="rounded-xl bg-slate-50 p-3">
-                    <p className="text-[11px] font-black uppercase tracking-wider text-slate-500">{entry.speaker}</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-700">{entry.text}</p>
+                    <p className="text-sm leading-6 text-slate-700">
+                      <span className="font-black text-slate-950">{entry.speaker}:</span> {entry.text}
+                    </p>
                   </div>
                 ))}
                 {interimTranscript && (
                   <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-3 text-sm italic leading-6 text-slate-500">
-                    {interimTranscript}
+                    <span className="font-black text-slate-700">{localSpeakerName}:</span> {interimTranscript}
                   </div>
                 )}
               </>
@@ -1083,6 +1105,11 @@ interface LiveMeetingChatState {
   sendMessage: (message: string) => Promise<void> | void
 }
 
+interface LiveMeetingTranscriptState {
+  entries: MeetingTranscriptEntry[]
+  sendEntry: (entry: MeetingTranscriptEntry) => Promise<void> | void
+}
+
 const MeetingRoomContent = ({
   liveStatus,
   connectionError,
@@ -1094,6 +1121,7 @@ const MeetingRoomContent = ({
   roomParticipants,
   liveControls,
   liveChat,
+  liveTranscript,
 }: {
   liveStatus: string
   connectionError?: string
@@ -1105,6 +1133,7 @@ const MeetingRoomContent = ({
   roomParticipants?: MeetingParticipant[]
   liveControls?: LiveMeetingControlsState
   liveChat?: LiveMeetingChatState
+  liveTranscript?: LiveMeetingTranscriptState
 }) => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = React.useState<SidebarTab>('ai')
@@ -1317,7 +1346,11 @@ const MeetingRoomContent = ({
       const transcriber = createMeetingTranscriber({
         speaker: participantName,
         onFinalTranscript: (entry) => {
-          setTranscriptEntries((current) => [...current, entry].slice(-120))
+          if (liveTranscript) {
+            void liveTranscript.sendEntry(entry)
+          } else {
+            setTranscriptEntries((current) => [...current, entry].slice(-120))
+          }
           setInterimTranscript('')
         },
         onInterimTranscript: setInterimTranscript,
@@ -1421,6 +1454,7 @@ const MeetingRoomContent = ({
     disabled: liveStatus !== 'Preview mode',
     sendMessage: sendPreviewChatMessage,
   }
+  const visibleTranscriptEntries = liveTranscript?.entries ?? transcriptEntries
 
   function createAndSaveSummary() {
     const summary = createMeetingSummary({
@@ -1428,7 +1462,7 @@ const MeetingRoomContent = ({
       title: 'Product Review - Q3 Workspace',
       participants: activeParticipants.map((participant) => participant.name),
       chatMessages: chatState.messages,
-      transcriptEntries,
+      transcriptEntries: visibleTranscriptEntries,
       notes: meetingNotes,
       startedAt: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
     })
@@ -1596,9 +1630,10 @@ const MeetingRoomContent = ({
                 chatSending={chatState.sending}
                 recordingNotice={activeRecordingNotice}
                 meetingNotes={meetingNotes}
-                transcriptEntries={transcriptEntries}
+                transcriptEntries={visibleTranscriptEntries}
                 interimTranscript={interimTranscript}
                 transcriptNotice={transcriptNotice}
+                localSpeakerName={participantName}
                 summaryNotice={summaryNotice}
                 onSendChat={chatState.sendMessage}
                 onActivityNotice={pushActivityNotice}
@@ -1640,6 +1675,7 @@ const ConnectedMeetingRoomContent = ({
   const [cloudParticipantStatus, setCloudParticipantStatus] = React.useState('not checked')
   const [mediaError, setMediaError] = React.useState('')
   const [chatMessages, setChatMessages] = React.useState<MeetingChatMessage[]>([])
+  const [transcriptEntries, setTranscriptEntries] = React.useState<MeetingTranscriptEntry[]>([])
   const [handRaisedByIdentity, setHandRaisedByIdentity] = React.useState<Record<string, boolean>>({})
   const [activityNotices, setActivityNotices] = React.useState<MeetingActivityNotice[]>([])
 
@@ -1651,6 +1687,10 @@ const ConnectedMeetingRoomContent = ({
     setChatMessages((current) => (current.some((item) => item.id === message.id) ? current : [...current, message]))
   }, [])
 
+  const addTranscriptEntry = React.useCallback((entry: MeetingTranscriptEntry) => {
+    setTranscriptEntries((current) => (current.some((item) => item.id === entry.id) ? current : [...current, entry].slice(-160)))
+  }, [])
+
   const handleDataMessage = React.useCallback(
     (message: ReceivedDataMessage<typeof chatTopic>) => {
       const chatMessage = parseChatMessage(message)
@@ -1660,6 +1700,16 @@ const ConnectedMeetingRoomContent = ({
   )
 
   const { send: sendDataMessage, isSending: chatSending } = useDataChannel(chatTopic, handleDataMessage)
+
+  const handleTranscriptMessage = React.useCallback(
+    (message: ReceivedDataMessage<typeof transcriptTopic>) => {
+      const transcriptEntry = parseTranscriptMessage(message)
+      if (transcriptEntry) addTranscriptEntry(transcriptEntry)
+    },
+    [addTranscriptEntry]
+  )
+
+  const { send: sendTranscriptMessage } = useDataChannel(transcriptTopic, handleTranscriptMessage)
 
   const handleMeetingEventMessage = React.useCallback(
     (message: ReceivedDataMessage<typeof meetingEventTopic>) => {
@@ -1788,6 +1838,20 @@ const ConnectedMeetingRoomContent = ({
       await sendDataMessage(chatEncoder.encode(JSON.stringify(message)), { reliable: true })
     },
     [addChatMessage, participantName, room.localParticipant.identity, room.localParticipant.name, sendDataMessage]
+  )
+
+  const sendTranscriptEntry = React.useCallback(
+    async (entry: MeetingTranscriptEntry) => {
+      const speaker = firstDisplayName(room.localParticipant.name, participantName, room.localParticipant.identity, entry.speaker)
+      const sharedEntry: MeetingTranscriptEntry = {
+        ...entry,
+        speaker,
+      }
+
+      addTranscriptEntry(sharedEntry)
+      await sendTranscriptMessage(transcriptEncoder.encode(JSON.stringify(sharedEntry)), { reliable: true })
+    },
+    [addTranscriptEntry, participantName, room.localParticipant.identity, room.localParticipant.name, sendTranscriptMessage]
   )
 
   const [isRecording, setIsRecording] = React.useState(false)
@@ -1980,6 +2044,10 @@ const ConnectedMeetingRoomContent = ({
           messages: chatMessages,
           sending: chatSending,
           sendMessage: sendChatMessage,
+        }}
+        liveTranscript={{
+          entries: transcriptEntries,
+          sendEntry: sendTranscriptEntry,
         }}
       />
     </>
