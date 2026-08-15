@@ -26,6 +26,7 @@ const PublicProfile = React.lazy(() => import("./pages/PublicProfile"));
 const MeetingsWorkspace = React.lazy(() => import("./pages/MeetingsWorkspace"));
 const SecureTeamWorkspace = React.lazy(() => import("./pages/SecureTeamWorkspace"));
 const InviteJoin = React.lazy(() => import("./pages/InviteJoin"));
+const GiftCardStudio = React.lazy(() => import("./pages/GiftCardStudio"));
 
 const RouteShell = ({ label = "Opening..." }: { label?: string }) => (
   <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-500">
@@ -139,14 +140,14 @@ function App() {
   React.useEffect(() => {
     if (view !== "home") return;
 
-    return prefetchRoutesOnIdle(["auth", "profile", "homeDashboard", "notifications", "editProfile", "websiteDashboard", "featureDetail", "teamWorkspace"], 1200);
+    return prefetchRoutesOnIdle(["auth", "profile", "homeDashboard", "notifications", "editProfile", "websiteDashboard", "featureDetail", "teamWorkspace", "giftCards"], 1200);
   }, [view]);
 
   React.useEffect(() => {
     if (!rememberedUser && !firebaseUser) return;
 
     return prefetchRoutesOnIdle(
-      ["profile", "homeDashboard", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview", "codeBuilder", "aiBuilder", "teamWorkspace"],
+      ["profile", "homeDashboard", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview", "codeBuilder", "aiBuilder", "teamWorkspace", "giftCards"],
       900
     );
   }, [firebaseUser, rememberedUser]);
@@ -315,6 +316,15 @@ function App() {
           element={protectedRoute(
             <React.Suspense fallback={<RouteShell label="Opening secure workspace..." />}>
               <SecureTeamWorkspace />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/gift-cards"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening gift cards..." />}>
+              <GiftCardStudio />
             </React.Suspense>,
             "Checking account..."
           )}

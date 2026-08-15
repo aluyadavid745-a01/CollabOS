@@ -14,6 +14,7 @@ export type PrefetchTarget =
   | 'featureDetail'
   | 'meetings'
   | 'teamWorkspace'
+  | 'giftCards'
   | 'inviteJoin'
 
 const preloaders: Record<PrefetchTarget, () => Promise<unknown>> = {
@@ -50,6 +51,7 @@ const preloaders: Record<PrefetchTarget, () => Promise<unknown>> = {
       import('livekit-client'),
     ]),
   teamWorkspace: () => import('../pages/SecureTeamWorkspace'),
+  giftCards: () => import('../pages/GiftCardStudio'),
   inviteJoin: () => import('../pages/InviteJoin'),
 }
 

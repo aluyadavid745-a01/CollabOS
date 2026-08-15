@@ -7,6 +7,7 @@ import {
   CalendarClock,
   CheckCircle2,
   FileText,
+  Gift,
   Globe2,
   LayoutDashboard,
   Lock,
@@ -177,11 +178,12 @@ const HomeDashboard: React.FC = () => {
                     {unreadCount} updates need attention. {tasks.filter((task) => task.status === 'Review').length} item{tasks.filter((task) => task.status === 'Review').length === 1 ? '' : 's'} are in review, and {publishedCount} website{publishedCount === 1 ? '' : 's'} are live. The fastest next move is to clear mentions, then review active launch tasks.
                   </p>
                 </div>
-                <div className="grid gap-3 md:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-4">
                   {[
                     ['Secure chat', '/workspace', MessageSquare],
                     ['Meetings', '/meetings', Video],
                     ['Websites', '/dashboard/websites', Globe2],
+                    ['Gift cards', '/gift-cards', Gift],
                   ].map(([label, route, Icon]) => {
                     const Component = Icon as React.ComponentType<{ className?: string }>
                     return (

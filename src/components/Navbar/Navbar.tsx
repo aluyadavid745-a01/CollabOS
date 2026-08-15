@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { AlertTriangle, ChevronDown, Globe2, KeyRound, LogOut, Menu, MessageSquare, UserCircle, UserCog, Video, X } from 'lucide-react'
+import { AlertTriangle, ChevronDown, Gift, Globe2, KeyRound, LogOut, Menu, MessageSquare, UserCircle, UserCog, Video, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../Common/Button'
 import type { AuthMode, AuthUser } from '../../pages/AuthPage'
@@ -89,6 +89,12 @@ const Navbar: React.FC<NavbarProps> = ({
     navigate('/meetings')
   }
 
+  const handleGiftCards = () => {
+    setIsAccountOpen(false)
+    setIsOpen(false)
+    navigate('/gift-cards')
+  }
+
   const handleLogout = () => {
     setIsAccountOpen(false)
     setIsOpen(false)
@@ -105,6 +111,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const warmWebsiteBuilder = () => prefetchRoutes(['websiteDashboard', 'websiteEditor', 'websitePreview'])
   const warmMeetings = () => prefetchRoute('meetings')
   const warmTeamWorkspace = () => prefetchRoute('teamWorkspace')
+  const warmGiftCards = () => prefetchRoute('giftCards')
 
   const navLinks = [
     { label: 'Features', href: '#features' },
@@ -227,6 +234,17 @@ const Navbar: React.FC<NavbarProps> = ({
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleGiftCards}
+                    onMouseEnter={warmGiftCards}
+                    onFocus={warmGiftCards}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
+                  >
+                    <Gift className="w-4 h-4 text-emerald-600" />
+                    Gift Cards
                   </button>
                   <button
                     type="button"
@@ -370,6 +388,17 @@ const Navbar: React.FC<NavbarProps> = ({
                   >
                     <Video className="w-4 h-4 text-emerald-300" />
                     Meetings
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleGiftCards}
+                    onMouseEnter={warmGiftCards}
+                    onFocus={warmGiftCards}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950"
+                  >
+                    <Gift className="w-4 h-4 text-emerald-600" />
+                    Gift Cards
                   </button>
                   <button
                     type="button"
