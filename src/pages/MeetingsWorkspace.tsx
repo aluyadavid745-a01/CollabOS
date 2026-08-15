@@ -933,6 +933,7 @@ const SidebarPanel = ({
   transcriptNotice,
   localSpeakerName,
   summaryNotice,
+  liveSummary,
   onSendChat,
   onActivityNotice,
   onMeetingNotesChange,
@@ -953,6 +954,7 @@ const SidebarPanel = ({
   transcriptNotice?: string
   localSpeakerName: string
   summaryNotice?: string
+  liveSummary?: MeetingSummary | null
   onSendChat: (message: string) => Promise<void> | void
   onActivityNotice: (message: string) => void
   onMeetingNotesChange: (notes: string) => void
@@ -977,6 +979,9 @@ const SidebarPanel = ({
       <AIToolsPanel
         onCreateSummary={onCreateSummary}
         summaryNotice={summaryNotice}
+        liveSummary={liveSummary}
+        interimTranscript={interimTranscript}
+        localSpeakerName={localSpeakerName}
         onRunAction={(action) => {
           onActivityNotice(`${action} queued`)
           if (action.toLowerCase().includes('task')) {
@@ -1028,6 +1033,21 @@ const SidebarPanel = ({
         {summaryNotice && (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
             {summaryNotice}
+          </div>
+        )}
+        {liveSummary && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <p className="text-xs font-black uppercase tracking-wider text-slate-600">Live summary</p>
+            <p className="mt-3 text-sm leading-6 text-slate-700">{liveSummary.overview}</p>
+            {liveSummary.actionItems.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {liveSummary.actionItems.slice(0, 3).map((item) => (
+                  <p key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700">
+                    {item.text}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
         )}
         {transcriptNotice && (
@@ -1369,9 +1389,9 @@ const MeetingRoomContent = ({
       transcriptRef.current = transcriber
       transcriber.start()
       setCaptions(true)
-      setActiveTab('notes')
-      setTranscriptNotice('Live transcript started. Keep this tab open while people speak.')
-      pushActivityNotice('Live transcript started')
+      setActiveTab('ai')
+      setTranscriptNotice('Live summary started. Keep this tab open while people speak.')
+      pushActivityNotice('Live summary started')
     } catch (error) {
       setTranscriptNotice(error instanceof Error ? error.message : 'Live transcript could not start.')
       setCaptions(false)
@@ -1455,11 +1475,40 @@ const MeetingRoomContent = ({
     sendMessage: sendPreviewChatMessage,
   }
   const visibleTranscriptEntries = liveTranscript?.entries ?? transcriptEntries
+  const meetingTitle = 'Product Review - Q3 Workspace'
+  const liveSummary = React.useMemo(() => {
+    const trimmedInterim = interimTranscript.trim()
+    const summaryTranscriptEntries = trimmedInterim
+      ? [
+          ...visibleTranscriptEntries,
+          {
+            id: 'live-interim-transcript',
+            speaker: participantName,
+            text: trimmedInterim,
+            timestamp: Date.now(),
+          },
+        ]
+      : visibleTranscriptEntries
+
+    if (!meetingNotes.trim() && summaryTranscriptEntries.length === 0 && chatState.messages.length === 0) {
+      return null
+    }
+
+    return createMeetingSummary({
+      roomId: roomName || 'preview-meeting',
+      title: meetingTitle,
+      participants: activeParticipants.map((participant) => participant.name),
+      chatMessages: chatState.messages,
+      transcriptEntries: summaryTranscriptEntries,
+      notes: meetingNotes,
+      startedAt: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
+    })
+  }, [activeParticipants, chatState.messages, elapsedSeconds, interimTranscript, meetingNotes, participantName, roomName, visibleTranscriptEntries])
 
   function createAndSaveSummary() {
     const summary = createMeetingSummary({
       roomId: roomName || 'preview-meeting',
-      title: 'Product Review - Q3 Workspace',
+      title: meetingTitle,
       participants: activeParticipants.map((participant) => participant.name),
       chatMessages: chatState.messages,
       transcriptEntries: visibleTranscriptEntries,
@@ -1635,6 +1684,7 @@ const MeetingRoomContent = ({
                 transcriptNotice={transcriptNotice}
                 localSpeakerName={participantName}
                 summaryNotice={summaryNotice}
+                liveSummary={liveSummary}
                 onSendChat={chatState.sendMessage}
                 onActivityNotice={pushActivityNotice}
                 onMeetingNotesChange={setMeetingNotes}
