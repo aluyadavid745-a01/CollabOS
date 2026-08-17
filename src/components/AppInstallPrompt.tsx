@@ -135,7 +135,7 @@ const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) 
           </button>
           <button type="button" onClick={() => void installApp()} disabled={isInstalling} className="order-1 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-wait disabled:opacity-70 sm:order-2">
             {installEvent ? <Download size={16} /> : <ExternalLink size={16} />}
-    {isInstalling ? 'Opening...' : installEvent ? 'Download app' : 'Add to home screen'}
+            {isInstalling ? 'Opening...' : 'Download app'}
           </button>
         </div>
       </section>
