@@ -35,6 +35,7 @@ const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) 
   const [installEvent, setInstallEvent] = React.useState<BeforeInstallPromptEvent | null>(null)
   const [isInstalling, setIsInstalling] = React.useState(false)
   const [hideForever, setHideForever] = React.useState(doNotShowAgain)
+  const [showInstructions, setShowInstructions] = React.useState(false)
 
   React.useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -74,7 +75,7 @@ const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) 
 
   const installApp = async () => {
     if (!installEvent) {
-      closePrompt()
+      setShowInstructions(true)
       return
     }
 
@@ -114,7 +115,9 @@ const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) 
             <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">CollabOS app</p>
             <h2 id="install-app-title" className="text-xl font-bold text-slate-950">Download the app</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Keep your workspace, meetings, and gift cards one tap away.
+              {showInstructions
+                ? 'Open your browser menu and choose Install app or Add to Home Screen to finish.'
+                : 'Keep your workspace, meetings, and gift cards one tap away.'}
             </p>
           </div>
         </div>
@@ -133,9 +136,9 @@ const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) 
           <button type="button" onClick={closePrompt} className="order-2 rounded-lg px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-100 sm:order-1">
             Not now
           </button>
-          <button type="button" onClick={() => void installApp()} disabled={isInstalling} className="order-1 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-wait disabled:opacity-70 sm:order-2">
-            {installEvent ? <Download size={16} /> : <ExternalLink size={16} />}
-            {isInstalling ? 'Opening...' : 'Download app'}
+          <button type="button" onClick={() => (showInstructions ? closePrompt() : void installApp())} disabled={isInstalling} className="order-1 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-wait disabled:opacity-70 sm:order-2">
+            {showInstructions ? <X size={16} /> : installEvent ? <Download size={16} /> : <ExternalLink size={16} />}
+            {isInstalling ? 'Opening...' : showInstructions ? 'Close' : 'Download app'}
           </button>
         </div>
       </section>
