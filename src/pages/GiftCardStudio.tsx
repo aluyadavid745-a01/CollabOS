@@ -172,6 +172,7 @@ const GiftCardStudio: React.FC = () => {
   const [orders, setOrders] = React.useState<GiftCardOrder[]>(() => readOrders())
   const [step, setStep] = React.useState<StudioStep>(1)
   const [activeSide, setActiveSide] = React.useState<'front' | 'back'>('front')
+  const [imageUploading, setImageUploading] = React.useState(false)
   const [status, setStatus] = React.useState('')
   const latestOrder = orders[0]
   const selectedStyle = styles.find((item) => item.id === draft.styleId) || styles[0]
@@ -190,10 +191,14 @@ const GiftCardStudio: React.FC = () => {
     const file = event.target.files?.[0]
     if (!file) return
 
+    setImageUploading(true)
     const reader = new FileReader()
     reader.onload = () => {
       updateDraft('imageDataUrl', typeof reader.result === 'string' ? reader.result : '')
+      setImageUploading(false)
+      event.target.value = ''
     }
+    reader.onerror = () => setImageUploading(false)
     reader.readAsDataURL(file)
   }
 
@@ -251,7 +256,13 @@ const GiftCardStudio: React.FC = () => {
     })
     setStep(1)
     setActiveSide('front')
+    setImageUploading(false)
     setStatus('')
+  }
+
+  const removeImage = () => {
+    updateDraft('imageDataUrl', '')
+    setImageUploading(false)
   }
 
   const previewOrder = latestOrder || {
@@ -329,7 +340,7 @@ const GiftCardStudio: React.FC = () => {
                   </p>
                 </div>
                 {draft.imageDataUrl && (
-                  <div className="absolute right-0 top-0 h-full w-[36%] overflow-hidden rounded-lg border border-white/70 bg-white/50">
+                  <div className="absolute right-0 top-0 h-full w-[39%] overflow-hidden rounded-r-xl border-l border-white/70 bg-white/50">
                     <img src={draft.imageDataUrl} alt="" className="h-full w-full object-cover" />
                   </div>
                 )}
@@ -423,19 +434,40 @@ const GiftCardStudio: React.FC = () => {
                   />
                 </label>
 
-                <label className="block">
-                  <span className="text-sm font-black text-slate-500">Photo <span className="font-bold">(optional)</span></span>
-                  <span className="mt-2 flex cursor-pointer items-center gap-4 rounded-lg border border-dashed border-slate-300 px-5 py-5 hover:bg-slate-50">
-                    <span className="grid h-16 w-16 place-items-center rounded-lg bg-slate-100 text-slate-500">
-                      <ImageIcon className="h-6 w-6" />
-                    </span>
-                    <span>
-                      <span className="block text-base font-black text-slate-950">Drag a photo here, or click to browse</span>
-                      <span className="mt-1 block text-sm font-bold text-slate-500">JPEG, PNG, or WebP. The preview crops it neatly inside the card image panel.</span>
-                    </span>
-                    <input type="file" accept="image/*" onChange={handleImage} className="sr-only" />
-                  </span>
-                </label>
+                <div>
+                  <p className="text-sm font-black text-slate-500">Photo <span className="font-bold">(optional)</span></p>
+                  <div className="mt-2 flex flex-col gap-3">
+                    <label className="flex cursor-pointer items-center gap-4 rounded-lg border border-dashed border-slate-300 px-5 py-5 hover:bg-slate-50">
+                      <span className="grid h-16 w-16 place-items-center overflow-hidden rounded-lg bg-slate-100 text-slate-500">
+                        {draft.imageDataUrl ? (
+                          <img src={draft.imageDataUrl} alt="" className="h-full w-full object-cover" />
+                        ) : imageUploading ? (
+                          <span className="h-7 w-7 animate-spin rounded-full border-2 border-slate-200 border-t-sky-500" />
+                        ) : (
+                          <ImageIcon className="h-6 w-6" />
+                        )}
+                      </span>
+                      <span>
+                        <span className="block text-base font-black text-slate-950">
+                          {imageUploading ? 'Uploading...' : draft.imageDataUrl ? 'Photo added' : 'Drag a photo here, or click to browse'}
+                        </span>
+                        <span className="mt-1 block text-sm font-bold text-slate-500">
+                          JPEG, PNG, or WebP. The preview crops it neatly inside the card image panel.
+                        </span>
+                      </span>
+                      <input type="file" accept="image/*" onChange={handleImage} className="sr-only" />
+                    </label>
+                    {draft.imageDataUrl && (
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="inline-flex h-11 w-fit items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-black text-red-600 hover:bg-red-100"
+                      >
+                        Remove image
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}
