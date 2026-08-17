@@ -71,9 +71,7 @@ const Footer: React.FC = () => {
               className="lg:col-span-1"
             >
               <a href="/" className="flex items-center gap-2 text-xl font-bold mb-4">
-                <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center">
-                  <span className="text-white font-bold">C</span>
-                </div>
+                <img src="/lll.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
                 <span className="text-slate-950">CollabOS</span>
               </a>
               <p className="text-sm text-slate-500 mb-6">

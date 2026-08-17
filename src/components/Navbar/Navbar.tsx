@@ -134,9 +134,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2 text-xl font-bold text-slate-950 group">
-          <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center transition-colors group-hover:bg-slate-800">
-            <span className="text-white font-bold">C</span>
-          </div>
+          <img src="/lll.png" alt="" className="h-8 w-8 rounded-lg object-cover transition-transform group-hover:scale-105" />
           <span>CollabOS</span>
         </a>
 
