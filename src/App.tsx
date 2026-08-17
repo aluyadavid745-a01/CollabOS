@@ -6,6 +6,7 @@ import { showToast } from "./utils/toast";
 import { deleteCookie, getJsonCookie, hasCookieConsent, setCookie, setJsonCookie } from "./utils/cookies";
 import { prefetchRoutes, prefetchRoutesOnIdle } from "./utils/prefetch";
 
+const AppInstallPrompt = React.lazy(() => import("./components/AppInstallPrompt"));
 const CookieConsent = React.lazy(() => import("./components/CookieConsent"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 const loadAuthPage = () => import("./pages/AuthPage");
@@ -251,6 +252,7 @@ function App() {
           />
         </React.Suspense>
         <React.Suspense fallback={null}>
+          <AppInstallPrompt />
           <CookieConsent />
         </React.Suspense>
       </>
@@ -427,6 +429,7 @@ function App() {
         />
       </Routes>
       <React.Suspense fallback={null}>
+        <AppInstallPrompt />
         <CookieConsent />
       </React.Suspense>
     </>
