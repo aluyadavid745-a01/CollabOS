@@ -2,11 +2,18 @@
   "name": "CollabOS",
   "short_name": "CollabOS",
   "description": "The operating system for modern teams",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#4f46e5",
   "icons": [
+    {
+      "src": "/lll-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/lll.png?v=2",
       "sizes": "512x512",
