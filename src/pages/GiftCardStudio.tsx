@@ -270,7 +270,7 @@ const GiftCardStudio: React.FC = () => {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-2xl font-black">
             <Gift className="h-6 w-6 text-sky-500" />
-            <span className="bg-gradient-to-r from-fuchsia-600 to-amber-400 bg-clip-text text-transparent">Airtify</span>
+            <span className="bg-gradient-to-r from-slate-950 to-sky-500 bg-clip-text text-transparent">CollabOS</span>
           </div>
           <div className="flex items-center gap-4 text-sm font-bold text-slate-500">
             <a href="#created-cards" className="hover:text-slate-950">Orders</a>
@@ -325,7 +325,7 @@ const GiftCardStudio: React.FC = () => {
                     <p className="text-4xl font-black text-slate-500">{money(draft.airtimeAmount).replace('NGN', 'N').replace(/\d[\d,]*/, '--')}</p>
                   </div>
                   <p className="text-[11px] font-bold text-slate-500">
-                    Dial *258*PIN# to load or redeem at airtify.app/redeem
+                    Dial *258*PIN# to load or redeem
                   </p>
                 </div>
                 {draft.imageDataUrl && (
