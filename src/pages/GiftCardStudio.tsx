@@ -715,22 +715,32 @@ const GiftCardStudio: React.FC = () => {
               Clear
             </Button>
           </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2">
             {orders.map((order) => (
-              <article key={order.id} className="rounded-lg border border-slate-200 bg-white p-4">
-                <p className="text-xs font-black uppercase tracking-wider text-emerald-700">{order.network} gift card</p>
-                <h3 className="mt-1 font-black">{order.title}</h3>
-                <p className="mt-1 text-sm text-slate-600">{order.quantity} card{order.quantity === 1 ? '' : 's'} · {money(order.total)}</p>
-                <p className="mt-3 break-all rounded-lg bg-slate-50 p-2 text-xs font-bold text-slate-600">{order.voucherCode}</p>
-                <div className="mt-3 flex gap-2">
-                  <Button type="button" size="sm" variant="secondary" onClick={() => copyOrder(order)}>
-                    <Send className="mr-2 h-4 w-4" />
-                    Share
-                  </Button>
-                  <Button type="button" size="sm" variant="secondary" onClick={() => downloadOrder(order)}>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save
-                  </Button>
+              <article key={order.id} className="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white p-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-black uppercase tracking-wider text-emerald-700">{order.network} gift card</p>
+                  <h3 className="mt-1 truncate font-black">{order.title}</h3>
+                  <p className="mt-1 text-sm text-slate-600">{order.quantity} card{order.quantity === 1 ? '' : 's'} · {money(order.total)}</p>
+                  <p className="mt-3 break-all rounded-lg bg-slate-50 p-2 text-xs font-bold text-slate-600">{order.voucherCode}</p>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => copyOrder(order)}
+                    className="inline-flex h-10 min-w-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+                  >
+                    <Send className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Share</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadOrder(order)}
+                    className="inline-flex h-10 min-w-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+                  >
+                    <Save className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Save</span>
+                  </button>
                 </div>
               </article>
             ))}
