@@ -252,7 +252,7 @@ function App() {
           />
         </React.Suspense>
         <React.Suspense fallback={null}>
-          <AppInstallPrompt />
+          <AppInstallPrompt isAuthenticated={Boolean(firebaseUser)} />
           <CookieConsent />
         </React.Suspense>
       </>
@@ -429,7 +429,7 @@ function App() {
         />
       </Routes>
       <React.Suspense fallback={null}>
-        <AppInstallPrompt />
+        <AppInstallPrompt isAuthenticated={Boolean(firebaseUser)} />
         <CookieConsent />
       </React.Suspense>
     </>

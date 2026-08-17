@@ -6,51 +6,69 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
 }
 
-const DISMISSED_KEY = 'collabos:install-prompt-dismissed'
+const DO_NOT_SHOW_KEY = 'collabos:install-prompt-do-not-show'
 
-const wasDismissedThisSession = () => {
+const doNotShowAgain = () => {
   try {
-    return window.sessionStorage.getItem(DISMISSED_KEY) === 'true'
+    return window.localStorage.getItem(DO_NOT_SHOW_KEY) === 'true'
   } catch {
     return false
   }
 }
 
-const rememberDismissal = () => {
+const rememberDoNotShowAgain = () => {
   try {
-    window.sessionStorage.setItem(DISMISSED_KEY, 'true')
+    window.localStorage.setItem(DO_NOT_SHOW_KEY, 'true')
   } catch {
-    // The prompt can still be dismissed for the current render.
+    // The current render can still be dismissed if storage is unavailable.
   }
 }
 
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
 
-const AppInstallPrompt: React.FC = () => {
+interface AppInstallPromptProps {
+  isAuthenticated: boolean
+}
+
+const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) => {
   const [isOpen, setIsOpen] = React.useState(false)
   const [installEvent, setInstallEvent] = React.useState<BeforeInstallPromptEvent | null>(null)
   const [isInstalling, setIsInstalling] = React.useState(false)
+  const [hideForever, setHideForever] = React.useState(doNotShowAgain)
 
   React.useEffect(() => {
-    if (isStandalone() || wasDismissedThisSession()) return
-
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault()
       setInstallEvent(event as BeforeInstallPromptEvent)
-      setIsOpen(true)
+      if (isAuthenticated && !isStandalone() && !doNotShowAgain()) setIsOpen(true)
+    }
+
+    const handleAppInstalled = () => {
+      setIsOpen(false)
+      setInstallEvent(null)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    const timer = window.setTimeout(() => setIsOpen(true), 900)
+    window.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
-      window.clearTimeout(timer)
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
     }
-  }, [])
+  }, [isAuthenticated])
+
+  React.useEffect(() => {
+    if (!isAuthenticated || isStandalone() || doNotShowAgain()) {
+      setIsOpen(false)
+      return
+    }
+
+    const timer = window.setTimeout(() => setIsOpen(true), 900)
+    return () => window.clearTimeout(timer)
+  }, [isAuthenticated])
 
   const closePrompt = () => {
-    rememberDismissal()
+    if (hideForever) rememberDoNotShowAgain()
     setIsOpen(false)
   }
 
@@ -66,7 +84,7 @@ const AppInstallPrompt: React.FC = () => {
     setIsInstalling(false)
     setInstallEvent(null)
 
-    if (choice.outcome === 'accepted') closePrompt()
+    if (choice.outcome === 'accepted' || choice.outcome === 'dismissed') closePrompt()
   }
 
   if (!isOpen) return null
@@ -100,6 +118,16 @@ const AppInstallPrompt: React.FC = () => {
             </p>
           </div>
         </div>
+
+        <label className="mt-5 flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            checked={hideForever}
+            onChange={(event) => setHideForever(event.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          Do not show again
+        </label>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button type="button" onClick={closePrompt} className="order-2 rounded-lg px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-100 sm:order-1">
