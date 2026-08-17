@@ -84,7 +84,7 @@ const styles = [
   },
   {
     id: 'photo',
-    label: 'Photo',
+    label: 'Brand promo',
     description: 'Image-led card',
     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
     swatch: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
@@ -279,7 +279,7 @@ const GiftCardStudio: React.FC = () => {
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-4 py-7 md:px-8">
+      <div className="mx-auto max-w-[742px] px-4 py-7">
         {status && (
           <div className="mb-5 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
             <BadgeCheck className="h-4 w-4" />
@@ -287,70 +287,52 @@ const GiftCardStudio: React.FC = () => {
           </div>
         )}
 
-        <section className="mx-auto max-w-3xl">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
-              {(['front', 'back'] as const).map((side) => (
-                <button
-                  key={side}
-                  type="button"
-                  onClick={() => setActiveSide(side)}
-                  className={`rounded-md px-4 py-2 text-sm font-black capitalize ${activeSide === side ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'}`}
-                >
-                  {side}
-                </button>
-              ))}
-            </div>
-            <p className="text-sm font-bold text-slate-500">{draft.quantity} x {money(draft.airtimeAmount)}</p>
-          </div>
-
+        <section>
           <article
-            className="relative aspect-[1.9/1] w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100 p-5 shadow-sm md:p-8"
+            className="relative aspect-[1.9/1] w-full overflow-hidden rounded-xl border border-slate-200 bg-[#f4f5f7] p-8 shadow-sm"
             style={{ background: selectedStyle.background }}
           >
             {activeSide === 'front' ? (
-              <div className="grid h-full grid-cols-[1fr_34%] gap-5">
+              <div className="relative flex h-full min-w-0 flex-col justify-between">
                 <div className="flex min-w-0 flex-col justify-between">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-700">A gift for you</p>
                     <h1
-                      className="mt-4 max-w-[16ch] text-3xl font-black leading-[0.98] text-slate-950 md:text-5xl"
+                      className="mt-4 max-w-[13ch] text-4xl font-black leading-[0.98] text-slate-950 md:text-[40px]"
                       style={{ overflowWrap: 'anywhere' }}
                     >
                       {draft.title || 'Any text you want'}
                     </h1>
-                    <p
-                      className="mt-4 max-w-[30ch] text-sm font-semibold leading-6 text-slate-600"
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        overflowWrap: 'anywhere',
-                      }}
-                    >
-                      {draft.message}
-                    </p>
+                    {draft.message && (
+                      <p
+                        className="mt-4 max-w-[30ch] text-sm font-semibold leading-6 text-slate-500"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          overflowWrap: 'anywhere',
+                        }}
+                      >
+                        {draft.message}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-end gap-4">
-                    <div className="rounded-lg border border-slate-300 bg-white/70 px-4 py-3 font-mono text-lg font-black tracking-[0.35em] text-slate-950">
+                  <div className="flex items-center gap-5">
+                    <div className="rounded-lg border border-slate-300 bg-white/70 px-4 py-3 font-mono text-base font-black tracking-[0.42em] text-slate-950">
                       .... .... ....
                     </div>
-                    <p className="text-3xl font-black text-slate-500">{money(draft.airtimeAmount).replace('NGN', 'N')}</p>
+                    <p className="text-4xl font-black text-slate-500">{money(draft.airtimeAmount).replace('NGN', 'N').replace(/\d[\d,]*/, '--')}</p>
                   </div>
                   <p className="text-[11px] font-bold text-slate-500">
-                    Dial {networkPrefixes[draft.network]}*PIN# to load or redeem with the voucher code.
+                    Dial *258*PIN# to load or redeem at airtify.app/redeem
                   </p>
                 </div>
-                <div className="min-h-0 overflow-hidden rounded-lg border border-white/70 bg-white/50">
-                  {draft.imageDataUrl ? (
+                {draft.imageDataUrl && (
+                  <div className="absolute right-0 top-0 h-full w-[36%] overflow-hidden rounded-lg border border-white/70 bg-white/50">
                     <img src={draft.imageDataUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="grid h-full place-items-center text-slate-400">
-                      <ImageIcon className="h-10 w-10" />
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid h-full gap-5 md:grid-cols-[1fr_190px]">
@@ -378,7 +360,7 @@ const GiftCardStudio: React.FC = () => {
           <p className="mt-3 text-sm font-bold text-slate-500">Choose a style, enter any text, add a photo if you want.</p>
         </section>
 
-        <section className="mx-auto mt-8 max-w-3xl">
+        <section className="mt-10">
           <div className="flex items-center justify-between gap-4">
             <StepMeter step={step} />
             <button type="button" onClick={resetDraft} className="text-sm font-bold text-slate-500 hover:text-slate-950">Reset</button>
@@ -399,14 +381,14 @@ const GiftCardStudio: React.FC = () => {
                         draft.styleId === item.id ? 'border-slate-950 shadow-sm' : 'border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      <span className="block h-14" style={{ background: item.swatch }} />
+                      <span className="block h-[66px]" style={{ background: item.swatch }} />
                       <span className="block px-3 py-3">
                         <span className="block text-sm font-black text-slate-900">{item.label}</span>
-                        <span className="mt-1 block text-xs font-bold text-slate-500">{item.description}</span>
                       </span>
                     </button>
                   ))}
                 </div>
+                <p className="mt-4 text-sm font-bold text-slate-500">{selectedStyle.description}</p>
               </div>
 
               <div className="mt-7 space-y-5">
@@ -574,32 +556,38 @@ const GiftCardStudio: React.FC = () => {
         </section>
       </div>
 
-      <footer className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-2xl shadow-slate-300/60 backdrop-blur md:px-8">
-        <div className="mx-auto flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-bold text-slate-500">{draft.quantity} x {money(draft.airtimeAmount)}</p>
-            <p className="text-sm font-black text-emerald-700">No fees. You pay exactly the face value.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {step > 1 && (
-              <button type="button" onClick={previousStep} className="inline-flex h-12 items-center gap-2 rounded-lg border border-slate-200 px-5 text-sm font-black text-slate-700 hover:bg-slate-50">
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </button>
-            )}
-            {step < 3 ? (
-              <button type="button" onClick={nextStep} className="inline-flex h-12 min-w-[220px] items-center justify-center gap-2 rounded-lg bg-sky-500 px-6 text-base font-black text-white hover:bg-sky-600">
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            ) : (
-              <button type="button" onClick={createOrder} className="inline-flex h-12 min-w-[260px] items-center justify-center gap-2 rounded-lg bg-sky-500 px-6 text-base font-black text-white hover:bg-sky-600">
-                <CreditCard className="h-5 w-5" />
-                Continue to payment
-              </button>
-            )}
-          </div>
-          <p className="text-right text-4xl font-black text-slate-950 sm:min-w-[180px]">{money(total)}</p>
+      <footer className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-2xl shadow-slate-300/60 backdrop-blur">
+        <div className="mx-auto max-w-[742px]">
+          {step === 1 ? (
+            <button type="button" onClick={nextStep} className="inline-flex h-[72px] w-full items-center justify-center rounded-lg bg-sky-500 text-lg font-black text-white hover:bg-sky-600">
+              Next
+            </button>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div>
+                <p className="text-sm font-bold text-slate-500">{draft.quantity} x {money(draft.airtimeAmount)}</p>
+                <p className="text-sm font-black text-emerald-700">No fees. You pay exactly the face value.</p>
+              </div>
+              <p className="text-right text-4xl font-black text-slate-950">{money(total)}</p>
+              <div className="flex gap-3 sm:col-span-2">
+                <button type="button" onClick={previousStep} className="inline-flex h-16 items-center gap-2 rounded-lg border border-slate-200 px-7 text-base font-black text-slate-700 hover:bg-slate-50">
+                  <ChevronLeft className="h-4 w-4" />
+                  Back
+                </button>
+                {step < 3 ? (
+                  <button type="button" onClick={nextStep} className="inline-flex h-16 flex-1 items-center justify-center gap-2 rounded-lg bg-sky-500 px-6 text-lg font-black text-white hover:bg-sky-600">
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button type="button" onClick={createOrder} className="inline-flex h-16 flex-1 items-center justify-center gap-2 rounded-lg bg-sky-500 px-6 text-lg font-black text-white hover:bg-sky-600">
+                    <CreditCard className="h-5 w-5" />
+                    Continue to payment
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </footer>
     </main>
