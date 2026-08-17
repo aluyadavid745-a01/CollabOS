@@ -204,9 +204,11 @@ const GiftCardStudio: React.FC = () => {
   const [orders, setOrders] = React.useState<GiftCardOrder[]>(() => readOrders())
   const [step, setStep] = React.useState<StudioStep>(1)
   const [activeSide, setActiveSide] = React.useState<'front' | 'back'>('front')
+  const [cardRotation, setCardRotation] = React.useState({ x: 0, y: 0 })
   const [imageUploading, setImageUploading] = React.useState(false)
   const [status, setStatus] = React.useState('')
   const [successOrder, setSuccessOrder] = React.useState<GiftCardOrder | null>(null)
+  const dragStartRef = React.useRef<{ x: number; y: number; rotationX: number; rotationY: number } | null>(null)
   const latestOrder = orders[0]
   const selectedStyle = styles.find((item) => item.id === draft.styleId) || styles[0]
 
@@ -321,6 +323,7 @@ const GiftCardStudio: React.FC = () => {
     })
     setStep(1)
     setActiveSide('front')
+    setCardRotation({ x: 0, y: 0 })
     setImageUploading(false)
     setSuccessOrder(null)
     setStatus('')
@@ -340,6 +343,40 @@ const GiftCardStudio: React.FC = () => {
 
   const nextStep = () => setStep((current) => (current === 1 ? 2 : current === 2 ? 3 : 3))
   const previousStep = () => setStep((current) => (current === 3 ? 2 : current === 2 ? 1 : 1))
+  const baseCardRotation = activeSide === 'back' ? 180 : 0
+  const cardTransform = `rotateX(${cardRotation.x}deg) rotateY(${baseCardRotation + cardRotation.y}deg)`
+
+  const startCardDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    dragStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      rotationX: cardRotation.x,
+      rotationY: cardRotation.y,
+    }
+  }
+
+  const dragCard = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) return
+    const deltaX = event.clientX - dragStartRef.current.x
+    const deltaY = event.clientY - dragStartRef.current.y
+    setCardRotation({
+      x: Math.max(-18, Math.min(18, dragStartRef.current.rotationX - deltaY * 0.08)),
+      y: Math.max(-42, Math.min(42, dragStartRef.current.rotationY + deltaX * 0.12)),
+    })
+  }
+
+  const stopCardDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    dragStartRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
+  const showCardSide = (side: 'front' | 'back') => {
+    setActiveSide(side)
+    setCardRotation({ x: 0, y: 0 })
+  }
 
   return (
     <main className="min-h-screen bg-white pb-36 text-slate-950">
@@ -395,67 +432,92 @@ const GiftCardStudio: React.FC = () => {
         )}
 
         <section>
-          <article
-            className="relative aspect-[1.9/1] w-full overflow-hidden rounded-xl border border-slate-200 bg-[#f4f5f7] p-8 shadow-sm"
-            style={{ background: selectedStyle.background }}
+          <div
+            className="relative aspect-[1.9/1] w-full touch-none select-none"
+            style={{ perspective: '1200px' }}
+            onPointerDown={startCardDrag}
+            onPointerMove={dragCard}
+            onPointerUp={stopCardDrag}
+            onPointerCancel={stopCardDrag}
+            role="img"
+            aria-label="Interactive 3D gift card preview"
           >
-            {activeSide === 'front' ? (
-              <div className="relative flex h-full min-w-0 flex-col justify-between">
-                <div className="flex min-w-0 flex-col justify-between">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-700">A gift for you</p>
-                    {draft.recipientName && (
-                      <p className="mt-3 text-sm font-black" style={{ color: selectedStyle.accent }}>
-                        For {draft.recipientName}
-                      </p>
-                    )}
-                    <h1
-                      className={`${draft.recipientName ? 'mt-2' : 'mt-4'} max-w-[13ch] text-4xl font-black leading-[0.98] text-slate-950 md:text-[40px]`}
-                      style={{ overflowWrap: 'anywhere' }}
-                    >
-                      {draft.title || 'Any text you want'}
-                    </h1>
-                    {draft.message && (
-                      <p
-                        className="mt-4 max-w-[30ch] text-sm font-semibold leading-6 text-slate-500"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          overflowWrap: 'anywhere',
-                        }}
+            <article
+              className="relative h-full w-full cursor-grab rounded-xl shadow-2xl shadow-slate-300/50 active:cursor-grabbing"
+              style={{
+                transform: cardTransform,
+                transformStyle: 'preserve-3d',
+                transition: dragStartRef.current ? 'none' : 'transform 220ms ease-out',
+              }}
+            >
+              <div
+                className="absolute inset-0 overflow-hidden rounded-xl border border-slate-200 bg-[#f4f5f7] p-8 shadow-sm"
+                style={{ backfaceVisibility: 'hidden', background: selectedStyle.background }}
+              >
+                <div className="relative flex h-full min-w-0 flex-col justify-between">
+                  <div className="flex min-w-0 flex-col justify-between">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-700">A gift for you</p>
+                      {draft.recipientName && (
+                        <p className="mt-3 text-sm font-black" style={{ color: selectedStyle.accent }}>
+                          For {draft.recipientName}
+                        </p>
+                      )}
+                      <h1
+                        className={`${draft.recipientName ? 'mt-2' : 'mt-4'} max-w-[13ch] text-4xl font-black leading-[0.98] text-slate-950 md:text-[40px]`}
+                        style={{ overflowWrap: 'anywhere' }}
                       >
-                        {draft.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-5">
-                    <div className="rounded-lg border border-slate-300 bg-white/70 px-4 py-3 font-mono text-base font-black tracking-[0.42em] text-slate-950">
-                      .... .... ....
+                        {draft.title || 'Any text you want'}
+                      </h1>
+                      {draft.message && (
+                        <p
+                          className="mt-4 max-w-[30ch] text-sm font-semibold leading-6 text-slate-500"
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
+                          {draft.message}
+                        </p>
+                      )}
                     </div>
-                    <p className="max-w-[180px] text-3xl font-black leading-none text-slate-500 md:text-4xl">{cardValue}</p>
+                    <div className="flex items-center gap-5">
+                      <div className="rounded-lg border border-slate-300 bg-white/70 px-4 py-3 font-mono text-base font-black tracking-[0.42em] text-slate-950">
+                        .... .... ....
+                      </div>
+                      <p className="max-w-[180px] text-3xl font-black leading-none text-slate-500 md:text-4xl">{cardValue}</p>
+                    </div>
+                    <p className="text-[11px] font-bold text-slate-500">
+                      Dial *258*PIN# to load or redeem
+                    </p>
                   </div>
-                  <p className="text-[11px] font-bold text-slate-500">
-                    Dial *258*PIN# to load or redeem
-                  </p>
+                  {draft.imageDataUrl && (
+                    <div className="absolute right-0 top-0 h-full w-[39%] overflow-hidden rounded-r-xl border-l border-white/70 bg-white/50">
+                      <img
+                        src={draft.imageDataUrl}
+                        alt=""
+                        className="h-full w-full"
+                        style={{
+                          objectFit: draft.imageFit,
+                          objectPosition: imageObjectPosition(draft.imagePosition),
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
-                {draft.imageDataUrl && (
-                  <div className="absolute right-0 top-0 h-full w-[39%] overflow-hidden rounded-r-xl border-l border-white/70 bg-white/50">
-                    <img
-                      src={draft.imageDataUrl}
-                      alt=""
-                      className="h-full w-full"
-                      style={{
-                        objectFit: draft.imageFit,
-                        objectPosition: imageObjectPosition(draft.imagePosition),
-                      }}
-                    />
-                  </div>
-                )}
               </div>
-            ) : (
-              <div className="grid h-full gap-5 md:grid-cols-[1fr_190px]">
+
+              <div
+                className="absolute inset-0 grid overflow-hidden rounded-xl border border-slate-200 bg-white p-8 shadow-sm md:grid-cols-[1fr_190px] md:gap-5"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  background: selectedStyle.background,
+                }}
+              >
                 <div className="flex min-w-0 flex-col justify-between">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.28em]" style={{ color: selectedStyle.accent }}>
@@ -475,21 +537,28 @@ const GiftCardStudio: React.FC = () => {
                   <p className="mt-3 text-xs font-black uppercase tracking-wider text-slate-500">Preview QR</p>
                 </div>
               </div>
-            )}
-          </article>
+            </article>
+          </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-bold text-slate-500">Choose a style, enter any text, add a photo if you want.</p>
+            <p className="text-sm font-bold text-slate-500">Drag the card to rotate it. Use the buttons to snap front or back.</p>
             <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
               {(['front', 'back'] as const).map((side) => (
                 <button
                   key={side}
                   type="button"
-                  onClick={() => setActiveSide(side)}
+                  onClick={() => showCardSide(side)}
                   className={`rounded-md px-3 py-1.5 text-xs font-black capitalize ${activeSide === side ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'}`}
                 >
                   {side}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => setCardRotation({ x: 0, y: 0 })}
+                className="rounded-md px-3 py-1.5 text-xs font-black text-slate-500 hover:text-slate-950"
+              >
+                Reset view
+              </button>
             </div>
           </div>
         </section>
