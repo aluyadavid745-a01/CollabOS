@@ -26,6 +26,8 @@ const rememberDoNotShowAgain = () => {
 
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
 
+const getPendingInstallEvent = () => (window as Window & { collabosInstallPrompt?: BeforeInstallPromptEvent }).collabosInstallPrompt || null
+
 interface AppInstallPromptProps {
   isAuthenticated: boolean
 }
@@ -38,15 +40,23 @@ const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) 
   const [showInstructions, setShowInstructions] = React.useState(false)
 
   React.useEffect(() => {
+    const pendingInstallEvent = getPendingInstallEvent()
+    if (pendingInstallEvent) {
+      setInstallEvent(pendingInstallEvent)
+      if (isAuthenticated && !isStandalone() && !doNotShowAgain()) setIsOpen(true)
+    }
+
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault()
       setInstallEvent(event as BeforeInstallPromptEvent)
+      ;(window as Window & { collabosInstallPrompt?: BeforeInstallPromptEvent }).collabosInstallPrompt = event as BeforeInstallPromptEvent
       if (isAuthenticated && !isStandalone() && !doNotShowAgain()) setIsOpen(true)
     }
 
     const handleAppInstalled = () => {
       setIsOpen(false)
       setInstallEvent(null)
+      ;(window as Window & { collabosInstallPrompt?: BeforeInstallPromptEvent }).collabosInstallPrompt = undefined
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -84,6 +94,7 @@ const AppInstallPrompt: React.FC<AppInstallPromptProps> = ({ isAuthenticated }) 
     const choice = await installEvent.userChoice
     setIsInstalling(false)
     setInstallEvent(null)
+    ;(window as Window & { collabosInstallPrompt?: BeforeInstallPromptEvent }).collabosInstallPrompt = undefined
 
     if (choice.outcome === 'accepted' || choice.outcome === 'dismissed') closePrompt()
   }

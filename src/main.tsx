@@ -5,6 +5,13 @@ import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import './index.css'
 
+type InstallPromptWindow = Window & { collabosInstallPrompt?: Event }
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault()
+  ;(window as InstallPromptWindow).collabosInstallPrompt = event
+})
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     void navigator.serviceWorker.register('/sw.js').catch(() => undefined)
