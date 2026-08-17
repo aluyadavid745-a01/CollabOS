@@ -171,6 +171,15 @@ function imageObjectPosition(position: GiftCardDraft['imagePosition']) {
   return 'center'
 }
 
+function formatCardValue(draft: GiftCardDraft) {
+  const airtimeValue = money(draft.airtimeAmount)
+  const dataValue = `${draft.dataAmountGb}GB`
+
+  if (draft.deliveryMode === 'data') return dataValue
+  if (draft.deliveryMode === 'combo') return `${airtimeValue} + ${dataValue}`
+  return airtimeValue
+}
+
 const StepMeter = ({ step }: { step: StudioStep }) => (
   <div className="flex items-center gap-4">
     <div className="flex items-center gap-2">
@@ -206,6 +215,7 @@ const GiftCardStudio: React.FC = () => {
     (draft.deliveryMode === 'airtime' ? 0 : draft.dataAmountGb * 450 * draft.quantity)
   const serviceFee = 0
   const total = subtotal + serviceFee
+  const cardValue = formatCardValue(draft)
 
   const updateDraft = <Key extends keyof GiftCardDraft>(key: Key, value: GiftCardDraft[Key]) => {
     setDraft((current) => ({ ...current, [key]: value }))
@@ -283,7 +293,7 @@ const GiftCardStudio: React.FC = () => {
       <text x="34" y="178" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#64748b">${message}</text>
       <rect x="34" y="292" width="215" height="48" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1"/>
       <text x="52" y="324" font-family="monospace" font-size="20" font-weight="900" letter-spacing="7" fill="#0f172a">.... .... ....</text>
-      <text x="270" y="328" font-family="Arial, sans-serif" font-size="40" font-weight="900" fill="#64748b">N --</text>
+      <text x="270" y="328" font-family="Arial, sans-serif" font-size="34" font-weight="900" fill="#64748b">${svgEscape(cardValue)}</text>
       <text x="34" y="365" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#64748b">Dial *258*PIN# to load or redeem</text>
       ${image}
     </svg>`
@@ -424,7 +434,7 @@ const GiftCardStudio: React.FC = () => {
                     <div className="rounded-lg border border-slate-300 bg-white/70 px-4 py-3 font-mono text-base font-black tracking-[0.42em] text-slate-950">
                       .... .... ....
                     </div>
-                    <p className="text-4xl font-black text-slate-500">{money(draft.airtimeAmount).replace('NGN', 'N').replace(/\d[\d,]*/, '--')}</p>
+                    <p className="max-w-[180px] text-3xl font-black leading-none text-slate-500 md:text-4xl">{cardValue}</p>
                   </div>
                   <p className="text-[11px] font-bold text-slate-500">
                     Dial *258*PIN# to load or redeem
@@ -695,7 +705,7 @@ const GiftCardStudio: React.FC = () => {
                   <span className="font-bold text-slate-500">Style</span>
                   <strong>{selectedStyle.label}</strong>
                   <span className="font-bold text-slate-500">Cards</span>
-                  <strong>{draft.quantity} x {money(draft.airtimeAmount)}</strong>
+                  <strong>{draft.quantity} x {cardValue}</strong>
                   <span className="font-bold text-slate-500">Delivery</span>
                   <strong className="capitalize">{draft.network} {draft.deliveryMode}</strong>
                 </div>
@@ -762,7 +772,7 @@ const GiftCardStudio: React.FC = () => {
           ) : (
             <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
-                <p className="text-sm font-bold text-slate-500">{draft.quantity} x {money(draft.airtimeAmount)}</p>
+                <p className="text-sm font-bold text-slate-500">{draft.quantity} x {cardValue}</p>
                 <p className="text-sm font-black text-emerald-700">No fees. You pay exactly the face value.</p>
               </div>
               <p className="text-right text-4xl font-black text-slate-950">{money(total)}</p>
