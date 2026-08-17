@@ -8,9 +8,9 @@
   "theme_color": "#4f46e5",
   "icons": [
     {
-      "src": "/collabos-icon.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
+      "src": "/lll.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
