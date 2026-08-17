@@ -9,6 +9,8 @@ import {
   CalendarClock,
   Camera,
   ChevronRight,
+  Check,
+  CheckCircle2,
   CircleDot,
   ClipboardCheck,
   Cloud,
@@ -19,6 +21,7 @@ import {
   Link2,
   Lock,
   Mic,
+  MicOff,
   MonitorUp,
   MoreHorizontal,
   Palette,
@@ -29,6 +32,7 @@ import {
   Repeat,
   Search,
   Send,
+  Settings2,
   ShieldCheck,
   Sparkles,
   Users,
@@ -81,11 +85,13 @@ import VideoGrid from '../components/Meetings/VideoGrid'
 import Whiteboard from '../components/Meetings/Whiteboard'
 import type { MeetingChatMessage, MeetingParticipant, MeetingTool, RoomMode } from '../components/Meetings/types'
 
-type SidebarTab = 'participants' | 'chat' | 'ai' | 'notes' | 'files' | 'polls' | 'whiteboard'
+type SidebarTab = 'participants' | 'chat' | 'ai' | 'agenda' | 'tasks' | 'notes' | 'files' | 'polls' | 'whiteboard'
 const sidebarTabs: Array<{ id: SidebarTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
   { id: 'participants', label: 'Participants', icon: Users },
   { id: 'chat', label: 'Chat', icon: Send },
   { id: 'ai', label: 'AI Assistant', icon: Bot },
+  { id: 'agenda', label: 'Agenda', icon: CheckCircle2 },
+  { id: 'tasks', label: 'Tasks', icon: ClipboardCheck },
   { id: 'notes', label: 'Notes', icon: FileText },
   { id: 'files', label: 'Files', icon: Cloud },
   { id: 'polls', label: 'Polls', icon: Vote },
@@ -321,6 +327,22 @@ type MeetingActivityNotice = {
   text: string
 }
 
+type MeetingAgendaItem = {
+  id: string
+  title: string
+  done: boolean
+  notes?: string
+}
+
+type MeetingActionTask = {
+  id: string
+  title: string
+  owner: string
+  due: string
+  priority: 'Low' | 'Medium' | 'High'
+  done: boolean
+}
+
 type MeetingEventMessage = {
   id: string
   type: 'hand'
@@ -427,6 +449,144 @@ const MetricCard = ({ label, value, icon: Icon }: { label: string; value: string
     </div>
   </motion.article>
 )
+
+const MeetingLobby = ({
+  participantName,
+  roomName,
+  micEnabled,
+  cameraEnabled,
+  apiConfigured,
+  signedIn,
+  onMicChange,
+  onCameraChange,
+  onJoin,
+  onBack,
+}: {
+  participantName: string
+  roomName: string
+  micEnabled: boolean
+  cameraEnabled: boolean
+  apiConfigured: boolean
+  signedIn: boolean
+  onMicChange: (enabled: boolean) => void
+  onCameraChange: (enabled: boolean) => void
+  onJoin: () => void
+  onBack: () => void
+}) => {
+  const [deviceStatus, setDeviceStatus] = React.useState('Checking browser devices')
+  const [deviceCounts, setDeviceCounts] = React.useState({ microphones: 0, cameras: 0 })
+
+  React.useEffect(() => {
+    let cancelled = false
+
+    const checkDevices = async () => {
+      if (!navigator.mediaDevices?.enumerateDevices) {
+        setDeviceStatus('Browser device list is not available')
+        return
+      }
+
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        if (cancelled) return
+        const microphones = devices.filter((device) => device.kind === 'audioinput').length
+        const cameras = devices.filter((device) => device.kind === 'videoinput').length
+        setDeviceCounts({ microphones, cameras })
+        setDeviceStatus(
+          microphones || cameras
+            ? `${microphones} mic${microphones === 1 ? '' : 's'} · ${cameras} camera${cameras === 1 ? '' : 's'} detected`
+            : 'No camera or microphone detected yet'
+        )
+      } catch {
+        if (!cancelled) setDeviceStatus('Device check needs browser permission')
+      }
+    }
+
+    void checkDevices()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const checks = [
+    { label: signedIn ? 'Signed in' : 'Preview without sign-in', good: signedIn },
+    { label: apiConfigured ? 'Meeting API configured' : 'Preview mode until API is configured', good: apiConfigured },
+    { label: deviceStatus, good: deviceCounts.microphones > 0 || deviceCounts.cameras > 0 },
+  ]
+
+  return (
+    <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-950 md:px-8 lg:px-12">
+      <section className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/70 md:p-8">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-600">Meeting lobby</p>
+          <h1 className="mt-3 text-3xl font-black leading-tight md:text-5xl">Ready to join, {participantName}?</h1>
+          <p className="mt-3 break-all text-sm font-bold text-slate-500">Room ID: {roomName}</p>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => onMicChange(!micEnabled)}
+              className={`flex items-center justify-between rounded-2xl border p-4 text-left ${
+                micEnabled ? 'border-slate-300 bg-slate-50 text-slate-950' : 'border-red-200 bg-red-50 text-red-700'
+              }`}
+            >
+              <span>
+                <span className="block text-sm font-black">{micEnabled ? 'Microphone on' : 'Microphone off'}</span>
+                <span className="mt-1 block text-xs font-bold opacity-70">Choose your starting audio state</span>
+              </span>
+              {micEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => onCameraChange(!cameraEnabled)}
+              className={`flex items-center justify-between rounded-2xl border p-4 text-left ${
+                cameraEnabled ? 'border-slate-300 bg-slate-50 text-slate-950' : 'border-red-200 bg-red-50 text-red-700'
+              }`}
+            >
+              <span>
+                <span className="block text-sm font-black">{cameraEnabled ? 'Camera on' : 'Camera off'}</span>
+                <span className="mt-1 block text-xs font-bold opacity-70">Choose your starting video state</span>
+              </span>
+              <Camera className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button type="button" size="lg" onClick={onJoin} className="gap-2">
+              <MonitorUp className="h-5 w-5" />
+              Join meeting
+            </Button>
+            <Button type="button" size="lg" variant="secondary" onClick={onBack}>
+              Back to meetings
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+          <div className="flex items-center gap-3">
+            <Settings2 className="h-5 w-5 text-slate-600" />
+            <h2 className="text-xl font-black">Before you join</h2>
+          </div>
+          <div className="mt-5 space-y-3">
+            {checks.map((check) => (
+              <div key={check.label} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <span className={`grid h-7 w-7 place-items-center rounded-full ${check.good ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  <Check className="h-4 w-4" />
+                </span>
+                <p className="text-sm font-bold text-slate-700">{check.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-black uppercase tracking-wider text-slate-500">What opens next</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              The room opens with chat, agenda, tasks, notes, transcript, recording, participants, and host controls ready in one workspace.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  )
+}
 
 const MeetingsDashboard = () => {
   const navigate = useNavigate()
@@ -571,6 +731,44 @@ const MeetingsDashboard = () => {
     } catch (error) {
       setDashboardNotice(error instanceof Error ? error.message : 'Recording file could not be downloaded.')
     }
+  }
+
+  const copySummary = async (summary: MeetingSummary) => {
+    const text = [
+      summary.title,
+      '',
+      summary.overview,
+      '',
+      'Decisions:',
+      ...(summary.decisions.length ? summary.decisions.map((decision) => `- ${decision}`) : ['- None captured']),
+      '',
+      'Action items:',
+      ...(summary.actionItems.length
+        ? summary.actionItems.map((item) => `- ${item.text}${item.owner ? ` | Owner: ${item.owner}` : ''}${item.due ? ` | Due: ${item.due}` : ''}`)
+        : ['- None captured']),
+      '',
+      'Follow-ups:',
+      ...(summary.followUps.length ? summary.followUps.map((item) => `- ${item}`) : ['- None captured']),
+    ].join('\n')
+
+    try {
+      await navigator.clipboard.writeText(text)
+      setDashboardNotice('Meeting recap copied.')
+    } catch {
+      window.prompt('Copy meeting recap', text)
+    }
+  }
+
+  const createTasksFromSummary = (summary: MeetingSummary) => {
+    updateMeetingActivity((current) => ({
+      ...current,
+      actionItems: Math.max(current.actionItems, summary.actionItems.length),
+    }))
+    setDashboardNotice(
+      summary.actionItems.length
+        ? `${summary.actionItems.length} action item${summary.actionItems.length === 1 ? '' : 's'} added to meeting activity.`
+        : 'This recap does not have detected action items yet.'
+    )
   }
 
   return (
@@ -854,6 +1052,32 @@ const MeetingsDashboard = () => {
                   </span>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-slate-700">{summary.overview}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void copySummary(summary)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-100"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy recap
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => createTasksFromSummary(summary)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-100"
+                  >
+                    <ClipboardCheck className="h-4 w-4" />
+                    Create tasks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/meetings/${summary.roomId}`)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-100"
+                  >
+                    <MonitorUp className="h-4 w-4" />
+                    Rejoin
+                  </button>
+                </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div>
                     <p className="text-xs font-black uppercase tracking-wider text-slate-500">Decisions</p>
@@ -928,6 +1152,9 @@ const SidebarPanel = ({
   chatSending,
   recordingNotice,
   meetingNotes,
+  agendaItems,
+  tasks,
+  taskDraft,
   transcriptEntries,
   interimTranscript,
   transcriptNotice,
@@ -937,6 +1164,12 @@ const SidebarPanel = ({
   onSendChat,
   onActivityNotice,
   onMeetingNotesChange,
+  onAgendaToggle,
+  onAgendaAdd,
+  onAgendaNoteChange,
+  onTaskDraftChange,
+  onTaskAdd,
+  onTaskToggle,
   onCreateSummary,
   onMuteParticipant,
   onMakePresenter,
@@ -949,6 +1182,9 @@ const SidebarPanel = ({
   chatSending?: boolean
   recordingNotice?: string
   meetingNotes: string
+  agendaItems: MeetingAgendaItem[]
+  tasks: MeetingActionTask[]
+  taskDraft: Omit<MeetingActionTask, 'id' | 'done'>
   transcriptEntries: MeetingTranscriptEntry[]
   interimTranscript?: string
   transcriptNotice?: string
@@ -958,6 +1194,12 @@ const SidebarPanel = ({
   onSendChat: (message: string) => Promise<void> | void
   onActivityNotice: (message: string) => void
   onMeetingNotesChange: (notes: string) => void
+  onAgendaToggle: (id: string) => void
+  onAgendaAdd: () => void
+  onAgendaNoteChange: (id: string, notes: string) => void
+  onTaskDraftChange: (draft: Omit<MeetingActionTask, 'id' | 'done'>) => void
+  onTaskAdd: () => void
+  onTaskToggle: (id: string) => void
   onCreateSummary: () => void
   onMuteParticipant: (participant: MeetingParticipant) => void
   onMakePresenter: (participant: MeetingParticipant) => void
@@ -998,6 +1240,131 @@ const SidebarPanel = ({
 
   if (activeTab === 'chat') {
     return <ChatPanel messages={chatMessages} disabled={chatDisabled} sending={chatSending} onSend={onSendChat} />
+  }
+
+  if (activeTab === 'agenda') {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-slate-600">Live agenda</p>
+              <p className="mt-1 text-sm text-slate-500">Track topics without leaving the call.</p>
+            </div>
+            <button
+              type="button"
+              onClick={onAgendaAdd}
+              className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+              title="Add agenda item"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-4 space-y-3">
+            {agendaItems.map((item, index) => (
+              <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <button
+                  type="button"
+                  onClick={() => onAgendaToggle(item.id)}
+                  className="flex w-full items-center gap-3 text-left"
+                >
+                  <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border ${item.done ? 'border-emerald-300 bg-emerald-100 text-emerald-700' : 'border-slate-300 bg-white text-slate-500'}`}>
+                    <Check className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className={`block text-sm font-black ${item.done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{item.title}</span>
+                    <span className="text-xs font-bold text-slate-500">Agenda item {index + 1}</span>
+                  </span>
+                </button>
+                <textarea
+                  value={item.notes || ''}
+                  onChange={(event) => onAgendaNoteChange(item.id, event.target.value)}
+                  className="mt-3 h-20 w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm leading-6 text-slate-800 outline-none focus:border-slate-500"
+                  placeholder="Decisions, blockers, or context for this topic"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (activeTab === 'tasks') {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-600">Action items</p>
+          <div className="mt-3 space-y-2">
+            <input
+              value={taskDraft.title}
+              onChange={(event) => onTaskDraftChange({ ...taskDraft, title: event.target.value })}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-500"
+              placeholder="Task"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={taskDraft.owner}
+                onChange={(event) => onTaskDraftChange({ ...taskDraft, owner: event.target.value })}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                placeholder="Owner"
+              />
+              <input
+                value={taskDraft.due}
+                onChange={(event) => onTaskDraftChange({ ...taskDraft, due: event.target.value })}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                placeholder="Due date"
+              />
+            </div>
+            <select
+              value={taskDraft.priority}
+              onChange={(event) => onTaskDraftChange({ ...taskDraft, priority: event.target.value as MeetingActionTask['priority'] })}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-500"
+            >
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+            <button
+              type="button"
+              onClick={onTaskAdd}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
+            >
+              <Plus className="h-4 w-4" />
+              Add task
+            </button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {tasks.length ? (
+            tasks.map((task) => (
+              <button
+                key={task.id}
+                type="button"
+                onClick={() => onTaskToggle(task.id)}
+                className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-left hover:bg-slate-50"
+              >
+                <div className="flex items-start gap-3">
+                  <span className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border ${task.done ? 'border-emerald-300 bg-emerald-100 text-emerald-700' : 'border-slate-300 text-slate-400'}`}>
+                    <Check className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className={`block text-sm font-black ${task.done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</span>
+                    <span className="mt-1 block text-xs font-bold text-slate-500">
+                      {[task.owner ? `Owner: ${task.owner}` : '', task.due ? `Due: ${task.due}` : '', task.priority].filter(Boolean).join(' | ')}
+                    </span>
+                  </span>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-bold text-slate-500">
+              Add tasks manually or generate a recap to detect assignments from notes, chat, and transcript.
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   if (activeTab === 'files') {
@@ -1142,6 +1509,8 @@ const MeetingRoomContent = ({
   liveControls,
   liveChat,
   liveTranscript,
+  initialMicEnabled = true,
+  initialCameraEnabled = true,
 }: {
   liveStatus: string
   connectionError?: string
@@ -1154,13 +1523,15 @@ const MeetingRoomContent = ({
   liveControls?: LiveMeetingControlsState
   liveChat?: LiveMeetingChatState
   liveTranscript?: LiveMeetingTranscriptState
+  initialMicEnabled?: boolean
+  initialCameraEnabled?: boolean
 }) => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = React.useState<SidebarTab>('ai')
   const [mode, setMode] = React.useState<RoomMode>('gallery')
   const [elapsedSeconds, setElapsedSeconds] = React.useState(0)
-  const [previewMic, setPreviewMic] = React.useState(true)
-  const [previewCamera, setPreviewCamera] = React.useState(true)
+  const [previewMic, setPreviewMic] = React.useState(initialMicEnabled)
+  const [previewCamera, setPreviewCamera] = React.useState(initialCameraEnabled)
   const [previewScreen, setPreviewScreen] = React.useState(false)
   const [raisedHand, setRaisedHand] = React.useState(false)
   const [captions, setCaptions] = React.useState(false)
@@ -1175,6 +1546,18 @@ const MeetingRoomContent = ({
   const [previewRecordingNotice, setPreviewRecordingNotice] = React.useState('')
   const [previewActivityNotices, setPreviewActivityNotices] = React.useState<MeetingActivityNotice[]>([])
   const [meetingNotes, setMeetingNotes] = React.useState('')
+  const [agendaItems, setAgendaItems] = React.useState<MeetingAgendaItem[]>([
+    { id: 'agenda-context', title: 'Confirm context and goals', done: false },
+    { id: 'agenda-decisions', title: 'Capture decisions', done: false },
+    { id: 'agenda-actions', title: 'Assign next steps', done: false },
+  ])
+  const [tasks, setTasks] = React.useState<MeetingActionTask[]>([])
+  const [taskDraft, setTaskDraft] = React.useState<Omit<MeetingActionTask, 'id' | 'done'>>({
+    title: '',
+    owner: participantName,
+    due: '',
+    priority: 'Medium',
+  })
   const [summaryNotice, setSummaryNotice] = React.useState('')
   const [transcriptEntries, setTranscriptEntries] = React.useState<MeetingTranscriptEntry[]>([])
   const [interimTranscript, setInterimTranscript] = React.useState('')
@@ -1187,32 +1570,48 @@ const MeetingRoomContent = ({
   const pushPreviewNotice = React.useCallback((text: string) => {
     setPreviewActivityNotices((current) => [{ id: `preview-${Date.now()}`, text }, ...current].slice(0, 4))
   }, [])
-  const activeParticipants =
-    roomParticipants?.length
-      ? roomParticipants.filter((participant) => !removedParticipantIds.includes(participant.id)).map((participant) =>
-          participant.id === 'local-user' || participant.name === participantName
-            ? {
-                ...participant,
-                role: presenterId === participant.id ? 'Presenter' : 'Host',
-                mic: mutedParticipantIds.includes(participant.id) ? false : liveControls?.micEnabled ?? previewMic,
-                camera: liveControls?.cameraEnabled ?? previewCamera,
-                screenShare: liveControls?.screenShareEnabled ?? previewScreen,
-                hand: raisedHand,
-              }
-            : {
-                ...participant,
-                role: presenterId === participant.id ? 'Presenter' : participant.role,
-                mic: mutedParticipantIds.includes(participant.id) ? false : participant.mic,
-              }
-        )
-      : [
-          createSelfParticipant(participantName, {
-            mic: liveControls?.micEnabled ?? previewMic,
-            camera: liveControls?.cameraEnabled ?? previewCamera,
-            screenShare: liveControls?.screenShareEnabled ?? previewScreen,
-            hand: raisedHand,
-          }),
-        ]
+  const activeParticipants = React.useMemo(
+    () =>
+      roomParticipants?.length
+        ? roomParticipants.filter((participant) => !removedParticipantIds.includes(participant.id)).map((participant) =>
+            participant.id === 'local-user' || participant.name === participantName
+              ? {
+                  ...participant,
+                  role: presenterId === participant.id ? 'Presenter' : 'Host',
+                  mic: mutedParticipantIds.includes(participant.id) ? false : liveControls?.micEnabled ?? previewMic,
+                  camera: liveControls?.cameraEnabled ?? previewCamera,
+                  screenShare: liveControls?.screenShareEnabled ?? previewScreen,
+                  hand: raisedHand,
+                }
+              : {
+                  ...participant,
+                  role: presenterId === participant.id ? 'Presenter' : participant.role,
+                  mic: mutedParticipantIds.includes(participant.id) ? false : participant.mic,
+                }
+          )
+        : [
+            createSelfParticipant(participantName, {
+              mic: liveControls?.micEnabled ?? previewMic,
+              camera: liveControls?.cameraEnabled ?? previewCamera,
+              screenShare: liveControls?.screenShareEnabled ?? previewScreen,
+              hand: raisedHand,
+            }),
+          ],
+    [
+      liveControls?.cameraEnabled,
+      liveControls?.micEnabled,
+      liveControls?.screenShareEnabled,
+      mutedParticipantIds,
+      participantName,
+      presenterId,
+      previewCamera,
+      previewMic,
+      previewScreen,
+      raisedHand,
+      removedParticipantIds,
+      roomParticipants,
+    ]
+  )
 
   React.useEffect(() => {
     const intervalId = window.setInterval(() => setElapsedSeconds((current) => current + 1), 1000)
@@ -1469,6 +1868,50 @@ const MeetingRoomContent = ({
     ])
   }
 
+  const addAgendaItem = () => {
+    const nextNumber = agendaItems.length + 1
+    setAgendaItems((current) => [
+      ...current,
+      {
+        id: `agenda-${Date.now()}`,
+        title: `Agenda item ${nextNumber}`,
+        done: false,
+      },
+    ])
+    pushActivityNotice('Agenda item added')
+  }
+
+  const toggleAgendaItem = (id: string) => {
+    setAgendaItems((current) => current.map((item) => item.id === id ? { ...item, done: !item.done } : item))
+  }
+
+  const updateAgendaNotes = (id: string, notes: string) => {
+    setAgendaItems((current) => current.map((item) => item.id === id ? { ...item, notes } : item))
+  }
+
+  const addTask = () => {
+    const title = taskDraft.title.trim()
+    if (!title) return
+
+    const task: MeetingActionTask = {
+      ...taskDraft,
+      id: `task-${Date.now()}`,
+      title,
+      owner: taskDraft.owner.trim(),
+      due: taskDraft.due.trim(),
+      done: false,
+    }
+
+    setTasks((current) => [task, ...current])
+    setTaskDraft({ title: '', owner: participantName, due: '', priority: 'Medium' })
+    updateMeetingActivity((current) => ({ ...current, actionItems: current.actionItems + 1 }))
+    pushActivityNotice('Task added')
+  }
+
+  const toggleTask = (id: string) => {
+    setTasks((current) => current.map((task) => task.id === id ? { ...task, done: !task.done } : task))
+  }
+
   const chatState: LiveMeetingChatState = liveChat ?? {
     messages: previewChatMessages,
     disabled: liveStatus !== 'Preview mode',
@@ -1476,6 +1919,16 @@ const MeetingRoomContent = ({
   }
   const visibleTranscriptEntries = liveTranscript?.entries ?? transcriptEntries
   const meetingTitle = 'Product Review - Q3 Workspace'
+  const meetingWorkspaceNotes = React.useMemo(() => {
+    const agendaLines = agendaItems
+      .map((item) => `${item.done ? 'Completed' : 'Open'} agenda: ${item.title}${item.notes ? `. ${item.notes}` : ''}`)
+      .join('\n')
+    const taskLines = tasks
+      .map((task) => `Task: ${task.title}${task.owner ? ` assigned to ${task.owner}` : ''}${task.due ? ` due ${task.due}` : ''}. Priority ${task.priority}.`)
+      .join('\n')
+
+    return [meetingNotes, agendaLines, taskLines].filter(Boolean).join('\n')
+  }, [agendaItems, meetingNotes, tasks])
   const liveSummary = React.useMemo(() => {
     const trimmedInterim = interimTranscript.trim()
     const summaryTranscriptEntries = trimmedInterim
@@ -1490,7 +1943,7 @@ const MeetingRoomContent = ({
         ]
       : visibleTranscriptEntries
 
-    if (!meetingNotes.trim() && summaryTranscriptEntries.length === 0 && chatState.messages.length === 0) {
+    if (!meetingWorkspaceNotes.trim() && summaryTranscriptEntries.length === 0 && chatState.messages.length === 0) {
       return null
     }
 
@@ -1500,10 +1953,10 @@ const MeetingRoomContent = ({
       participants: activeParticipants.map((participant) => participant.name),
       chatMessages: chatState.messages,
       transcriptEntries: summaryTranscriptEntries,
-      notes: meetingNotes,
+      notes: meetingWorkspaceNotes,
       startedAt: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
     })
-  }, [activeParticipants, chatState.messages, elapsedSeconds, interimTranscript, meetingNotes, participantName, roomName, visibleTranscriptEntries])
+  }, [activeParticipants, chatState.messages, elapsedSeconds, interimTranscript, meetingWorkspaceNotes, participantName, roomName, visibleTranscriptEntries])
 
   function createAndSaveSummary() {
     const summary = createMeetingSummary({
@@ -1512,7 +1965,7 @@ const MeetingRoomContent = ({
       participants: activeParticipants.map((participant) => participant.name),
       chatMessages: chatState.messages,
       transcriptEntries: visibleTranscriptEntries,
-      notes: meetingNotes,
+      notes: meetingWorkspaceNotes,
       startedAt: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
     })
 
@@ -1536,6 +1989,8 @@ const MeetingRoomContent = ({
     { label: 'Screen Share', icon: MonitorUp, active: liveControls?.screenShareEnabled ?? previewScreen, onClick: () => void toggleScreenShare() },
     { label: 'Whiteboard', icon: Palette, active: activeTab === 'whiteboard', onClick: () => setActiveTab('whiteboard') },
     { label: 'AI Assistant', icon: Bot, active: activeTab === 'ai', onClick: () => setActiveTab('ai') },
+    { label: 'Agenda', icon: CheckCircle2, active: activeTab === 'agenda', onClick: () => setActiveTab('agenda') },
+    { label: 'Tasks', icon: ClipboardCheck, active: activeTab === 'tasks', onClick: () => setActiveTab('tasks') },
     { label: 'Chat', icon: Send, active: activeTab === 'chat', onClick: () => setActiveTab('chat') },
     { label: 'Participants', icon: Users, active: activeTab === 'participants', onClick: () => setActiveTab('participants') },
     { label: 'Raise Hand', icon: Hand, active: raisedHand, onClick: () => void toggleRaiseHand() },
@@ -1561,6 +2016,23 @@ const MeetingRoomContent = ({
           <p className="mt-1 text-xs font-bold text-slate-400">
             Meeting timer {formatElapsed(elapsedSeconds)} · {activeParticipants.length} participant{activeParticipants.length === 1 ? '' : 's'}
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              { label: liveControls?.micEnabled ?? previewMic ? 'Mic on' : 'Mic off', active: liveControls?.micEnabled ?? previewMic },
+              { label: liveControls?.cameraEnabled ?? previewCamera ? 'Camera on' : 'Camera off', active: liveControls?.cameraEnabled ?? previewCamera },
+              { label: captions ? 'Captions active' : 'Captions off', active: captions },
+              { label: recording ? 'Recording' : 'Not recording', active: recording },
+            ].map((pill) => (
+              <span
+                key={pill.label}
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
+                  pill.active ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-500'
+                }`}
+              >
+                {pill.label}
+              </span>
+            ))}
+          </div>
           {roomName && (
             <p className="mt-1 max-w-full break-all text-[11px] font-bold text-slate-500">
               Room ID: {roomName}
@@ -1679,6 +2151,9 @@ const MeetingRoomContent = ({
                 chatSending={chatState.sending}
                 recordingNotice={activeRecordingNotice}
                 meetingNotes={meetingNotes}
+                agendaItems={agendaItems}
+                tasks={tasks}
+                taskDraft={taskDraft}
                 transcriptEntries={visibleTranscriptEntries}
                 interimTranscript={interimTranscript}
                 transcriptNotice={transcriptNotice}
@@ -1688,6 +2163,12 @@ const MeetingRoomContent = ({
                 onSendChat={chatState.sendMessage}
                 onActivityNotice={pushActivityNotice}
                 onMeetingNotesChange={setMeetingNotes}
+                onAgendaToggle={toggleAgendaItem}
+                onAgendaAdd={addAgendaItem}
+                onAgendaNoteChange={updateAgendaNotes}
+                onTaskDraftChange={setTaskDraft}
+                onTaskAdd={addTask}
+                onTaskToggle={toggleTask}
                 onCreateSummary={createAndSaveSummary}
                 onMuteParticipant={muteParticipant}
                 onMakePresenter={makePresenter}
@@ -2106,7 +2587,11 @@ const ConnectedMeetingRoomContent = ({
 
 const MeetingRoom = () => {
   const { roomId } = useParams()
+  const navigate = useNavigate()
   const { profile, firebaseUser } = useAuth()
+  const [enteredLobby, setEnteredLobby] = React.useState(false)
+  const [lobbyMicEnabled, setLobbyMicEnabled] = React.useState(true)
+  const [lobbyCameraEnabled, setLobbyCameraEnabled] = React.useState(false)
   const [token, setToken] = React.useState<string | null>(null)
   const [serverUrl, setServerUrl] = React.useState<string | null>(null)
   const [status, setStatus] = React.useState(isMeetingApiConfigured ? 'Connecting securely' : 'Preview mode')
@@ -2120,6 +2605,7 @@ const MeetingRoom = () => {
   const roomName = roomId || 'collabos-meeting'
 
   React.useEffect(() => {
+    setEnteredLobby(false)
     setToken(null)
     setServerUrl(null)
     setConnectionError('')
@@ -2128,6 +2614,12 @@ const MeetingRoom = () => {
 
   React.useEffect(() => {
     let cancelled = false
+
+    if (!enteredLobby) {
+      return () => {
+        cancelled = true
+      }
+    }
 
     if (token && serverUrl) {
       return () => {
@@ -2193,7 +2685,7 @@ const MeetingRoom = () => {
       cancelled = true
       window.clearTimeout(connectionTimeoutId)
     }
-  }, [firebaseUser, participantName, roomName, serverUrl, token])
+  }, [enteredLobby, firebaseUser, participantName, roomName, serverUrl, token])
 
   React.useEffect(() => {
     if (!token || !serverUrl || status !== 'Joining LiveKit room') return
@@ -2206,14 +2698,31 @@ const MeetingRoom = () => {
     return () => window.clearTimeout(liveKitTimeoutId)
   }, [serverUrl, status, token])
 
+  if (!enteredLobby) {
+    return (
+      <MeetingLobby
+        participantName={participantName}
+        roomName={roomName}
+        micEnabled={lobbyMicEnabled}
+        cameraEnabled={lobbyCameraEnabled}
+        apiConfigured={isMeetingApiConfigured}
+        signedIn={Boolean(firebaseUser)}
+        onMicChange={setLobbyMicEnabled}
+        onCameraChange={setLobbyCameraEnabled}
+        onJoin={() => setEnteredLobby(true)}
+        onBack={() => navigate('/meetings')}
+      />
+    )
+  }
+
   if (token && serverUrl) {
     return (
       <LiveKitRoom
         serverUrl={serverUrl}
         token={token}
         connect
-        audio={false}
-        video={false}
+        audio={lobbyMicEnabled}
+        video={lobbyCameraEnabled}
         onConnected={() => {
           setStatus('LiveKit connected')
           setConnectionError('')
@@ -2232,7 +2741,17 @@ const MeetingRoom = () => {
     )
   }
 
-  return <MeetingRoomContent liveStatus={status} connectionError={connectionError} participantName={participantName} roomName={roomName} participantDebug="Live participants: not connected" />
+  return (
+    <MeetingRoomContent
+      liveStatus={status}
+      connectionError={connectionError}
+      participantName={participantName}
+      roomName={roomName}
+      participantDebug="Live participants: not connected"
+      initialMicEnabled={lobbyMicEnabled}
+      initialCameraEnabled={lobbyCameraEnabled}
+    />
+  )
 }
 
 const MeetingsWorkspace = () => {
