@@ -8,7 +8,6 @@ import {
   Gift,
   Image as ImageIcon,
   QrCode,
-  Save,
   Send,
   Smartphone,
   Trash2,
@@ -20,6 +19,7 @@ import { useAuth } from '../context/AuthContext'
 type Network = 'MTN' | 'Airtel' | 'Glo' | '9mobile'
 type DeliveryMode = 'airtime' | 'data' | 'combo'
 type StudioStep = 1 | 2 | 3
+type ImageFormat = 'png' | 'jpeg' | 'webp'
 
 type GiftCardDraft = {
   title: string
@@ -180,6 +180,34 @@ function formatCardValue(draft: GiftCardDraft) {
   return airtimeValue
 }
 
+function buildCardSvg(card: GiftCardDraft, value: string) {
+  const title = svgEscape(card.title || 'Gift card')
+  const message = svgEscape(card.message)
+  const recipient = svgEscape(card.recipientName)
+  const style = styles.find((item) => item.id === card.styleId) || styles[0]
+  const image = card.imageDataUrl
+    ? `<image href="${card.imageDataUrl}" x="462" y="0" width="298" height="400" preserveAspectRatio="${card.imageFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'}" />`
+    : ''
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="400" viewBox="0 0 760 400">
+    <defs>
+      <clipPath id="card-clip"><rect width="760" height="400" rx="14"/></clipPath>
+    </defs>
+    <g clip-path="url(#card-clip)">
+      <rect width="760" height="400" fill="#f4f5f7"/>
+      <text x="34" y="45" font-family="Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="4" fill="#334155">A GIFT FOR YOU</text>
+      ${recipient ? `<text x="34" y="82" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="${style.accent}">For ${recipient}</text>` : ''}
+      <text x="34" y="${recipient ? 128 : 102}" font-family="Arial, sans-serif" font-size="42" font-weight="900" fill="#0f172a">${title}</text>
+      <text x="34" y="182" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#64748b">${message}</text>
+      <rect x="34" y="292" width="215" height="48" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1"/>
+      <text x="52" y="324" font-family="monospace" font-size="20" font-weight="900" letter-spacing="7" fill="#0f172a">.... .... ....</text>
+      <text x="270" y="328" font-family="Arial, sans-serif" font-size="34" font-weight="900" fill="#64748b">${svgEscape(value)}</text>
+      <text x="34" y="365" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#64748b">Dial *258*PIN# to load or redeem</text>
+      ${image}
+    </g>
+  </svg>`
+}
+
 const StepMeter = ({ step }: { step: StudioStep }) => (
   <div className="flex items-center gap-4">
     <div className="flex items-center gap-2">
@@ -266,47 +294,52 @@ const GiftCardStudio: React.FC = () => {
     setStatus('Gift card details copied.')
   }
 
-  const downloadOrder = (order: GiftCardOrder | null) => {
-    if (!order) return
+  const downloadCardImage = async (card: GiftCardDraft | GiftCardOrder | null, format: ImageFormat) => {
+    if (!card) return
 
-    const blob = new Blob([JSON.stringify(order, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${order.title.toLowerCase().replace(/\W+/g, '-')}-gift-card.json`
-    link.click()
-    URL.revokeObjectURL(url)
-    setStatus('Card file downloaded.')
-  }
-
-  const downloadPreviewImage = () => {
-    const title = svgEscape(draft.title || 'Gift card')
-    const message = svgEscape(draft.message)
-    const recipient = svgEscape(draft.recipientName)
-    const accent = selectedStyle.accent
-    const image = draft.imageDataUrl
-      ? `<image href="${draft.imageDataUrl}" x="462" y="0" width="298" height="400" preserveAspectRatio="${draft.imageFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'}" />`
-      : ''
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="400" viewBox="0 0 760 400">
-      <rect width="760" height="400" rx="14" fill="#f4f5f7"/>
-      <text x="34" y="45" font-family="Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="4" fill="#334155">A GIFT FOR YOU</text>
-      <text x="34" y="95" font-family="Arial, sans-serif" font-size="42" font-weight="900" fill="#0f172a">${title}</text>
-      ${recipient ? `<text x="34" y="130" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="${accent}">For ${recipient}</text>` : ''}
-      <text x="34" y="178" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#64748b">${message}</text>
-      <rect x="34" y="292" width="215" height="48" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1"/>
-      <text x="52" y="324" font-family="monospace" font-size="20" font-weight="900" letter-spacing="7" fill="#0f172a">.... .... ....</text>
-      <text x="270" y="328" font-family="Arial, sans-serif" font-size="34" font-weight="900" fill="#64748b">${svgEscape(cardValue)}</text>
-      <text x="34" y="365" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#64748b">Dial *258*PIN# to load or redeem</text>
-      ${image}
-    </svg>`
+    const value = formatCardValue(card)
+    const svg = buildCardSvg(card, value)
     const blob = new Blob([svg], { type: 'image/svg+xml' })
     const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${(draft.title || 'gift-card').toLowerCase().replace(/\W+/g, '-')}-preview.svg`
-    link.click()
-    URL.revokeObjectURL(url)
-    setStatus('Gift card preview downloaded.')
+    const image = new Image()
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve()
+        image.onerror = () => reject(new Error('Gift card image could not be prepared.'))
+        image.src = url
+      })
+
+      const canvas = document.createElement('canvas')
+      canvas.width = 1520
+      canvas.height = 800
+      const context = canvas.getContext('2d')
+      if (!context) throw new Error('Image export is not available in this browser.')
+
+      context.fillStyle = '#ffffff'
+      context.fillRect(0, 0, canvas.width, canvas.height)
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+
+      const mimeType = `image/${format}`
+      const outputBlob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((nextBlob) => {
+          if (nextBlob) resolve(nextBlob)
+          else reject(new Error(`${format.toUpperCase()} export is not supported in this browser.`))
+        }, mimeType, 0.95)
+      })
+
+      const outputUrl = URL.createObjectURL(outputBlob)
+      const link = document.createElement('a')
+      link.href = outputUrl
+      link.download = `${(card.title || 'gift-card').toLowerCase().replace(/\W+/g, '-')}-gift-card.${format === 'jpeg' ? 'jpg' : format}`
+      link.click()
+      URL.revokeObjectURL(outputUrl)
+      setStatus(`Gift card ${format.toUpperCase()} downloaded.`)
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Gift card image could not be downloaded.')
+    } finally {
+      URL.revokeObjectURL(url)
+    }
   }
 
   const clearOrders = () => {
@@ -419,9 +452,15 @@ const GiftCardStudio: React.FC = () => {
                   <Send className="mr-2 h-4 w-4" />
                   Copy details
                 </Button>
-                <Button type="button" size="sm" variant="secondary" onClick={downloadPreviewImage}>
+                <Button type="button" size="sm" variant="secondary" onClick={() => downloadCardImage(successOrder, 'png')}>
                   <Download className="mr-2 h-4 w-4" />
-                  Download image
+                  PNG
+                </Button>
+                <Button type="button" size="sm" variant="secondary" onClick={() => downloadCardImage(successOrder, 'jpeg')}>
+                  JPG
+                </Button>
+                <Button type="button" size="sm" variant="secondary" onClick={() => downloadCardImage(successOrder, 'webp')}>
+                  WebP
                 </Button>
                 <Button type="button" size="sm" onClick={resetDraft}>
                   Create another
@@ -803,22 +842,35 @@ const GiftCardStudio: React.FC = () => {
                   <p className="mt-1 text-sm text-slate-600">{order.quantity} card{order.quantity === 1 ? '' : 's'} · {money(order.total)}</p>
                   <p className="mt-3 break-all rounded-lg bg-slate-50 p-2 text-xs font-bold text-slate-600">{order.voucherCode}</p>
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="mt-3 grid grid-cols-4 gap-2">
                   <button
                     type="button"
                     onClick={() => copyOrder(order)}
-                    className="inline-flex h-10 min-w-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+                    className="inline-flex h-10 min-w-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-sm font-black text-slate-700 hover:bg-slate-50"
                   >
                     <Send className="h-4 w-4 shrink-0" />
                     <span className="truncate">Share</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => downloadOrder(order)}
-                    className="inline-flex h-10 min-w-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+                    onClick={() => downloadCardImage(order, 'png')}
+                    className="inline-flex h-10 min-w-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-sm font-black text-slate-700 hover:bg-slate-50"
                   >
-                    <Save className="h-4 w-4 shrink-0" />
-                    <span className="truncate">Save</span>
+                    PNG
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadCardImage(order, 'jpeg')}
+                    className="inline-flex h-10 min-w-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-sm font-black text-slate-700 hover:bg-slate-50"
+                  >
+                    JPG
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadCardImage(order, 'webp')}
+                    className="inline-flex h-10 min-w-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-sm font-black text-slate-700 hover:bg-slate-50"
+                  >
+                    WebP
                   </button>
                 </div>
               </article>
