@@ -76,6 +76,14 @@ VITE_FIREBASE_AI_MODEL=gemini-3.5-flash
 
 When Firebase is not configured or unavailable, profile and website data fall back to local browser storage so the app remains usable during local development.
 
+For Flutterwave test checkout in the gift-card studio, add the sandbox public key only:
+
+```bash
+VITE_FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST-...
+```
+
+Do not put Flutterwave secret keys in frontend env files. Production transaction verification must happen from the backend with server-only credentials.
+
 ## Firebase Rules
 
 Firestore and Storage rules are included:

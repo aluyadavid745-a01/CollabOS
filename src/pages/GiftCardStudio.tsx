@@ -15,6 +15,11 @@ import {
 } from 'lucide-react'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
+import {
+  isFlutterwaveConfigured,
+  startFlutterwavePayment,
+  type FlutterwavePaymentResponse,
+} from '../services/flutterwavePayments'
 
 type Network = 'MTN' | 'Airtel' | 'Glo' | '9mobile'
 type DeliveryMode = 'airtime' | 'data' | 'combo'
@@ -47,6 +52,10 @@ type GiftCardOrder = GiftCardDraft & {
   voucherCode: string
   ussdCode: string
   dummyPaymentRef: string
+  paymentProvider: 'flutterwave'
+  paymentStatus: string
+  flutterwaveRef?: string
+  flutterwaveTransactionId?: number
 }
 
 const STORAGE_KEY = 'collabos:dummyGiftCards'
@@ -234,6 +243,7 @@ const GiftCardStudio: React.FC = () => {
   const [activeSide, setActiveSide] = React.useState<'front' | 'back'>('front')
   const [cardRotation, setCardRotation] = React.useState({ x: 0, y: 0 })
   const [imageUploading, setImageUploading] = React.useState(false)
+  const [paymentBusy, setPaymentBusy] = React.useState(false)
   const [status, setStatus] = React.useState('')
   const [successOrder, setSuccessOrder] = React.useState<GiftCardOrder | null>(null)
   const dragStartRef = React.useRef<{ x: number; y: number; rotationX: number; rotationY: number } | null>(null)
@@ -266,9 +276,10 @@ const GiftCardStudio: React.FC = () => {
     reader.readAsDataURL(file)
   }
 
-  const createOrder = () => {
+  const createOrder = (payment: FlutterwavePaymentResponse) => {
     const voucherCode = makeCode('GIFT')
     const ussdCode = `${networkPrefixes[draft.network]}*${voucherCode.replace(/-/g, '').slice(-10)}#`
+    const paymentRef = payment.tx_ref || makeCode('FLW')
     const order: GiftCardOrder = {
       ...draft,
       id: makeCode('CARD'),
@@ -277,19 +288,60 @@ const GiftCardStudio: React.FC = () => {
       serviceFee,
       voucherCode,
       ussdCode,
-      dummyPaymentRef: makeCode('PAY'),
+      dummyPaymentRef: paymentRef,
+      paymentProvider: 'flutterwave',
+      paymentStatus: payment.status || 'successful',
+      flutterwaveRef: payment.flw_ref,
+      flutterwaveTransactionId: payment.transaction_id,
     }
     const nextOrders = [order, ...orders].slice(0, 8)
     setOrders(nextOrders)
     writeOrders(nextOrders)
     setSuccessOrder(order)
-    setStatus('Gift card created. Codes are ready.')
+    setStatus('Flutterwave test payment received. Gift card codes are ready.')
+  }
+
+  const payAndCreateOrder = async () => {
+    if (!draft.recipientEmail.trim()) {
+      setStatus('Add an email address before starting payment.')
+      return
+    }
+
+    if (!isFlutterwaveConfigured) {
+      setStatus('Flutterwave test public key is missing. Add VITE_FLUTTERWAVE_PUBLIC_KEY to .env.local and restart Vite.')
+      return
+    }
+
+    setPaymentBusy(true)
+    setStatus('Opening Flutterwave test checkout...')
+
+    try {
+      const txRef = makeCode('FLW')
+      const payment = await startFlutterwavePayment({
+        txRef,
+        amount: total,
+        email: draft.recipientEmail.trim(),
+        name: draft.recipientName.trim() || draft.sender.trim() || 'CollabOS Customer',
+        description: `${draft.quantity} ${draft.network} ${draft.deliveryMode} gift card${draft.quantity === 1 ? '' : 's'}`,
+        quantity: draft.quantity,
+      })
+
+      if (payment.status !== 'successful' && payment.status !== 'completed') {
+        throw new Error(`Flutterwave returned ${payment.status || 'an incomplete payment status'}.`)
+      }
+
+      createOrder(payment)
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Flutterwave payment could not be completed.')
+    } finally {
+      setPaymentBusy(false)
+    }
   }
 
   const copyOrder = async (order: GiftCardOrder | null) => {
     if (!order) return
 
-    const text = `${order.title}\n${order.message}\n${order.recipientName ? `To: ${order.recipientName}\n` : ''}Cards: ${order.quantity} x ${money(order.airtimeAmount)}\nVoucher: ${order.voucherCode}\nUSSD: ${order.ussdCode}\nReference: ${order.dummyPaymentRef}`
+    const text = `${order.title}\n${order.message}\n${order.recipientName ? `To: ${order.recipientName}\n` : ''}Cards: ${order.quantity} x ${money(order.airtimeAmount)}\nVoucher: ${order.voucherCode}\nUSSD: ${order.ussdCode}\nPayment reference: ${order.dummyPaymentRef}`
     await navigator.clipboard.writeText(text)
     setStatus('Gift card details copied.')
   }
@@ -358,6 +410,7 @@ const GiftCardStudio: React.FC = () => {
     setActiveSide('front')
     setCardRotation({ x: 0, y: 0 })
     setImageUploading(false)
+    setPaymentBusy(false)
     setSuccessOrder(null)
     setStatus('')
   }
@@ -371,7 +424,9 @@ const GiftCardStudio: React.FC = () => {
     ...draft,
     voucherCode: 'GIFT-PREVIEW-CODE',
     ussdCode: `${networkPrefixes[draft.network]}*0000000000#`,
-    dummyPaymentRef: 'PAY-PREVIEW',
+    dummyPaymentRef: 'FLW-PREVIEW',
+    paymentProvider: 'flutterwave' as const,
+    paymentStatus: 'preview',
   }
 
   const nextStep = () => setStep((current) => (current === 1 ? 2 : current === 2 ? 3 : 3))
@@ -568,7 +623,7 @@ const GiftCardStudio: React.FC = () => {
                   <div className="space-y-2 text-sm font-bold text-slate-700">
                     <p>Voucher: <span className="font-black text-slate-950">{previewOrder.voucherCode}</span></p>
                     <p>USSD: <span className="font-black text-slate-950">{previewOrder.ussdCode}</span></p>
-                    <p>Ref: <span className="font-black text-slate-950">{previewOrder.dummyPaymentRef}</span></p>
+                    <p>Payment: <span className="font-black text-slate-950">{previewOrder.dummyPaymentRef}</span></p>
                   </div>
                 </div>
                 <div className="grid place-items-center rounded-lg border border-slate-200 bg-white/80 p-4 text-center">
@@ -806,8 +861,17 @@ const GiftCardStudio: React.FC = () => {
                 />
               </label>
               <p className="mt-2 text-sm font-bold leading-6 text-slate-500">
-                The order follows this address. Provider delivery and payment gateway connection can be added later.
+                The order follows this address. Test checkout runs through Flutterwave before codes are created.
               </p>
+              <div className={`mt-5 rounded-lg border p-4 text-sm font-bold ${
+                isFlutterwaveConfigured
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : 'border-amber-200 bg-amber-50 text-amber-800'
+              }`}>
+                {isFlutterwaveConfigured
+                  ? 'Flutterwave test mode is configured for this browser build.'
+                  : 'Flutterwave test mode is not configured yet. Add VITE_FLUTTERWAVE_PUBLIC_KEY to .env.local, then restart Vite.'}
+              </div>
               <div className="mt-8 border-t border-slate-200 pt-7">
                 <div className="grid gap-3 text-base md:grid-cols-[1fr_auto]">
                   <span className="font-bold text-slate-500">Style</span>
@@ -841,6 +905,7 @@ const GiftCardStudio: React.FC = () => {
                   <h3 className="mt-1 truncate font-black">{order.title}</h3>
                   <p className="mt-1 text-sm text-slate-600">{order.quantity} card{order.quantity === 1 ? '' : 's'} · {money(order.total)}</p>
                   <p className="mt-3 break-all rounded-lg bg-slate-50 p-2 text-xs font-bold text-slate-600">{order.voucherCode}</p>
+                  <p className="mt-2 break-all text-xs font-bold text-slate-500">Flutterwave: {order.dummyPaymentRef}</p>
                 </div>
                 <div className="mt-3 grid grid-cols-4 gap-2">
                   <button
@@ -894,7 +959,7 @@ const GiftCardStudio: React.FC = () => {
             <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
                 <p className="text-sm font-bold text-slate-500">{draft.quantity} x {cardValue}</p>
-                <p className="text-sm font-black text-emerald-700">No fees. You pay exactly the face value.</p>
+                <p className="text-sm font-black text-emerald-700">Flutterwave test checkout · no CollabOS fee.</p>
               </div>
               <p className="text-right text-4xl font-black text-slate-950">{money(total)}</p>
               <div className="flex gap-3 sm:col-span-2">
@@ -908,9 +973,18 @@ const GiftCardStudio: React.FC = () => {
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 ) : (
-                  <button type="button" onClick={createOrder} className="inline-flex h-16 flex-1 items-center justify-center gap-2 rounded-lg bg-sky-500 px-6 text-lg font-black text-white hover:bg-sky-600">
-                    <CreditCard className="h-5 w-5" />
-                    Create cards
+                  <button
+                    type="button"
+                    onClick={payAndCreateOrder}
+                    disabled={paymentBusy}
+                    className="inline-flex h-16 flex-1 items-center justify-center gap-2 rounded-lg bg-sky-500 px-6 text-lg font-black text-white hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    {paymentBusy ? (
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/50 border-t-white" />
+                    ) : (
+                      <CreditCard className="h-5 w-5" />
+                    )}
+                    {paymentBusy ? 'Processing...' : 'Pay with Flutterwave'}
                   </button>
                 )}
               </div>
