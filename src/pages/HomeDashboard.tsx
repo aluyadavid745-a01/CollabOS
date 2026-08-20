@@ -27,9 +27,9 @@ import { useAuth } from '../context/AuthContext'
 import { listHomeNotifications, markHomeNotificationRead } from '../services/homeNotifications'
 import { createLocalWorkspace, listLocalMessages, listStoredTeamWorkspaces } from '../services/teamChat'
 import { createDefaultProfile, type UserProfile } from '../types/profile'
+import { createLocalProject, readLocalProjects, writeLocalProjects } from '../utils/localProjects'
 import { createLocalTask, readLocalTasks, writeLocalTasks, type LocalTask } from '../utils/localTasks'
 import { showToast } from '../utils/toast'
-import { createWebsiteProjectInstant, listCachedWebsiteProjects } from '../utils/websiteBuilderStorage'
 import type { HomeNotification, HomeTask } from '../types/home'
 
 type QuickCreateType = 'task' | 'project' | 'channel' | 'team' | 'document' | 'meeting'
@@ -121,11 +121,26 @@ const QuickCreateModal = ({
       return
     }
 
-    if (type === 'project' || type === 'document') {
-      const project = createWebsiteProjectInstant(profile.uid)
-      showToast({ message: type === 'project' ? 'Project created' : 'Document created', type: 'success' })
+    if (type === 'project') {
+      const project = createLocalProject({
+        name: cleanName,
+        description,
+        members: owner,
+        deadline: dueAt,
+      })
+      if (!writeLocalProjects([project, ...readLocalProjects()])) {
+        showToast({ message: "We couldn't save your project. Please try again.", type: 'error' })
+        return
+      }
+      showToast({ message: 'Project created', type: 'success' })
       onCreated()
-      navigate(type === 'project' ? `/builder/${project.id}` : '/dashboard/websites')
+      navigate('/projects')
+      return
+    }
+
+    if (type === 'document') {
+      showToast({ message: 'Document setup opened', type: 'success' })
+      navigate('/dashboard/websites')
       return
     }
 
@@ -237,9 +252,9 @@ const HomeDashboard: React.FC = () => {
     void refreshKey
     return listStoredTeamWorkspaces()
   }, [refreshKey])
-  const websites = React.useMemo(() => {
+  const projects = React.useMemo(() => {
     void refreshKey
-    return listCachedWebsiteProjects()
+    return readLocalProjects()
   }, [refreshKey])
   const localTasks = React.useMemo(() => {
     void refreshKey
@@ -264,17 +279,6 @@ const HomeDashboard: React.FC = () => {
       .slice(0, 3)
   }, [activeWorkspace, refreshKey])
 
-  const workspaceTasks: HomeTask[] = React.useMemo(() => workspaces.flatMap((workspace) =>
-    workspace.projects.map((project, index) => ({
-      id: `${workspace.id}-${project.id}`,
-      title: project.name,
-      owner: project.owner,
-      status: project.status,
-      dueAt: new Date(Date.now() + (index + 1) * 86400000).toISOString(),
-      route: '/workspace',
-    }))
-  ), [workspaces])
-
   const taskCards = [
     ...localTasks.map((task) => ({
       id: task.id,
@@ -284,7 +288,6 @@ const HomeDashboard: React.FC = () => {
       dueAt: task.dueAt,
       route: '/home',
     } satisfies HomeTask)),
-    ...workspaceTasks,
   ].slice(0, 6)
 
   const todayTasks = taskCards.filter((task) => task.status !== 'Done' && dueToday(task.dueAt))
@@ -294,8 +297,8 @@ const HomeDashboard: React.FC = () => {
   const onboardingItems = [
     { label: 'Create your team space', done: workspaces.length > 0, action: () => openCreate('team') },
     { label: 'Invite your team', done: Boolean(activeWorkspace?.invites.length), action: () => navigate('/workspace') },
-    { label: 'Create your first project', done: websites.length > 0 || workspaceTasks.length > 0, action: () => openCreate('project') },
-    { label: 'Create your first task', done: localTasks.length > 0 || workspaceTasks.length > 0, action: () => openCreate('task') },
+    { label: 'Create your first project', done: projects.length > 0, action: () => navigate('/projects') },
+    { label: 'Create your first task', done: localTasks.length > 0, action: () => openCreate('task') },
   ]
   const completedOnboarding = onboardingItems.filter((item) => item.done).length
   const onboardingProgress = Math.round((completedOnboarding / onboardingItems.length) * 100)
@@ -326,7 +329,7 @@ const HomeDashboard: React.FC = () => {
     const prompt = aiPrompt.toLowerCase()
     if (prompt.includes('create') && prompt.includes('project')) {
       openCreate('project')
-      setAiAnswer('I opened project creation. Add the project name, team members, and deadline, then create it.')
+      setAiAnswer('I opened project creation. Add the project name, people involved, and deadline, then create it.')
       return
     }
     if (prompt.includes('task')) {
@@ -375,7 +378,7 @@ const HomeDashboard: React.FC = () => {
   const primaryLinks = [
     { label: 'Home', icon: Home, action: () => navigate('/home'), active: true },
     { label: 'My Tasks', icon: CheckSquare, action: () => navigate('/tasks') },
-    { label: 'Projects', icon: Folder, action: () => navigate('/dashboard/websites') },
+    { label: 'Projects', icon: Folder, action: () => navigate('/projects') },
     { label: 'Messages', icon: MessageSquare, action: () => navigate('/workspace') },
     { label: 'Team', icon: Users, action: () => navigate('/workspace') },
     { label: 'Calendar', icon: CalendarClock, action: () => navigate('/meetings') },
@@ -508,7 +511,7 @@ const HomeDashboard: React.FC = () => {
           <section className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {[
               { label: 'Tasks due today', value: todayTasks.length, action: () => navigate('/tasks') },
-              { label: 'Active projects', value: workspaceTasks.length + websites.length, action: () => navigate('/dashboard/websites') },
+              { label: 'Active projects', value: projects.filter((project) => project.status !== 'Done').length, action: () => navigate('/projects') },
               { label: 'New messages', value: recentMessages.length, action: () => navigate('/workspace') },
               { label: 'Upcoming meetings', value: upcomingMeetings, action: () => navigate('/meetings') },
               { label: 'Recent team activity', value: notifications.length, action: () => navigate('/notifications') },
@@ -583,24 +586,17 @@ const HomeDashboard: React.FC = () => {
                 </button>
               </div>
               <div className="space-y-3">
-                {[...workspaceTasks.slice(0, 2), ...websites.slice(0, 2).map((website) => ({
-                  id: website.id,
-                  title: website.name,
-                  owner: activeProfile.name,
-                  status: website.status === 'published' ? 'Done' : 'In Progress',
-                  dueAt: website.updatedAt,
-                  route: '/dashboard/websites',
-                } satisfies HomeTask))].slice(0, 4).map((project) => (
-                  <button key={project.id} type="button" onClick={() => navigate(project.route)} className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:bg-slate-50">
-                    <p className="font-bold">{project.title}</p>
+                {projects.slice(0, 4).map((project) => (
+                  <button key={project.id} type="button" onClick={() => navigate('/projects')} className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:bg-slate-50">
+                    <p className="font-bold">{project.name}</p>
                     <p className="mt-1 text-sm text-slate-600">{project.status}</p>
                   </button>
                 ))}
-                {!workspaceTasks.length && !websites.length && (
+                {!projects.length && (
                   <div className="rounded-lg border border-dashed border-slate-300 p-5">
                     <h3 className="font-black">No projects yet</h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600">Projects help you organize work like a website redesign, marketing campaign, mobile app, or company launch.</p>
-                    <Button type="button" size="sm" onClick={() => openCreate('project')} className="mt-4 gap-2"><Plus className="h-4 w-4" />Create your first project</Button>
+                    <Button type="button" size="sm" onClick={() => navigate('/projects')} className="mt-4 gap-2"><Plus className="h-4 w-4" />Create your first project</Button>
                   </div>
                 )}
               </div>

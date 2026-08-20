@@ -14,6 +14,7 @@ const AuthPage = React.lazy(loadAuthPage);
 const EmailAction = React.lazy(() => import("./pages/EmailAction"));
 const HomeDashboard = React.lazy(() => import("./pages/HomeDashboard"));
 const MyTasks = React.lazy(() => import("./pages/MyTasks"));
+const ProjectsPage = React.lazy(() => import("./pages/ProjectsPage"));
 const NotificationCenter = React.lazy(() => import("./pages/NotificationCenter"));
 const EditProfile = React.lazy(() => import("./pages/EditProfile"));
 const FeatureDetail = React.lazy(() => import("./pages/FeatureDetail"));
@@ -142,14 +143,14 @@ function App() {
   React.useEffect(() => {
     if (view !== "home") return;
 
-    return prefetchRoutesOnIdle(["auth", "profile", "homeDashboard", "myTasks", "notifications", "editProfile", "websiteDashboard", "featureDetail", "teamWorkspace", "giftCards"], 1200);
+    return prefetchRoutesOnIdle(["auth", "profile", "homeDashboard", "myTasks", "projects", "notifications", "editProfile", "websiteDashboard", "featureDetail", "teamWorkspace", "giftCards"], 1200);
   }, [view]);
 
   React.useEffect(() => {
     if (!rememberedUser && !firebaseUser) return;
 
     return prefetchRoutesOnIdle(
-      ["profile", "homeDashboard", "myTasks", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview", "codeBuilder", "aiBuilder", "teamWorkspace", "giftCards"],
+      ["profile", "homeDashboard", "myTasks", "projects", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview", "codeBuilder", "aiBuilder", "teamWorkspace", "giftCards"],
       900
     );
   }, [firebaseUser, rememberedUser]);
@@ -301,6 +302,15 @@ function App() {
           element={protectedRoute(
             <React.Suspense fallback={<RouteShell label="Opening tasks..." />}>
               <MyTasks />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/projects"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening projects..." />}>
+              <ProjectsPage />
             </React.Suspense>,
             "Checking account..."
           )}
