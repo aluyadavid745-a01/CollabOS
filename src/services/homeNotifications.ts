@@ -30,9 +30,9 @@ const notification = (input: Omit<HomeNotification, 'read'>, read: Set<string>):
   read: read.has(input.id),
 })
 
-export const listHomeNotifications = (profile?: UserProfile | null): HomeNotification[] => {
+export const listHomeNotifications = (_profile?: UserProfile | null): HomeNotification[] => {
+  void _profile
   const read = readIds()
-  const now = Date.now()
   const workspaces = listStoredTeamWorkspaces()
   const websites = listCachedWebsiteProjects()
 
@@ -91,28 +91,6 @@ export const listHomeNotifications = (profile?: UserProfile | null): HomeNotific
       priority: website.status === 'published' ? 'high' : 'normal',
     }, read))
   })
-
-  items.push(notification({
-    id: 'meeting-upcoming-daily-sync',
-    type: 'meeting',
-    title: 'Daily workspace sync',
-    body: 'Meeting room and AI notes are ready for the next team check-in.',
-    source: 'Meetings',
-    route: '/meetings',
-    createdAt: new Date(now - 1000 * 60 * 24).toISOString(),
-    priority: 'normal',
-  }, read))
-
-  items.push(notification({
-    id: 'ai-brief-ready',
-    type: 'ai',
-    title: 'AI brief ready',
-    body: `Summary prepared for ${profile?.name || 'your workspace'} across messages, sites, and projects.`,
-    source: 'CollabOS AI',
-    route: '/home',
-    createdAt: new Date(now - 1000 * 60 * 12).toISOString(),
-    priority: 'high',
-  }, read))
 
   return items.sort((a, b) => Number(a.read) - Number(b.read) || b.createdAt.localeCompare(a.createdAt))
 }

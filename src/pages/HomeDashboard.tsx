@@ -320,6 +320,7 @@ const HomeDashboard: React.FC = () => {
 
   const todayTasks = taskCards.filter((task) => task.status !== 'Done' && dueToday(task.dueAt))
   const nextTask = todayTasks[0] || taskCards.find((task) => task.status !== 'Done')
+  const upcomingMeetings = notifications.filter((item) => item.type === 'meeting').length
 
   const onboardingItems = [
     { label: 'Create your team space', done: workspaces.length > 0, action: () => openCreate('team') },
@@ -516,7 +517,7 @@ const HomeDashboard: React.FC = () => {
               { label: 'Tasks due today', value: todayTasks.length, action: () => openCreate('task') },
               { label: 'Active projects', value: workspaceTasks.length + websites.length, action: () => navigate('/dashboard/websites') },
               { label: 'New messages', value: recentMessages.length, action: () => navigate('/workspace') },
-              { label: 'Upcoming meetings', value: 1, action: () => navigate('/meetings') },
+              { label: 'Upcoming meetings', value: upcomingMeetings, action: () => navigate('/meetings') },
               { label: 'Recent team activity', value: notifications.length, action: () => navigate('/notifications') },
             ].map((item) => (
               <button key={item.label} type="button" onClick={item.action} className={`${panel} min-h-[110px] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md`}>
