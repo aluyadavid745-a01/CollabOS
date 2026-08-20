@@ -30,6 +30,8 @@ import { createDefaultProfile, type UserProfile } from '../types/profile'
 import { createLocalProject, readLocalProjects, writeLocalProjects } from '../utils/localProjects'
 import { createLocalTask, readLocalTasks, writeLocalTasks, type LocalTask } from '../utils/localTasks'
 import { readLocalCalendarEvents, readLocalFiles, readLocalMessages, readLocalTeamMembers } from '../utils/localWorkspace'
+import { readLocalActivity, recordLocalActivity } from '../utils/localActivity'
+import { loadSampleWorkspace } from '../utils/investorDemo'
 import { showToast } from '../utils/toast'
 import type { HomeNotification, HomeTask } from '../types/home'
 
@@ -102,6 +104,7 @@ const QuickCreateModal = ({
         return
       }
       showToast({ message: 'Task created successfully', type: 'success' })
+      recordLocalActivity({ type: 'task', title: 'Task created', detail: nextTask.title, route: '/tasks' })
       onCreated()
       onClose()
       return
@@ -117,6 +120,7 @@ const QuickCreateModal = ({
         defaultLanguage: 'English',
       })
       showToast({ message: 'Team space created', type: 'success' })
+      recordLocalActivity({ type: 'team', title: 'Team space created', detail: cleanName, route: '/team' })
       onCreated()
       onClose()
       return
@@ -134,6 +138,7 @@ const QuickCreateModal = ({
         return
       }
       showToast({ message: 'Project created', type: 'success' })
+      recordLocalActivity({ type: 'project', title: 'Project created', detail: project.name, route: '/projects' })
       onCreated()
       navigate('/projects')
       return
@@ -282,6 +287,10 @@ const HomeDashboard: React.FC = () => {
     void refreshKey
     return readLocalFiles()
   }, [refreshKey])
+  const activity = React.useMemo(() => {
+    void refreshKey
+    return readLocalActivity()
+  }, [refreshKey])
   const localTasks = React.useMemo(() => {
     void refreshKey
     return readLocalTasks()
@@ -390,6 +399,7 @@ const HomeDashboard: React.FC = () => {
     }
     setRefreshKey((value) => value + 1)
     showToast({ message: 'Task completed', type: 'success' })
+    recordLocalActivity({ type: 'task', title: 'Task completed', detail: updated.find((task) => task.id === taskId)?.title || 'Task', route: '/tasks' })
   }
 
   const addTodoTask = () => {
@@ -411,6 +421,13 @@ const HomeDashboard: React.FC = () => {
     setNewTaskTitle('')
     setRefreshKey((value) => value + 1)
     showToast({ message: 'Task added', type: 'success' })
+    recordLocalActivity({ type: 'task', title: 'Task added', detail: task.title, route: '/tasks' })
+  }
+
+  const loadDemo = () => {
+    const project = loadSampleWorkspace(activeProfile.name)
+    setRefreshKey((value) => value + 1)
+    showToast({ message: `${project.name} loaded`, type: 'success' })
   }
 
   const primaryLinks = [
@@ -479,6 +496,9 @@ const HomeDashboard: React.FC = () => {
                   Create
                 </Button>
               </div>
+              <Button type="button" variant="secondary" onClick={loadDemo} className="min-h-[44px]">
+                Load Sample Workspace
+              </Button>
             </div>
           </header>
 
@@ -666,6 +686,31 @@ const HomeDashboard: React.FC = () => {
                 )}
               </div>
             </article>
+          </section>
+
+          <section className={`${panel} mt-5 p-5`}>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black">Activity</h2>
+                <p className="mt-1 text-sm text-slate-600">Real updates from tasks, projects, messages, meetings, files, and team changes.</p>
+              </div>
+              <Button type="button" variant="secondary" size="sm" onClick={loadDemo}>Load sample</Button>
+            </div>
+            <div className="space-y-3">
+              {activity.slice(0, 6).map((item) => (
+                <button key={item.id} type="button" onClick={() => navigate(item.route)} className="w-full rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:bg-slate-50">
+                  <p className="font-bold">{item.title}</p>
+                  <p className="mt-1 text-sm text-slate-600">{item.detail}</p>
+                  <p className="mt-2 text-xs font-bold text-slate-400">{new Date(item.createdAt).toLocaleString()}</p>
+                </button>
+              ))}
+              {!activity.length && (
+                <div className="rounded-lg border border-dashed border-slate-300 p-5">
+                  <h3 className="font-black">No activity yet</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Create a task, project, message, meeting, file, or team member and it will appear here.</p>
+                </div>
+              )}
+            </div>
           </section>
         </section>
       </div>

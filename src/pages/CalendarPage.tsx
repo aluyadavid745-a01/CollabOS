@@ -2,6 +2,8 @@ import React from 'react'
 import { ArrowLeft, CalendarClock, Clock, Plus, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
+import { readLocalProjects } from '../utils/localProjects'
+import { recordLocalActivity } from '../utils/localActivity'
 import { createLocalCalendarEvent, readLocalCalendarEvents, writeLocalCalendarEvents } from '../utils/localWorkspace'
 import { showToast } from '../utils/toast'
 
@@ -13,6 +15,8 @@ const CalendarPage: React.FC = () => {
   const [title, setTitle] = React.useState('')
   const [date, setDate] = React.useState('')
   const [time, setTime] = React.useState('')
+  const [projectId, setProjectId] = React.useState('')
+  const [projects] = React.useState(() => readLocalProjects())
 
   const addEvent = () => {
     if (!title.trim() || !date) {
@@ -20,7 +24,7 @@ const CalendarPage: React.FC = () => {
       return
     }
 
-    const event = createLocalCalendarEvent({ title, date, time: time || '09:00' })
+    const event = createLocalCalendarEvent({ title, date, time: time || '09:00', projectId: projectId || undefined })
     if (!writeLocalCalendarEvents([event, ...events])) {
       showToast({ message: "We couldn't save this meeting. Please try again.", type: 'error' })
       return
@@ -29,6 +33,8 @@ const CalendarPage: React.FC = () => {
     setTitle('')
     setDate('')
     setTime('')
+    setProjectId('')
+    recordLocalActivity({ type: 'calendar', title: 'Meeting added', detail: event.title, route: '/calendar' })
     showToast({ message: 'Meeting added', type: 'success' })
   }
 
@@ -39,6 +45,7 @@ const CalendarPage: React.FC = () => {
       return
     }
     setEvents(nextEvents)
+    recordLocalActivity({ type: 'calendar', title: 'Meeting deleted', detail: 'A meeting was removed', route: '/calendar' })
     showToast({ message: 'Meeting deleted', type: 'success' })
   }
 
@@ -56,10 +63,14 @@ const CalendarPage: React.FC = () => {
 
         <section className={`${panel} mb-5 p-4 sm:p-5`}>
           <h2 className="text-xl font-black">Add a meeting</h2>
-          <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_170px_140px_auto]">
+          <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_170px_140px_180px_auto]">
             <input value={title} onChange={(event) => setTitle(event.target.value)} className="min-h-[48px] rounded-lg border border-slate-200 px-4 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" placeholder="Weekly check-in" />
             <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="min-h-[48px] rounded-lg border border-slate-200 px-4 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
             <input type="time" value={time} onChange={(event) => setTime(event.target.value)} className="min-h-[48px] rounded-lg border border-slate-200 px-4 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+            <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="min-h-[48px] rounded-lg border border-slate-200 bg-white px-3 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" aria-label="Project">
+              <option value="">No project</option>
+              {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+            </select>
             <Button type="button" onClick={addEvent} className="min-h-[48px] gap-2"><Plus className="h-4 w-4" />Add</Button>
           </div>
         </section>
@@ -77,6 +88,7 @@ const CalendarPage: React.FC = () => {
                 <div className="min-w-0 flex-1">
                   <p className="font-bold">{event.title}</p>
                   <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-500"><Clock className="h-4 w-4" />{new Date(`${event.date}T${event.time}`).toLocaleString()}</p>
+                  {event.projectId && <p className="mt-1 text-xs font-bold text-slate-400">{projects.find((project) => project.id === event.projectId)?.name || 'Project'}</p>}
                 </div>
                 <button type="button" onClick={() => deleteEvent(event.id)} className="grid h-10 w-10 place-items-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete meeting">
                   <Trash2 className="h-4 w-4" />

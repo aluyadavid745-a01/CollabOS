@@ -4,6 +4,9 @@ import { ArrowLeft, CalendarClock, CheckCircle2, Folder, Plus, Trash2, Users } f
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { createLocalProject, readLocalProjects, writeLocalProjects, type LocalProjectStatus } from '../utils/localProjects'
+import { readLocalTasks } from '../utils/localTasks'
+import { createAiLaunchPlan } from '../utils/investorDemo'
+import { recordLocalActivity } from '../utils/localActivity'
 import { showToast } from '../utils/toast'
 
 const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70'
@@ -17,6 +20,12 @@ const ProjectsPage: React.FC = () => {
   const [description, setDescription] = React.useState('')
   const [members, setMembers] = React.useState('')
   const [deadline, setDeadline] = React.useState('')
+  const [aiPrompt, setAiPrompt] = React.useState('Plan a launch for our new app')
+  const [refreshKey, setRefreshKey] = React.useState(0)
+  const tasks = React.useMemo(() => {
+    void refreshKey
+    return readLocalTasks()
+  }, [refreshKey])
 
   const saveProjects = (nextProjects: typeof projects, message: string) => {
     if (!writeLocalProjects(nextProjects)) {
@@ -44,6 +53,7 @@ const ProjectsPage: React.FC = () => {
     })
 
     saveProjects([project, ...projects], 'Project created')
+    recordLocalActivity({ type: 'project', title: 'Project created', detail: project.name, route: '/projects' })
     setName('')
     setDescription('')
     setMembers('')
@@ -55,13 +65,22 @@ const ProjectsPage: React.FC = () => {
       projects.map((project) => project.id === projectId ? { ...project, status, updatedAt: new Date().toISOString() } : project),
       'Project updated'
     )
+    recordLocalActivity({ type: 'project', title: 'Project updated', detail: status, route: '/projects' })
   }
 
   const deleteProject = (projectId: string) => {
     saveProjects(projects.filter((project) => project.id !== projectId), 'Project deleted')
+    recordLocalActivity({ type: 'project', title: 'Project deleted', detail: 'A project was removed', route: '/projects' })
   }
 
   const activeProjects = projects.filter((project) => project.status !== 'Done')
+
+  const generatePlan = () => {
+    const project = createAiLaunchPlan(aiPrompt, 'You')
+    setProjects(readLocalProjects())
+    setRefreshKey((value) => value + 1)
+    showToast({ message: `${project.name} plan created`, type: 'success' })
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-5 text-slate-950 sm:px-6 lg:px-10">
@@ -86,6 +105,18 @@ const ProjectsPage: React.FC = () => {
             </div>
           </div>
         </header>
+
+        <section className={`${panel} mb-5 p-4 sm:p-5`}>
+          <h2 className="text-xl font-black">Ask AI to create a project plan</h2>
+          <p className="mt-1 text-sm text-slate-600">Describe the outcome. CollabOS will create a project, tasks, a meeting, message, and file.</p>
+          <div className="mt-4 flex flex-col gap-3 lg:flex-row">
+            <input value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} className="min-h-[48px] min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-4 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+            <Button type="button" onClick={generatePlan} className="min-h-[48px] gap-2">
+              <Plus className="h-5 w-5" />
+              Generate Plan
+            </Button>
+          </div>
+        </section>
 
         <section className={`${panel} mb-5 p-4 sm:p-5`}>
           <h2 className="text-xl font-black">Create a project</h2>
@@ -118,6 +149,12 @@ const ProjectsPage: React.FC = () => {
 
         <section className="grid gap-4 lg:grid-cols-2">
           {projects.length ? projects.map((project, index) => (
+            (() => {
+              const projectTasks = tasks.filter((task) => task.projectId === project.id)
+              const doneCount = projectTasks.filter((task) => task.done).length
+              const progress = projectTasks.length ? Math.round((doneCount / projectTasks.length) * 100) : 0
+
+              return (
             <motion.article
               key={project.id}
               initial={{ opacity: 0, y: 8 }}
@@ -137,6 +174,19 @@ const ProjectsPage: React.FC = () => {
                 <button type="button" onClick={() => deleteProject(project.id)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete project">
                   <Trash2 className="h-4 w-4" />
                 </button>
+              </div>
+
+              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center justify-between text-sm font-bold text-slate-700">
+                  <span>{projectTasks.length} task{projectTasks.length === 1 ? '' : 's'}</span>
+                  <span>{progress}% complete</span>
+                </div>
+                <div className="mt-2 h-2 rounded-full bg-white">
+                  <div className="h-full rounded-full bg-slate-950 transition-all" style={{ width: `${progress}%` }} />
+                </div>
+                {projectTasks.slice(0, 3).map((task) => (
+                  <p key={task.id} className="mt-2 text-sm font-semibold text-slate-600">{task.done ? 'Done' : 'To do'} - {task.title}</p>
+                ))}
               </div>
 
               <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-600 sm:grid-cols-2">
@@ -168,6 +218,8 @@ const ProjectsPage: React.FC = () => {
                 </Button>
               </div>
             </motion.article>
+              )
+            })()
           )) : (
             <div className={`${panel} p-8 text-center lg:col-span-2`}>
               <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-slate-100 text-slate-500">

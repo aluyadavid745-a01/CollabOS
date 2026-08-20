@@ -2,6 +2,7 @@ export interface LocalMessage {
   id: string
   text: string
   sender: string
+  projectId?: string
   createdAt: string
 }
 
@@ -19,6 +20,7 @@ export interface LocalCalendarEvent {
   date: string
   time: string
   notes: string
+  projectId?: string
   createdAt: string
 }
 
@@ -27,6 +29,7 @@ export interface LocalFileRecord {
   name: string
   type: string
   owner: string
+  projectId?: string
   createdAt: string
 }
 
@@ -62,10 +65,11 @@ const localId = () =>
 
 export const readLocalMessages = () => readList<LocalMessage>(MESSAGES_KEY)
 export const writeLocalMessages = (messages: LocalMessage[]) => writeList(MESSAGES_KEY, messages)
-export const createLocalMessage = (input: { text: string; sender: string }) => ({
+export const createLocalMessage = (input: { text: string; sender: string; projectId?: string }) => ({
   id: localId(),
   text: input.text.trim(),
   sender: input.sender.trim() || 'You',
+  projectId: input.projectId,
   createdAt: new Date().toISOString(),
 } satisfies LocalMessage)
 
@@ -82,21 +86,23 @@ export const createLocalTeamMember = (input: { name: string; email: string; role
 export const readLocalCalendarEvents = () =>
   readList<LocalCalendarEvent>(CALENDAR_KEY).sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
 export const writeLocalCalendarEvents = (events: LocalCalendarEvent[]) => writeList(CALENDAR_KEY, events)
-export const createLocalCalendarEvent = (input: { title: string; date: string; time: string; notes?: string }) => ({
+export const createLocalCalendarEvent = (input: { title: string; date: string; time: string; notes?: string; projectId?: string }) => ({
   id: localId(),
   title: input.title.trim(),
   date: input.date,
   time: input.time,
   notes: input.notes?.trim() || '',
+  projectId: input.projectId,
   createdAt: new Date().toISOString(),
 } satisfies LocalCalendarEvent)
 
 export const readLocalFiles = () => readList<LocalFileRecord>(FILES_KEY)
 export const writeLocalFiles = (files: LocalFileRecord[]) => writeList(FILES_KEY, files)
-export const createLocalFileRecord = (input: { name: string; type: string; owner: string }) => ({
+export const createLocalFileRecord = (input: { name: string; type: string; owner: string; projectId?: string }) => ({
   id: localId(),
   name: input.name.trim(),
   type: input.type.trim() || 'Document',
   owner: input.owner.trim() || 'You',
+  projectId: input.projectId,
   createdAt: new Date().toISOString(),
 } satisfies LocalFileRecord)

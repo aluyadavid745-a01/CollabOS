@@ -6,6 +6,7 @@ export interface LocalTask {
   priority: 'Low' | 'Medium' | 'High'
   description: string
   done: boolean
+  projectId?: string
   createdAt: string
 }
 
@@ -39,6 +40,7 @@ export const createLocalTask = (input: {
   dueAt?: string
   priority?: LocalTask['priority']
   description?: string
+  projectId?: string
 }) => ({
   id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
   title: input.title.trim(),
@@ -47,5 +49,6 @@ export const createLocalTask = (input: {
   priority: input.priority || 'Medium',
   description: input.description?.trim() || '',
   done: false,
+  projectId: input.projectId,
   createdAt: new Date().toISOString(),
 } satisfies LocalTask)

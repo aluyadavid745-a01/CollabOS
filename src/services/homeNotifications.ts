@@ -2,6 +2,7 @@ import type { HomeNotification } from '../types/home'
 import type { UserProfile } from '../types/profile'
 import { listStoredTeamWorkspaces } from './teamChat'
 import { listCachedWebsiteProjects } from '../utils/websiteBuilderStorage'
+import { readLocalActivity } from '../utils/localActivity'
 
 const READ_KEY = 'collabos:homeNotifications:read'
 
@@ -35,6 +36,7 @@ export const listHomeNotifications = (_profile?: UserProfile | null): HomeNotifi
   const read = readIds()
   const workspaces = listStoredTeamWorkspaces()
   const websites = listCachedWebsiteProjects()
+  const activity = readLocalActivity()
 
   const items: HomeNotification[] = []
 
@@ -89,6 +91,19 @@ export const listHomeNotifications = (_profile?: UserProfile | null): HomeNotifi
       route: '/dashboard/websites',
       createdAt: website.updatedAt,
       priority: website.status === 'published' ? 'high' : 'normal',
+    }, read))
+  })
+
+  activity.slice(0, 8).forEach((item) => {
+    items.push(notification({
+      id: `activity-${item.id}`,
+      type: item.type === 'calendar' ? 'meeting' : item.type === 'task' ? 'project' : item.type === 'ai' ? 'ai' : item.type === 'team' ? 'invite' : item.type === 'file' ? 'website' : 'message',
+      title: item.title,
+      body: item.detail,
+      source: 'CollabOS',
+      route: item.route,
+      createdAt: item.createdAt,
+      priority: item.type === 'ai' ? 'high' : 'normal',
     }, read))
   })
 

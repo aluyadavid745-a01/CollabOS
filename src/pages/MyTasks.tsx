@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
+import { readLocalProjects } from '../utils/localProjects'
 import { createLocalTask, readLocalTasks, writeLocalTasks } from '../utils/localTasks'
+import { recordLocalActivity } from '../utils/localActivity'
 import { showToast } from '../utils/toast'
 
 const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70'
@@ -15,8 +17,10 @@ const MyTasks: React.FC = () => {
   const { profile } = useAuth()
   const activeProfile = profile || createDefaultProfile({ name: 'CollabOS User', email: '' })
   const [tasks, setTasks] = React.useState(() => readLocalTasks())
+  const [projects] = React.useState(() => readLocalProjects())
   const [title, setTitle] = React.useState('')
   const [dueAt, setDueAt] = React.useState('')
+  const [projectId, setProjectId] = React.useState('')
 
   const saveTasks = (nextTasks: typeof tasks, successMessage: string) => {
     if (!writeLocalTasks(nextTasks)) {
@@ -39,11 +43,14 @@ const MyTasks: React.FC = () => {
       title: cleanTitle,
       owner: activeProfile.name,
       dueAt: dueAt || undefined,
+      projectId: projectId || undefined,
     })
 
     saveTasks([nextTask, ...tasks], 'Task added for later')
+    recordLocalActivity({ type: 'task', title: 'Task added', detail: nextTask.title, route: '/tasks' })
     setTitle('')
     setDueAt('')
+    setProjectId('')
   }
 
   const toggleTask = (taskId: string) => {
@@ -51,10 +58,12 @@ const MyTasks: React.FC = () => {
       tasks.map((task) => task.id === taskId ? { ...task, done: !task.done } : task),
       'Task updated'
     )
+    recordLocalActivity({ type: 'task', title: 'Task updated', detail: 'Task status changed', route: '/tasks' })
   }
 
   const deleteTask = (taskId: string) => {
     saveTasks(tasks.filter((task) => task.id !== taskId), 'Task deleted')
+    recordLocalActivity({ type: 'task', title: 'Task deleted', detail: 'A task was removed', route: '/tasks' })
   }
 
   const openTasks = tasks.filter((task) => !task.done)
@@ -87,7 +96,7 @@ const MyTasks: React.FC = () => {
         <section className={`${panel} mb-5 p-4 sm:p-5`}>
           <h2 className="text-xl font-black">Create a task for later</h2>
           <p className="mt-1 text-sm text-slate-600">Type what you need to do. You can add a date if you want.</p>
-          <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_180px_auto]">
+          <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_180px_180px_auto]">
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -109,6 +118,10 @@ const MyTasks: React.FC = () => {
               className="min-h-[48px] rounded-lg border border-slate-200 bg-white px-4 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
               aria-label="Due date"
             />
+            <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="min-h-[48px] rounded-lg border border-slate-200 bg-white px-4 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" aria-label="Project">
+              <option value="">No project</option>
+              {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+            </select>
             <Button type="button" onClick={addTask} className="min-h-[48px] gap-2">
               <Plus className="h-5 w-5" />
               Add Task
@@ -138,6 +151,7 @@ const MyTasks: React.FC = () => {
                     <CalendarClock className="h-4 w-4" />
                     {new Date(task.dueAt).toLocaleDateString()}
                   </p>
+                  {task.projectId && <p className="mt-1 text-xs font-bold text-slate-400">{projects.find((project) => project.id === task.projectId)?.name || 'Project'}</p>}
                 </div>
                 <button type="button" onClick={() => deleteTask(task.id)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete task">
                   <Trash2 className="h-4 w-4" />

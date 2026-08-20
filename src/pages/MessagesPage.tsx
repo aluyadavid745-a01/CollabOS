@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
+import { readLocalProjects } from '../utils/localProjects'
+import { recordLocalActivity } from '../utils/localActivity'
 import { createLocalMessage, readLocalMessages, writeLocalMessages } from '../utils/localWorkspace'
 import { showToast } from '../utils/toast'
 
@@ -14,7 +16,9 @@ const MessagesPage: React.FC = () => {
   const { profile } = useAuth()
   const activeProfile = profile || createDefaultProfile({ name: 'CollabOS User', email: '' })
   const [messages, setMessages] = React.useState(() => readLocalMessages())
+  const [projects] = React.useState(() => readLocalProjects())
   const [draft, setDraft] = React.useState('')
+  const [projectId, setProjectId] = React.useState('')
 
   const sendMessage = () => {
     const text = draft.trim()
@@ -23,7 +27,7 @@ const MessagesPage: React.FC = () => {
       return
     }
 
-    const message = createLocalMessage({ text, sender: activeProfile.name })
+    const message = createLocalMessage({ text, sender: activeProfile.name, projectId: projectId || undefined })
     if (!writeLocalMessages([message, ...messages])) {
       showToast({ message: "We couldn't send your message. Please try again.", type: 'error' })
       return
@@ -31,6 +35,8 @@ const MessagesPage: React.FC = () => {
 
     setMessages([message, ...messages])
     setDraft('')
+    setProjectId('')
+    recordLocalActivity({ type: 'message', title: 'Message sent', detail: message.text, route: '/messages' })
     showToast({ message: 'Message sent', type: 'success' })
   }
 
@@ -48,7 +54,7 @@ const MessagesPage: React.FC = () => {
 
         <section className={`${panel} mb-5 p-4 sm:p-5`}>
           <h2 className="text-xl font-black">Send a message</h2>
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 grid gap-2 lg:grid-cols-[1fr_180px_auto]">
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
@@ -63,6 +69,10 @@ const MessagesPage: React.FC = () => {
               aria-label="Message"
               autoFocus
             />
+            <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="min-h-[48px] rounded-lg border border-slate-200 bg-white px-3 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" aria-label="Project">
+              <option value="">No project</option>
+              {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+            </select>
             <Button type="button" onClick={sendMessage} className="min-h-[48px] gap-2">
               <Send className="h-4 w-4" />
               Send
@@ -78,6 +88,7 @@ const MessagesPage: React.FC = () => {
             {messages.length ? messages.map((message) => (
               <article key={message.id} className="p-4">
                 <p className="font-bold">{message.text}</p>
+                {message.projectId && <p className="mt-1 text-xs font-bold text-slate-400">{projects.find((project) => project.id === message.projectId)?.name || 'Project'}</p>}
                 <p className="mt-2 text-sm font-semibold text-slate-500">{message.sender} - {new Date(message.createdAt).toLocaleString()}</p>
               </article>
             )) : (
