@@ -4,6 +4,10 @@ export type PrefetchTarget =
   | 'homeDashboard'
   | 'myTasks'
   | 'projects'
+  | 'messages'
+  | 'team'
+  | 'calendar'
+  | 'files'
   | 'notifications'
   | 'editProfile'
   | 'websiteDashboard'
@@ -30,6 +34,10 @@ const preloaders: Record<PrefetchTarget, () => Promise<unknown>> = {
   homeDashboard: () => import('../pages/HomeDashboard'),
   myTasks: () => import('../pages/MyTasks'),
   projects: () => import('../pages/ProjectsPage'),
+  messages: () => import('../pages/MessagesPage'),
+  team: () => import('../pages/TeamPage'),
+  calendar: () => import('../pages/CalendarPage'),
+  files: () => import('../pages/FilesPage'),
   notifications: () => import('../pages/NotificationCenter'),
   editProfile: () => import('../pages/EditProfile'),
   websiteDashboard: () => import('../pages/WebsiteBuilderDashboard'),

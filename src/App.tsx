@@ -15,6 +15,10 @@ const EmailAction = React.lazy(() => import("./pages/EmailAction"));
 const HomeDashboard = React.lazy(() => import("./pages/HomeDashboard"));
 const MyTasks = React.lazy(() => import("./pages/MyTasks"));
 const ProjectsPage = React.lazy(() => import("./pages/ProjectsPage"));
+const MessagesPage = React.lazy(() => import("./pages/MessagesPage"));
+const TeamPage = React.lazy(() => import("./pages/TeamPage"));
+const CalendarPage = React.lazy(() => import("./pages/CalendarPage"));
+const FilesPage = React.lazy(() => import("./pages/FilesPage"));
 const NotificationCenter = React.lazy(() => import("./pages/NotificationCenter"));
 const EditProfile = React.lazy(() => import("./pages/EditProfile"));
 const FeatureDetail = React.lazy(() => import("./pages/FeatureDetail"));
@@ -143,14 +147,14 @@ function App() {
   React.useEffect(() => {
     if (view !== "home") return;
 
-    return prefetchRoutesOnIdle(["auth", "profile", "homeDashboard", "myTasks", "projects", "notifications", "editProfile", "websiteDashboard", "featureDetail", "teamWorkspace", "giftCards"], 1200);
+    return prefetchRoutesOnIdle(["auth", "profile", "homeDashboard", "myTasks", "projects", "messages", "team", "calendar", "files", "notifications", "editProfile", "websiteDashboard", "featureDetail", "teamWorkspace", "giftCards"], 1200);
   }, [view]);
 
   React.useEffect(() => {
     if (!rememberedUser && !firebaseUser) return;
 
     return prefetchRoutesOnIdle(
-      ["profile", "homeDashboard", "myTasks", "projects", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview", "codeBuilder", "aiBuilder", "teamWorkspace", "giftCards"],
+      ["profile", "homeDashboard", "myTasks", "projects", "messages", "team", "calendar", "files", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview", "codeBuilder", "aiBuilder", "teamWorkspace", "giftCards"],
       900
     );
   }, [firebaseUser, rememberedUser]);
@@ -311,6 +315,42 @@ function App() {
           element={protectedRoute(
             <React.Suspense fallback={<RouteShell label="Opening projects..." />}>
               <ProjectsPage />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/messages"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening messages..." />}>
+              <MessagesPage />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/team"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening team..." />}>
+              <TeamPage />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/calendar"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening calendar..." />}>
+              <CalendarPage />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/files"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening files..." />}>
+              <FilesPage />
             </React.Suspense>,
             "Checking account..."
           )}

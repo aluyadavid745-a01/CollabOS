@@ -25,10 +25,11 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
 import { listHomeNotifications, markHomeNotificationRead } from '../services/homeNotifications'
-import { createLocalWorkspace, listLocalMessages, listStoredTeamWorkspaces } from '../services/teamChat'
+import { createLocalWorkspace, listStoredTeamWorkspaces } from '../services/teamChat'
 import { createDefaultProfile, type UserProfile } from '../types/profile'
 import { createLocalProject, readLocalProjects, writeLocalProjects } from '../utils/localProjects'
 import { createLocalTask, readLocalTasks, writeLocalTasks, type LocalTask } from '../utils/localTasks'
+import { readLocalCalendarEvents, readLocalFiles, readLocalMessages, readLocalTeamMembers } from '../utils/localWorkspace'
 import { showToast } from '../utils/toast'
 import type { HomeNotification, HomeTask } from '../types/home'
 
@@ -140,12 +141,12 @@ const QuickCreateModal = ({
 
     if (type === 'document') {
       showToast({ message: 'Document setup opened', type: 'success' })
-      navigate('/dashboard/websites')
+      navigate('/files')
       return
     }
 
     showToast({ message: type === 'meeting' ? 'Meeting setup opened' : 'Channel setup opened', type: 'success' })
-    navigate(type === 'meeting' ? '/meetings' : '/workspace')
+    navigate(type === 'meeting' ? '/calendar' : '/messages')
   }
 
   const title = type === 'task' ? 'Create a task' : type === 'team' ? 'Create your team space' : type === 'meeting' ? 'Create a meeting' : type === 'channel' ? 'Create a channel' : type === 'document' ? 'Create a document' : 'Create a project'
@@ -213,6 +214,19 @@ const QuickCreateModal = ({
           </div>
         )}
 
+        {type === 'project' && (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-bold text-slate-700">Team members</span>
+              <input value={owner} onChange={(event) => setOwner(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" placeholder="Sarah, David, Alex" />
+            </label>
+            <label className="block">
+              <span className="text-sm font-bold text-slate-700">Deadline</span>
+              <input type="date" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+            </label>
+          </div>
+        )}
+
         <button type="button" onClick={() => setShowMore((current) => !current)} className="mt-4 flex min-h-[44px] items-center gap-2 text-sm font-bold text-slate-700">
           <ChevronDown className={`h-4 w-4 transition ${showMore ? 'rotate-180' : ''}`} />
           More options
@@ -256,6 +270,18 @@ const HomeDashboard: React.FC = () => {
     void refreshKey
     return readLocalProjects()
   }, [refreshKey])
+  const teamMembers = React.useMemo(() => {
+    void refreshKey
+    return readLocalTeamMembers()
+  }, [refreshKey])
+  const calendarEvents = React.useMemo(() => {
+    void refreshKey
+    return readLocalCalendarEvents()
+  }, [refreshKey])
+  const files = React.useMemo(() => {
+    void refreshKey
+    return readLocalFiles()
+  }, [refreshKey])
   const localTasks = React.useMemo(() => {
     void refreshKey
     return readLocalTasks()
@@ -264,20 +290,12 @@ const HomeDashboard: React.FC = () => {
     void refreshKey
     return listHomeNotifications(profile)
   }, [profile, refreshKey])
-  const activeWorkspace = workspaces[0]
   const recentMessages = React.useMemo(() => {
     void refreshKey
-    if (!activeWorkspace) return []
-    return activeWorkspace.channels
-      .flatMap((channel) =>
-        listLocalMessages(activeWorkspace, channel.id).map((message) => ({
-          ...message,
-          channelName: channel.name,
-        }))
-      )
+    return readLocalMessages()
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 3)
-  }, [activeWorkspace, refreshKey])
+  }, [refreshKey])
 
   const taskCards = [
     ...localTasks.map((task) => ({
@@ -292,11 +310,11 @@ const HomeDashboard: React.FC = () => {
 
   const todayTasks = taskCards.filter((task) => task.status !== 'Done' && dueToday(task.dueAt))
   const nextTask = todayTasks[0] || taskCards.find((task) => task.status !== 'Done')
-  const upcomingMeetings = notifications.filter((item) => item.type === 'meeting').length
+  const upcomingMeetings = calendarEvents.length
 
   const onboardingItems = [
     { label: 'Create your team space', done: workspaces.length > 0, action: () => openCreate('team') },
-    { label: 'Invite your team', done: Boolean(activeWorkspace?.invites.length), action: () => navigate('/workspace') },
+    { label: 'Invite your team', done: teamMembers.length > 0, action: () => navigate('/team') },
     { label: 'Create your first project', done: projects.length > 0, action: () => navigate('/projects') },
     { label: 'Create your first task', done: localTasks.length > 0, action: () => openCreate('task') },
   ]
@@ -330,6 +348,26 @@ const HomeDashboard: React.FC = () => {
     if (prompt.includes('create') && prompt.includes('project')) {
       openCreate('project')
       setAiAnswer('I opened project creation. Add the project name, people involved, and deadline, then create it.')
+      return
+    }
+    if (prompt.includes('message')) {
+      navigate('/messages')
+      setAiAnswer('I opened Messages so you can send a clear team update.')
+      return
+    }
+    if (prompt.includes('team') || prompt.includes('invite')) {
+      navigate('/team')
+      setAiAnswer('I opened Team so you can add or invite people.')
+      return
+    }
+    if (prompt.includes('meeting') || prompt.includes('calendar')) {
+      navigate('/calendar')
+      setAiAnswer('I opened Calendar so you can schedule a meeting.')
+      return
+    }
+    if (prompt.includes('file') || prompt.includes('document')) {
+      navigate('/files')
+      setAiAnswer('I opened Files so you can save important documents.')
       return
     }
     if (prompt.includes('task')) {
@@ -379,10 +417,10 @@ const HomeDashboard: React.FC = () => {
     { label: 'Home', icon: Home, action: () => navigate('/home'), active: true },
     { label: 'My Tasks', icon: CheckSquare, action: () => navigate('/tasks') },
     { label: 'Projects', icon: Folder, action: () => navigate('/projects') },
-    { label: 'Messages', icon: MessageSquare, action: () => navigate('/workspace') },
-    { label: 'Team', icon: Users, action: () => navigate('/workspace') },
-    { label: 'Calendar', icon: CalendarClock, action: () => navigate('/meetings') },
-    { label: 'Files', icon: FileText, action: () => navigate('/dashboard/websites') },
+    { label: 'Messages', icon: MessageSquare, action: () => navigate('/messages') },
+    { label: 'Team', icon: Users, action: () => navigate('/team') },
+    { label: 'Calendar', icon: CalendarClock, action: () => navigate('/calendar') },
+    { label: 'Files', icon: FileText, action: () => navigate('/files') },
   ]
 
   return (
@@ -508,13 +546,14 @@ const HomeDashboard: React.FC = () => {
             </article>
           </section>
 
-          <section className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <section className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
             {[
               { label: 'Tasks due today', value: todayTasks.length, action: () => navigate('/tasks') },
               { label: 'Active projects', value: projects.filter((project) => project.status !== 'Done').length, action: () => navigate('/projects') },
-              { label: 'New messages', value: recentMessages.length, action: () => navigate('/workspace') },
-              { label: 'Upcoming meetings', value: upcomingMeetings, action: () => navigate('/meetings') },
-              { label: 'Recent team activity', value: notifications.length, action: () => navigate('/notifications') },
+              { label: 'Team members', value: teamMembers.length, action: () => navigate('/team') },
+              { label: 'New messages', value: recentMessages.length, action: () => navigate('/messages') },
+              { label: 'Upcoming meetings', value: upcomingMeetings, action: () => navigate('/calendar') },
+              { label: 'Saved files', value: files.length, action: () => navigate('/files') },
             ].map((item) => (
               <button key={item.label} type="button" onClick={item.action} className={`${panel} min-h-[110px] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md`}>
                 <p className="text-3xl font-black">{item.value}</p>
@@ -622,7 +661,7 @@ const HomeDashboard: React.FC = () => {
                   <div className="rounded-lg border border-dashed border-slate-300 p-5">
                     <h3 className="font-black">No messages yet</h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600">Messages are where your team shares updates and decisions.</p>
-                    <Button type="button" size="sm" variant="secondary" onClick={() => navigate('/workspace')} className="mt-4">Open messages</Button>
+                    <Button type="button" size="sm" variant="secondary" onClick={() => navigate('/messages')} className="mt-4">Open messages</Button>
                   </div>
                 )}
               </div>
@@ -637,7 +676,7 @@ const HomeDashboard: React.FC = () => {
             { label: 'Home', icon: Home, action: () => navigate('/home') },
             { label: 'Tasks', icon: CheckSquare, action: () => navigate('/tasks') },
             { label: 'Create', icon: Plus, action: () => openCreate('task'), primary: true },
-            { label: 'Messages', icon: MessageSquare, action: () => navigate('/workspace') },
+            { label: 'Messages', icon: MessageSquare, action: () => navigate('/messages') },
             { label: 'Profile', icon: Users, action: () => navigate('/profile') },
           ].map((item) => {
             const Icon = item.icon
