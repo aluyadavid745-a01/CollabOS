@@ -170,7 +170,7 @@ function App() {
       workspace: nextUser.workspace,
     });
     prefetchRoutes(["profile", "homeDashboard", "notifications", "editProfile", "websiteDashboard", "websiteEditor", "websitePreview"]);
-    navigateRouter(getPostAuthRedirect(location.state) || consumePendingAuthRedirect() || "/", { replace: true });
+    navigateRouter(getPostAuthRedirect(location.state) || consumePendingAuthRedirect() || "/home", { replace: true });
   };
 
   const handleSignupVerified = (nextUser: AuthUser) => {
