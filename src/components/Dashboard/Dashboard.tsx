@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Bot, CalendarClock, CheckCircle2, FileText, Folder, MessageSquare, Users } from 'lucide-react'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -15,10 +16,9 @@ const Dashboard: React.FC = () => {
     if (!sectionRef.current) return
 
     const ctx = gsap.context(() => {
-      // Title animation
       gsap.fromTo(
         titleRef.current,
-        { y: 30, opacity: 0 },
+        { y: 28, opacity: 0 },
         {
           scrollTrigger: {
             trigger: sectionRef.current,
@@ -31,10 +31,9 @@ const Dashboard: React.FC = () => {
         }
       )
 
-      // Description animation
       gsap.fromTo(
         descRef.current,
-        { y: 20, opacity: 0 },
+        { y: 18, opacity: 0 },
         {
           scrollTrigger: {
             trigger: sectionRef.current,
@@ -43,15 +42,14 @@ const Dashboard: React.FC = () => {
           y: 0,
           opacity: 1,
           duration: 0.8,
-          delay: 0.2,
+          delay: 0.15,
           immediateRender: false,
         }
       )
 
-      // Image animation with parallax
       gsap.fromTo(
         imageRef.current,
-        { scale: 0.9, opacity: 0 },
+        { scale: 0.96, opacity: 0 },
         {
           scrollTrigger: {
             trigger: sectionRef.current,
@@ -59,159 +57,162 @@ const Dashboard: React.FC = () => {
           },
           scale: 1,
           opacity: 1,
-          duration: 1,
-          delay: 0.3,
+          duration: 0.9,
+          delay: 0.25,
           immediateRender: false,
         }
       )
-
-      gsap.to(imageRef.current, {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'center center',
-          scrub: 1,
-        },
-        y: -30,
-        ease: 'none',
-      })
     }, sectionRef)
 
     return () => ctx.revert()
   }, [])
 
   const features = [
-    'Unified Team Workspace',
-    'Real-time Collaboration',
-    'AI-Powered Insights',
-    'Admin Analytics Foundations',
+    { icon: CheckCircle2, label: 'Today’s tasks', detail: 'Know exactly what needs attention.' },
+    { icon: Folder, label: 'Active projects', detail: 'Track owners, deadlines, and progress.' },
+    { icon: MessageSquare, label: 'Team updates', detail: 'Keep decisions close to the work.' },
+    { icon: Bot, label: 'AI next action', detail: 'Turn intent into workspace actions.' },
   ]
 
   return (
     <section
       ref={sectionRef}
-      className="py-20 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 relative overflow-hidden"
+      className="relative overflow-hidden border-t border-slate-200 bg-white px-4 py-20 md:px-8 md:py-28 lg:px-16 lg:py-36"
       id="dashboard"
     >
-      <div className="absolute inset-0 bg-white" />
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-slate-700 shadow-sm mb-6"
-            >
-              <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-              <span className="text-sm font-semibold">
-                Beautiful Dashboard
-              </span>
-            </motion.div>
-
-            <h2 ref={titleRef} className="text-title text-slate-950 mb-6">
-              Know what needs attention today
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
+          <div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-black text-slate-700 shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              Product cockpit
+            </div>
+            <h2 ref={titleRef} className="text-4xl font-black leading-tight text-slate-950 md:text-5xl lg:text-6xl">
+              Every morning starts with one clear screen.
             </h2>
+          </div>
+          <p ref={descRef} className="max-w-2xl text-lg leading-8 text-slate-600">
+            The dashboard pulls together tasks, active projects, messages, files, meetings, team activity, and the next best action so a beginner understands the workspace in minutes.
+          </p>
+        </div>
 
-            <p ref={descRef} className="text-body text-slate-600 mb-8 leading-relaxed">
-              The dashboard brings together today’s tasks, active projects, recent messages, upcoming meetings, files, and the next action your team should take.
-            </p>
+        <div className="mb-8 grid gap-4 md:grid-cols-4">
+          {features.map((feature) => {
+            const Icon = feature.icon
+            return (
+              <motion.article
+                key={feature.label}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
+              >
+                <Icon className="h-5 w-5 text-slate-600" />
+                <h3 className="mt-4 font-black text-slate-950">{feature.label}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{feature.detail}</p>
+              </motion.article>
+            )
+          })}
+        </div>
 
-            {/* Feature List */}
-            <div className="space-y-4 mb-8">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-3"
-                >
-                  <div className="w-6 h-6 rounded-full bg-slate-950 flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-4 h-4 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-slate-700">{feature}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { number: 'Real', label: 'Workspace data only' },
-                { number: 'Clear', label: 'Next action focused' },
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="p-4 rounded-lg border border-slate-200 bg-slate-50"
-                >
-                  <p className="text-2xl font-bold text-slate-950">
-                    {stat.number}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Right - Dashboard Image */}
-          <motion.div
-            ref={imageRef}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative"
-          >
-            {/* Dashboard Card */}
-            <div className="relative glass-effect rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70 md:p-8">
-              {/* Fake dashboard header */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                </div>
-                <div className="h-2 bg-slate-200 rounded w-1/2" />
+        <motion.div
+          ref={imageRef}
+          initial={{ opacity: 0, scale: 0.96 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="rounded-[1.4rem] border border-slate-300 bg-white p-2 shadow-2xl shadow-slate-300/60"
+        >
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4">
+              <div>
+                <p className="text-sm font-black uppercase tracking-wider text-slate-500">Home</p>
+                <h3 className="text-2xl font-black text-slate-950">Good morning, David</h3>
               </div>
+              <button type="button" className="min-h-[44px] rounded-xl bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-slate-950/15">
+                + Create
+              </button>
+            </div>
 
-              {/* Fake dashboard content */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  {[1, 2, 3].map((i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 3, repeat: Infinity, delay: i * 0.3 }}
-                      className="h-12 rounded-lg border border-slate-200 bg-slate-100"
-                    />
+            <div className="grid gap-4 p-4 lg:grid-cols-[1fr_360px]">
+              <section className="grid gap-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  {[
+                    ['Tasks due today', '4'],
+                    ['Active projects', '2'],
+                    ['Upcoming meetings', '1'],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                      <p className="text-3xl font-black text-slate-950">{value}</p>
+                      <p className="mt-2 text-sm font-bold text-slate-500">{label}</p>
+                    </div>
                   ))}
                 </div>
-                <div className="h-16 rounded-lg border border-slate-200 bg-slate-50" />
-                <div className="h-24 rounded-lg border border-slate-200 bg-slate-50" />
-              </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xl font-black text-slate-950">Website redesign</h4>
+                      <p className="mt-1 text-sm font-semibold text-slate-500">8 tasks, 3 owners, Friday deadline</p>
+                    </div>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-black text-slate-700">Active</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-100">
+                    <div className="h-full w-2/3 rounded-full bg-slate-950" />
+                  </div>
+                  <div className="mt-5 grid gap-3 md:grid-cols-2">
+                    {[
+                      ['Finalize landing copy', 'Done'],
+                      ['Upload demo screenshots', 'Today'],
+                      ['Review pricing limits', 'Today'],
+                      ['Invite design reviewer', 'Tomorrow'],
+                    ].map(([task, status]) => (
+                      <div key={task} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <p className="font-bold text-slate-800">{task}</p>
+                        <p className="mt-1 text-xs font-black uppercase tracking-wider text-slate-500">{status}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              <aside className="grid gap-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-950 text-white">
+                      <Bot className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-slate-950">AI next action</h4>
+                      <p className="text-sm font-semibold text-slate-500">Workspace-aware</p>
+                    </div>
+                  </div>
+                  <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-slate-700">
+                    Finish the pricing copy, then assign the demo screenshot task before today’s check-in.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <h4 className="font-black text-slate-950">Team activity</h4>
+                  <div className="mt-4 space-y-3">
+                    {[
+                      [Users, 'Sarah joined Website redesign'],
+                      [FileText, 'Pitch deck outline saved'],
+                      [CalendarClock, 'Launch review at 2:00 PM'],
+                    ].map(([Icon, item]) => {
+                      const ActivityIcon = Icon as typeof Users
+                      return (
+                        <div key={String(item)} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                          <ActivityIcon className="h-4 w-4 text-slate-500" />
+                          <p className="text-sm font-bold text-slate-700">{String(item)}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </aside>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   )

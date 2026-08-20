@@ -14,20 +14,33 @@
   body {
     @apply bg-slate-50 text-slate-950 antialiased;
     overflow-x: hidden;
+    text-rendering: geometricPrecision;
+  }
+
+  ::selection {
+    @apply bg-slate-950 text-white;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-slate-950 ring-offset-2 ring-offset-white;
   }
 }
 
 @layer components {
   .glass-effect {
-    @apply bg-white border border-slate-200 shadow-sm;
+    @apply bg-white border border-slate-200 shadow-sm shadow-slate-200/70;
   }
 
   .text-title {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold leading-tight;
+    @apply text-4xl md:text-5xl lg:text-6xl font-black leading-tight;
   }
 
   .text-body {
     @apply text-base md:text-lg text-slate-600;
+  }
+
+  .premium-panel {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70;
   }
 
   .animate-blob {
