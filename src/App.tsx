@@ -22,6 +22,7 @@ const MessagesPage = React.lazy(() => import("./pages/MessagesPage"));
 const TeamPage = React.lazy(() => import("./pages/TeamPage"));
 const CalendarPage = React.lazy(() => import("./pages/CalendarPage"));
 const FilesPage = React.lazy(() => import("./pages/FilesPage"));
+const AiWorkspace = React.lazy(() => import("./pages/AiWorkspace"));
 const NotificationCenter = React.lazy(() => import("./pages/NotificationCenter"));
 const EditProfile = React.lazy(() => import("./pages/EditProfile"));
 const FeatureDetail = React.lazy(() => import("./pages/FeatureDetail"));
@@ -334,6 +335,15 @@ function App() {
           )}
         />
         <Route
+          path="/dashboard"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening dashboard..." />}>
+              <HomeDashboard />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
           path="/tasks"
           element={protectedRoute(
             <React.Suspense fallback={<RouteShell label="Opening tasks..." />}>
@@ -383,6 +393,15 @@ function App() {
           element={protectedRoute(
             <React.Suspense fallback={<RouteShell label="Opening files..." />}>
               <FilesPage />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/ai"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening AI assistant..." />}>
+              <AiWorkspace />
             </React.Suspense>,
             "Checking account..."
           )}

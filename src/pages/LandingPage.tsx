@@ -9,6 +9,7 @@ import CTA from '../components/CTA/CTA'
 import Footer from '../components/Footer/Footer'
 import Navbar from '../components/Navbar/Navbar'
 import CompanyStory from '../components/CompanyStory/CompanyStory'
+import InvestorReadySections from '../components/InvestorReady/InvestorReadySections'
 import type { AuthMode, AuthUser } from './AuthPage'
 import { trackAnalyticsEvent } from '../services/analytics'
 
@@ -58,6 +59,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <main className="relative">
         {/* Hero Section */}
         <Hero rememberedUser={rememberedUser} onNavigate={onNavigate} />
+
+        <InvestorReadySections />
 
         <CompanyStory />
 

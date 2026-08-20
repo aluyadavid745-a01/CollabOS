@@ -438,6 +438,7 @@ const HomeDashboard: React.FC = () => {
     { label: 'Team', icon: Users, action: () => navigate('/team') },
     { label: 'Calendar', icon: CalendarClock, action: () => navigate('/calendar') },
     { label: 'Files', icon: FileText, action: () => navigate('/files') },
+    { label: 'AI', icon: Bot, action: () => navigate('/ai') },
   ]
 
   return (
@@ -563,6 +564,9 @@ const HomeDashboard: React.FC = () => {
                 <Button type="button" onClick={askAi}>Ask</Button>
               </div>
               {aiAnswer && <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-700">{aiAnswer}</p>}
+              <button type="button" onClick={() => navigate('/ai')} className="mt-3 text-sm font-bold text-slate-700 hover:text-slate-950">
+                Open AI workspace assistant
+              </button>
             </article>
           </section>
 
