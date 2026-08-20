@@ -262,6 +262,7 @@ const HomeDashboard: React.FC = () => {
   const [isHelpOpen, setIsHelpOpen] = React.useState(false)
   const [aiPrompt, setAiPrompt] = React.useState('What do I need to finish today?')
   const [aiAnswer, setAiAnswer] = React.useState('')
+  const [newTaskTitle, setNewTaskTitle] = React.useState('')
   const [onboardingDismissed, setOnboardingDismissed] = React.useState(() => typeof window !== 'undefined' && window.localStorage.getItem(ONBOARDING_KEY) === '1')
 
   const workspaces = React.useMemo(() => {
@@ -377,6 +378,30 @@ const HomeDashboard: React.FC = () => {
     writeLocalTasks(updated)
     setRefreshKey((value) => value + 1)
     showToast({ message: 'Task completed', type: 'success' })
+  }
+
+  const addTodoTask = () => {
+    const title = newTaskTitle.trim()
+    if (!title) {
+      showToast({ message: 'Type a task first.', type: 'warning' })
+      return
+    }
+
+    const task: LocalTask = {
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+      title,
+      owner: activeProfile.name,
+      dueAt: new Date().toISOString(),
+      priority: 'Medium',
+      description: '',
+      done: false,
+      createdAt: new Date().toISOString(),
+    }
+
+    writeLocalTasks([task, ...readLocalTasks()])
+    setNewTaskTitle('')
+    setRefreshKey((value) => value + 1)
+    showToast({ message: 'Task added', type: 'success' })
   }
 
   const primaryLinks = [
@@ -530,18 +555,42 @@ const HomeDashboard: React.FC = () => {
           <section className="grid gap-5 xl:grid-cols-3">
             <article className={`${panel} p-5`}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-black">My Tasks</h2>
+                <div>
+                  <h2 className="text-xl font-black">My Tasks</h2>
+                  <p className="mt-1 text-sm text-slate-600">Add tasks like a simple to-do list.</p>
+                </div>
                 <button type="button" onClick={() => openCreate('task')} className={iconButton} aria-label="Create task" title="Create a task">
                   <Plus className="h-5 w-5" />
                 </button>
               </div>
+              <div className="mb-4 flex gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                <input
+                  value={newTaskTitle}
+                  onChange={(event) => setNewTaskTitle(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      addTodoTask()
+                    }
+                  }}
+                  className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-transparent bg-white px-3 text-sm font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+                  placeholder="Add a task, like Call Sarah"
+                  aria-label="Add a task"
+                />
+                <Button type="button" onClick={addTodoTask} className="min-h-[44px] shrink-0 gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add
+                </Button>
+              </div>
               <div className="space-y-3">
                 {taskCards.length ? taskCards.map((task) => (
-                  <div key={task.id} className="rounded-lg border border-slate-200 p-3">
+                  <div key={task.id} className={`rounded-lg border p-3 ${task.status === 'Done' ? 'border-emerald-100 bg-emerald-50/70' : 'border-slate-200 bg-white'}`}>
                     <div className="flex items-start justify-between gap-3">
-                      <button type="button" onClick={() => navigate(task.route)} className="text-left font-bold hover:text-slate-700">{task.title}</button>
+                      <button type="button" onClick={() => navigate(task.route)} className={`text-left font-bold hover:text-slate-700 ${task.status === 'Done' ? 'text-slate-500 line-through' : 'text-slate-950'}`}>{task.title}</button>
                       {localTasks.some((item) => item.id === task.id) && (
-                        <button type="button" onClick={() => dismissTask(task.id)} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700 hover:bg-emerald-100 hover:text-emerald-700">Done</button>
+                        <button type="button" onClick={() => dismissTask(task.id)} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700 hover:bg-emerald-100 hover:text-emerald-700">
+                          {task.status === 'Done' ? 'Done' : 'Mark done'}
+                        </button>
                       )}
                     </div>
                     <p className="mt-2 flex items-center gap-2 text-xs font-bold text-slate-500">
@@ -552,8 +601,7 @@ const HomeDashboard: React.FC = () => {
                 )) : (
                   <div className="rounded-lg border border-dashed border-slate-300 p-5">
                     <h3 className="font-black">No tasks yet</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">Tasks help you track who is doing what and when it is due.</p>
-                    <Button type="button" size="sm" onClick={() => openCreate('task')} className="mt-4 gap-2"><Plus className="h-4 w-4" />Create your first task</Button>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">Type your first to-do above, then press Add.</p>
                   </div>
                 )}
               </div>
