@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
     'Unified Team Workspace',
     'Real-time Collaboration',
     'AI-Powered Insights',
-    'Advanced Analytics',
+    'Admin Analytics Foundations',
   ]
 
   return (
@@ -115,13 +115,11 @@ const Dashboard: React.FC = () => {
             </motion.div>
 
             <h2 ref={titleRef} className="text-title text-slate-950 mb-6">
-              See Your Work Like Never Before
+              Know what needs attention today
             </h2>
 
             <p ref={descRef} className="text-body text-slate-600 mb-8 leading-relaxed">
-              Our intelligent dashboard gives you instant insights into team performance, project
-              progress, and upcoming deadlines. Everything you need to make informed decisions at a
-              glance.
+              The dashboard brings together today’s tasks, active projects, recent messages, upcoming meetings, files, and the next action your team should take.
             </p>
 
             {/* Feature List */}
@@ -157,8 +155,8 @@ const Dashboard: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4">
               {[
-                { number: '99.9%', label: 'Uptime SLA' },
-                { number: '100K+', label: 'Active Teams' },
+                { number: 'Real', label: 'Workspace data only' },
+                { number: 'Clear', label: 'Next action focused' },
               ].map((stat, index) => (
                 <motion.div
                   key={index}

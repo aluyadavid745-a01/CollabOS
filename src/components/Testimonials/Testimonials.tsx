@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Star } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { GlassmorphicCard } from '../Common/GlassmorphicCard'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -51,49 +51,6 @@ const Testimonials: React.FC = () => {
     return () => ctx.revert()
   }, [])
 
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Sarah Chen',
-      role: 'Product Manager at TechCorp',
-      avatar: '👩‍💼',
-      company: 'TechCorp',
-      rating: 5,
-      content:
-        'CollabOS has completely transformed how our team works. We\'ve reduced meetings by 40% and increased productivity significantly. The AI assistant is a game-changer.',
-    },
-    {
-      id: 2,
-      name: 'Marcus Johnson',
-      role: 'CEO at StartupXYZ',
-      avatar: '👨‍💼',
-      company: 'StartupXYZ',
-      rating: 5,
-      content:
-        'Best investment we\'ve made for our team. The seamless integration between chat, tasks, and documents eliminated our need for multiple tools.',
-    },
-    {
-      id: 3,
-      name: 'Emily Rodriguez',
-      role: 'Team Lead at DesignCo',
-      avatar: '👩‍🎨',
-      company: 'DesignCo',
-      rating: 5,
-      content:
-        'The real-time collaboration features are incredible. Our remote team feels more connected than ever. This is the future of work.',
-    },
-    {
-      id: 4,
-      name: 'David Kim',
-      role: 'Engineering Manager at DataFlow',
-      avatar: '👨‍💻',
-      company: 'DataFlow',
-      rating: 5,
-      content:
-        'Switching to CollabOS was the best decision. Better performance, more features, and superior customer support. Highly recommended!',
-    },
-  ]
-
   return (
     <section
       ref={sectionRef}
@@ -113,52 +70,32 @@ const Testimonials: React.FC = () => {
           >
             <span className="w-2 h-2 bg-emerald-500 rounded-full" />
             <span className="text-sm font-semibold">
-              Success Stories
+              Customer proof
             </span>
           </motion.div>
           <h2 ref={titleRef} className="text-title text-slate-950 mb-6">
-            Loved by Teams Worldwide
+            Testimonials will be published only when verified
           </h2>
           <p className="text-body max-w-2xl mx-auto">
-            See what industry leaders have to say about CollabOS and how it\'s transforming their
-            workflows.
+            CollabOS will not show fake logos, fake ratings, fake growth, or invented customer quotes.
+            Approved testimonials should include a real person, company, job title, and specific result.
           </p>
         </div>
 
-        {/* Testimonials Grid */}
         <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {testimonials.map((testimonial) => (
-            <GlassmorphicCard key={testimonial.id} className="testimonial-card flex flex-col" hover={true}>
-              {/* Rating */}
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: testimonial.rating }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-
-              {/* Content */}
-              <p className="text-slate-600 mb-6 flex-1 text-sm leading-relaxed">
-                "{testimonial.content}"
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-4 pt-6 border-t border-slate-200">
-                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-xl flex-shrink-0">
-                  {testimonial.avatar}
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-950">{testimonial.name}</p>
-                  <p className="text-xs text-slate-500">{testimonial.role}</p>
-                </div>
-              </div>
+          {[
+            'Real person and company',
+            'Job title and permission to publish',
+            'Specific workflow result',
+            'Verification before public display',
+          ].map((requirement) => (
+            <GlassmorphicCard key={requirement} className="testimonial-card flex items-start gap-3" hover={true}>
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+              <p className="font-bold text-slate-700">{requirement}</p>
             </GlassmorphicCard>
           ))}
         </div>
 
-        {/* Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -166,9 +103,9 @@ const Testimonials: React.FC = () => {
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 pt-12 border-t border-slate-200"
         >
           {[
-            { number: '100K+', label: 'Happy Teams' },
-            { number: '4.9/5', label: 'Average Rating' },
-            { number: '99.9%', label: 'Uptime' },
+            { number: 'Early Access', label: 'Current stage' },
+            { number: 'Real Data', label: 'Metrics policy' },
+            { number: 'Verified Only', label: 'Customer proof' },
           ].map((stat, index) => (
             <motion.div
               key={index}

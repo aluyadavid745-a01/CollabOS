@@ -14,37 +14,37 @@ const Footer: React.FC = () => {
     {
       section: 'Product',
       links: [
-        { label: 'Features', href: '#features' },
+        { label: 'Product', href: '/product' },
+        { label: 'Features', href: '/features' },
         { label: 'Pricing', href: '#pricing' },
-        { label: 'Security', href: '#' },
-        { label: 'Roadmap', href: '#' },
+        { label: 'Security', href: '/security' },
       ],
     },
     {
       section: 'Company',
       links: [
-        { label: 'About Us', href: '#' },
-        { label: 'Blog', href: '#' },
-        { label: 'Careers', href: '#' },
-        { label: 'Press', href: '#' },
+        { label: 'About', href: '/about' },
+        { label: 'Investors', href: '/investors' },
+        { label: 'Contact', href: '/contact' },
+        { label: 'Customers', href: '/customers' },
       ],
     },
     {
       section: 'Resources',
       links: [
-        { label: 'Documentation', href: '#' },
-        { label: 'API Docs', href: '#' },
-        { label: 'Support', href: '#' },
-        { label: 'Community', href: '#' },
+        { label: 'Help center', href: '/help' },
+        { label: 'Solutions', href: '/solutions' },
+        { label: 'Status', href: '/status' },
+        { label: 'Admin analytics', href: '/admin/analytics' },
       ],
     },
     {
       section: 'Legal',
       links: [
-        { label: 'Privacy', href: '#' },
-        { label: 'Terms', href: '#' },
-        { label: 'Cookie Policy', href: '#' },
-        { label: 'Compliance', href: '#' },
+        { label: 'Privacy', href: '/privacy' },
+        { label: 'Terms', href: '/terms' },
+        { label: 'Security', href: '/security' },
+        { label: 'Contact', href: '/contact' },
       ],
     },
   ]
@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
     { icon: Twitter, href: '#', label: 'Twitter' },
     { icon: Github, href: '#', label: 'GitHub' },
     { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Mail, href: '#', label: 'Email' },
+    { icon: Mail, href: 'mailto:support@collabos.dev', label: 'Email' },
   ]
 
   return (
@@ -134,13 +134,13 @@ const Footer: React.FC = () => {
               © {currentYear} CollabOS. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-sm text-slate-500">
-              <a href="#" className="hover:text-slate-950 transition-colors">
+              <a href="/status" className="hover:text-slate-950 transition-colors">
                 Status
               </a>
-              <a href="#" className="hover:text-slate-950 transition-colors">
+              <a href="/privacy" className="hover:text-slate-950 transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="hover:text-slate-950 transition-colors">
+              <a href="/terms" className="hover:text-slate-950 transition-colors">
                 Terms of Service
               </a>
             </div>

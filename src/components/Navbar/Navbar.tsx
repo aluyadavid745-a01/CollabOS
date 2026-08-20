@@ -114,10 +114,11 @@ const Navbar: React.FC<NavbarProps> = ({
   const warmGiftCards = () => prefetchRoute('giftCards')
 
   const navLinks = [
+    { label: 'Product', href: '/product' },
     { label: 'Features', href: '#features' },
-    { label: 'Dashboard', href: '#dashboard' },
     { label: 'Pricing', href: '#pricing' },
-    { label: 'Testimonials', href: '#testimonials' },
+    { label: 'Security', href: '/security' },
+    { label: 'Investors', href: '/investors' },
   ]
 
   return (

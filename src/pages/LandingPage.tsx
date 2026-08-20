@@ -8,7 +8,9 @@ import Testimonials from '../components/Testimonials/Testimonials'
 import CTA from '../components/CTA/CTA'
 import Footer from '../components/Footer/Footer'
 import Navbar from '../components/Navbar/Navbar'
+import CompanyStory from '../components/CompanyStory/CompanyStory'
 import type { AuthMode, AuthUser } from './AuthPage'
+import { trackAnalyticsEvent } from '../services/analytics'
 
 interface LandingPageProps {
   rememberedUser?: AuthUser | null
@@ -29,6 +31,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
     const previousScrollBehavior = document.documentElement.style.scrollBehavior
 
     document.documentElement.style.scrollBehavior = 'smooth'
+    trackAnalyticsEvent('website_visited', { path: window.location.pathname })
 
     return () => {
       document.documentElement.style.scrollBehavior = previousScrollBehavior
@@ -55,6 +58,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <main className="relative">
         {/* Hero Section */}
         <Hero rememberedUser={rememberedUser} onNavigate={onNavigate} />
+
+        <CompanyStory />
 
         {/* Features Section */}
         <Features />

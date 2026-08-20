@@ -9,6 +9,9 @@ import { prefetchRoutes, prefetchRoutesOnIdle } from "./utils/prefetch";
 const AppInstallPrompt = React.lazy(() => import("./components/AppInstallPrompt"));
 const CookieConsent = React.lazy(() => import("./components/CookieConsent"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
+const CompanyPage = React.lazy(() => import("./pages/CompanyPage"));
+const InvestorsPage = React.lazy(() => import("./pages/InvestorsPage"));
+const AdminAnalytics = React.lazy(() => import("./pages/AdminAnalytics"));
 const loadAuthPage = () => import("./pages/AuthPage");
 const AuthPage = React.lazy(loadAuthPage);
 const EmailAction = React.lazy(() => import("./pages/EmailAction"));
@@ -50,7 +53,9 @@ function readStoredUser(key: string): AuthUser | null {
 
 function getViewFromPath(pathname: string): AuthMode | "home" {
   if (pathname === "/signin") return "signin";
+  if (pathname === "/login") return "signin";
   if (pathname === "/get-started") return "signup";
+  if (pathname === "/signup") return "signup";
   return "home";
 }
 
@@ -63,7 +68,7 @@ function getPostAuthRedirect(state: unknown) {
 
 function normalizePostAuthRedirect(from: unknown) {
   if (typeof from !== "string" || !from.startsWith("/") || from.startsWith("//")) return null;
-  if (from === "/signin" || from === "/get-started") return null;
+  if (from === "/signin" || from === "/get-started" || from === "/login" || from === "/signup") return null;
 
   return from;
 }
@@ -284,6 +289,33 @@ function App() {
             </React.Suspense>
           }
         />
+        {["/product", "/features", "/solutions", "/customers", "/about", "/security", "/help", "/contact", "/status", "/privacy", "/terms"].map((path) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <React.Suspense fallback={<RouteShell label="Opening page..." />}>
+                <CompanyPage />
+              </React.Suspense>
+            }
+          />
+        ))}
+        <Route
+          path="/pricing"
+          element={
+            <React.Suspense fallback={<RouteShell label="Opening pricing..." />}>
+              <LandingPage {...sharedPageProps} />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="/investors"
+          element={
+            <React.Suspense fallback={<RouteShell label="Opening investors..." />}>
+              <InvestorsPage />
+            </React.Suspense>
+          }
+        />
         <Route
           path="/features/:slug"
           element={
@@ -389,6 +421,15 @@ function App() {
               <GiftCardStudio />
             </React.Suspense>,
             "Checking account..."
+          )}
+        />
+        <Route
+          path="/admin/analytics"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening analytics..." />}>
+              <AdminAnalytics />
+            </React.Suspense>,
+            "Checking admin access..."
           )}
         />
         <Route

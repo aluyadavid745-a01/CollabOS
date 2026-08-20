@@ -152,7 +152,7 @@ export const featureDetails = [
 ]
 
 export const platformHighlights = [
-  { icon: Shield, label: 'Enterprise Security', desc: 'SOC 2 Type II certified' },
+  { icon: Shield, label: 'Security foundations', desc: 'Authentication, permissions, and protected secrets' },
   { icon: Sparkles, label: 'Premium UX', desc: 'Clean workflows for modern teams' },
   { icon: Bot, label: 'AI Ready', desc: 'Smarter collaboration assistance' },
   { icon: Users, label: 'Team First', desc: 'Built around people and projects' },

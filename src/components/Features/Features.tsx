@@ -80,15 +80,11 @@ const Features: React.FC = () => {
               Powerful Features
             </span>
           </motion.div>
-          <h2
-            ref={titleRef}
-            className="text-title text-slate-950 mb-6"
-          >
-            Everything You Need in One Platform
+          <h2 ref={titleRef} className="text-title text-slate-950 mb-6">
+            Projects, tasks, communication, files, meetings, and AI in one workspace
           </h2>
           <p className="text-body max-w-2xl mx-auto">
-            Comprehensive tools designed to help teams communicate, collaborate, and create
-            amazing work together.
+            CollabOS is built around a simple idea: a team should know where the work lives, who owns it, and what happens next.
           </p>
         </div>
 
@@ -119,10 +115,10 @@ const Features: React.FC = () => {
         {/* Additional Features Highlight */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-16">
           {[
-            { icon: Shield, label: 'Enterprise Security', desc: 'SOC 2 Type II certified' },
-            { icon: Rocket, label: 'Lightning Fast', desc: '99.9% uptime SLA' },
-            { icon: Clock, label: '24/7 Support', desc: 'Always here to help' },
-            { icon: Settings, label: 'Fully Customizable', desc: 'Adapt to your workflow' },
+            { icon: Shield, label: 'Security foundations', desc: 'Auth, permissions, and protected secrets' },
+            { icon: Rocket, label: 'Fast loading', desc: 'Lazy routes and focused pages' },
+            { icon: Clock, label: 'Clear next steps', desc: 'Beginner-friendly empty states' },
+            { icon: Settings, label: 'Configurable plans', desc: 'Pricing and AI limits can change' },
           ].map((item, index) => {
             const Icon = item.icon
             return (

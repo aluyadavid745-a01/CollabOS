@@ -3,11 +3,12 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Check, ChevronDown, X } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 import { Button } from '../Common/Button'
 import { GlassmorphicCard } from '../Common/GlassmorphicCard'
 import type { AuthUser } from '../../pages/AuthPage'
 import { prefetchRoute } from '../../utils/prefetch'
+import { aiCreditAddOn, formatNaira, pricingPlans } from '../../data/businessModel'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -62,60 +63,6 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
     return () => ctx.revert()
   }, [])
 
-  const plans = [
-    {
-      id: 'starter',
-      name: 'Starter',
-      monthlyPrice: 29,
-      yearlyPrice: 278,
-      description: 'Perfect for small teams',
-      features: [
-        { name: 'Up to 10 team members', included: true },
-        { name: 'Basic messaging and chat', included: true },
-        { name: 'Task management', included: true },
-        { name: 'File storage (10GB)', included: true },
-        { name: 'Video meetings (30 min)', included: false },
-        { name: 'AI assistant', included: false },
-        { name: '24/7 support', included: false },
-      ],
-      featured: false,
-    },
-    {
-      id: 'pro',
-      name: 'Professional',
-      monthlyPrice: 79,
-      yearlyPrice: 758,
-      description: 'For growing teams',
-      features: [
-        { name: 'Up to 100 team members', included: true },
-        { name: 'Advanced messaging and chat', included: true },
-        { name: 'Advanced task management', included: true },
-        { name: 'File storage (1TB)', included: true },
-        { name: 'Unlimited video meetings', included: true },
-        { name: 'AI assistant with insights', included: true },
-        { name: 'Priority support', included: false },
-      ],
-      featured: true,
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      monthlyPrice: null,
-      yearlyPrice: null,
-      description: 'For large organizations',
-      features: [
-        { name: 'Unlimited team members', included: true },
-        { name: 'Everything in Professional', included: true },
-        { name: 'Advanced security features', included: true },
-        { name: 'Unlimited file storage', included: true },
-        { name: 'Custom integrations', included: true },
-        { name: 'Dedicated AI assistant', included: true },
-        { name: '24/7 dedicated support', included: true },
-      ],
-      featured: false,
-    },
-  ]
-
   const handlePlanAction = (price: number | null) => {
     if (rememberedUser) {
       navigate('/home')
@@ -133,19 +80,19 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
   const faqs = [
     {
       question: 'Is there a free trial?',
-      answer: 'Yes. Every paid plan includes a 14-day free trial so your team can test CollabOS before choosing a plan.',
+      answer: 'The Free plan lets teams start without a sales call. Paid trial rules can be configured before launch.',
     },
     {
       question: 'Can I switch between monthly and yearly billing?',
-      answer: 'Yes. You can move between monthly and yearly billing. Yearly billing gives you the best value with 20% savings.',
+      answer: 'Yes. Plan pricing is configuration-driven so monthly, yearly, and future launch pricing can be changed without redesigning the page.',
     },
     {
       question: 'What happens when I add more teammates?',
-      answer: 'Starter supports up to 10 members, Professional supports up to 100 members, and Enterprise supports unlimited members.',
+      answer: 'Each plan has a clear team limit. The exact limits live in pricing configuration so they can change as the business model is refined.',
     },
     {
       question: 'Do plans include video meetings and AI?',
-      answer: 'Professional and Enterprise include unlimited video meetings and AI assistant features. Starter includes core collaboration tools.',
+      answer: 'Every plan includes a defined AI action allowance. Additional AI credits are designed as an optional paid add-on.',
     },
     {
       question: 'Can I cancel anytime?',
@@ -153,7 +100,7 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
     },
     {
       question: 'Who should use Enterprise?',
-      answer: 'Enterprise is for larger organizations that need advanced security, unlimited storage, custom integrations, and dedicated support.',
+      answer: 'Enterprise is for larger organizations that need custom security review, procurement, rollout support, and usage limits.',
     },
   ]
 
@@ -186,7 +133,7 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
           </h2>
           <p className="text-body max-w-2xl mx-auto">
             Choose the perfect plan for your team. All plans include a 14-day free trial. No credit
-            card required.
+            card required. Prices are launch configuration and can be changed as the business model is finalized.
           </p>
         </div>
 
@@ -224,13 +171,13 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
         </div>
 
         {/* Pricing Cards */}
-        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans.map((plan) => {
-            const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice
+        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
+          {pricingPlans.map((plan) => {
+            const price = billingCycle === 'yearly' ? plan.yearlyPriceNgn : plan.monthlyPriceNgn
             const monthlyEquivalent =
-              billingCycle === 'yearly' && plan.yearlyPrice ? Math.round(plan.yearlyPrice / 12) : null
-            const monthlyTotal = plan.monthlyPrice ? plan.monthlyPrice * 12 : null
-            const yearlySavings = monthlyTotal && plan.yearlyPrice ? monthlyTotal - plan.yearlyPrice : null
+              billingCycle === 'yearly' && plan.yearlyPriceNgn ? Math.round(plan.yearlyPriceNgn / 12) : null
+            const monthlyTotal = plan.monthlyPriceNgn ? plan.monthlyPriceNgn * 12 : null
+            const yearlySavings = monthlyTotal && plan.yearlyPriceNgn ? monthlyTotal - plan.yearlyPriceNgn : null
 
             return (
               <motion.div key={plan.id} className="pricing-card h-full">
@@ -258,8 +205,8 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
                 {/* Pricing */}
                 <div className="mb-8">
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold text-slate-950">
-                      {price === null ? 'Custom' : `$${price}`}
+                    <span className="text-3xl font-bold text-slate-950">
+                      {price === null ? 'Custom' : formatNaira(price)}
                     </span>
                     {price !== null && (
                       <span className="text-slate-500 text-sm ml-2">
@@ -269,12 +216,13 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
                   </div>
                   {billingCycle === 'yearly' && monthlyEquivalent && yearlySavings && (
                     <p className="mt-2 text-sm font-semibold text-green-400">
-                      ${monthlyEquivalent}/month equivalent. Save ${yearlySavings}/year.
+                      {formatNaira(monthlyEquivalent)}/month equivalent. Save {formatNaira(yearlySavings)}/year.
                     </p>
                   )}
-                  {billingCycle === 'monthly' && plan.monthlyPrice && (
-                    <p className="mt-2 text-sm text-slate-500">Switch to yearly and save 20%.</p>
+                  {billingCycle === 'monthly' && plan.monthlyPriceNgn !== null && plan.monthlyPriceNgn > 0 && (
+                    <p className="mt-2 text-sm text-slate-500">Switch to yearly for launch savings.</p>
                   )}
+                  <p className="mt-3 text-sm font-bold text-slate-700">{plan.aiActionsPerMonth === null ? 'Custom AI usage' : `${plan.aiActionsPerMonth.toLocaleString()} AI actions/month`}</p>
                 </div>
 
                 {/* CTA Button */}
@@ -297,18 +245,8 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
                 <div className="space-y-4 flex-1">
                   {plan.features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      {feature.included ? (
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span
-                        className={`text-sm ${
-                          feature.included ? 'text-slate-700' : 'text-slate-400'
-                        }`}
-                      >
-                        {feature.name}
-                      </span>
+                      <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-slate-700">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -316,6 +254,13 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
             </motion.div>
             )
           })}
+        </div>
+
+        <div className="mt-8 rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+          <h3 className="text-xl font-black">{aiCreditAddOn.label}</h3>
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+            {aiCreditAddOn.description} Usage limits are stored in configuration so they can be adjusted without major code changes.
+          </p>
         </div>
 
         {/* FAQ Section */}
