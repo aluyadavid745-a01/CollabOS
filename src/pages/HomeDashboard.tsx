@@ -27,49 +27,17 @@ import { useAuth } from '../context/AuthContext'
 import { listHomeNotifications, markHomeNotificationRead } from '../services/homeNotifications'
 import { createLocalWorkspace, listLocalMessages, listStoredTeamWorkspaces } from '../services/teamChat'
 import { createDefaultProfile, type UserProfile } from '../types/profile'
+import { createLocalTask, readLocalTasks, writeLocalTasks, type LocalTask } from '../utils/localTasks'
 import { showToast } from '../utils/toast'
 import { createWebsiteProjectInstant, listCachedWebsiteProjects } from '../utils/websiteBuilderStorage'
 import type { HomeNotification, HomeTask } from '../types/home'
 
 type QuickCreateType = 'task' | 'project' | 'channel' | 'team' | 'document' | 'meeting'
 
-interface LocalTask {
-  id: string
-  title: string
-  owner: string
-  dueAt: string
-  priority: 'Low' | 'Medium' | 'High'
-  description: string
-  done: boolean
-  createdAt: string
-}
-
-const LOCAL_TASKS_KEY = 'collabos:beginnerTasks'
 const ONBOARDING_KEY = 'collabos:onboardingDismissed'
 
 const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70'
 const iconButton = 'grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2'
-
-const readLocalTasks = () => {
-  if (typeof window === 'undefined') return []
-
-  try {
-    const value = window.localStorage.getItem(LOCAL_TASKS_KEY)
-    return value ? (JSON.parse(value) as LocalTask[]) : []
-  } catch {
-    return []
-  }
-}
-
-const writeLocalTasks = (tasks: LocalTask[]) => {
-  if (typeof window === 'undefined') return
-
-  try {
-    window.localStorage.setItem(LOCAL_TASKS_KEY, JSON.stringify(tasks))
-  } catch {
-    showToast({ message: "We couldn't save your task. Please try again.", type: 'error' })
-  }
-}
 
 const startOfToday = () => {
   const date = new Date()
@@ -121,17 +89,17 @@ const QuickCreateModal = ({
     }
 
     if (type === 'task') {
-      const nextTask: LocalTask = {
-        id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+      const nextTask = createLocalTask({
         title: cleanName,
         owner: owner.trim() || profile.name,
-        dueAt: new Date(dueAt).toISOString(),
+        dueAt,
         priority,
-        description: description.trim(),
-        done: false,
-        createdAt: new Date().toISOString(),
+        description,
+      })
+      if (!writeLocalTasks([nextTask, ...readLocalTasks()])) {
+        showToast({ message: "We couldn't save your task. Please try again.", type: 'error' })
+        return
       }
-      writeLocalTasks([nextTask, ...readLocalTasks()])
       showToast({ message: 'Task created successfully', type: 'success' })
       onCreated()
       onClose()
@@ -362,8 +330,8 @@ const HomeDashboard: React.FC = () => {
       return
     }
     if (prompt.includes('task')) {
-      openCreate('task')
-      setAiAnswer('I opened task creation with the simplest fields first: name, owner, due date, priority, and description.')
+      navigate('/tasks')
+      setAiAnswer('I opened My Tasks so you can add tasks for later like a simple to-do list.')
       return
     }
     setAiAnswer(
@@ -375,7 +343,10 @@ const HomeDashboard: React.FC = () => {
 
   const dismissTask = (taskId: string) => {
     const updated = readLocalTasks().map((task) => task.id === taskId ? { ...task, done: true } : task)
-    writeLocalTasks(updated)
+    if (!writeLocalTasks(updated)) {
+      showToast({ message: "We couldn't save your task. Please try again.", type: 'error' })
+      return
+    }
     setRefreshKey((value) => value + 1)
     showToast({ message: 'Task completed', type: 'success' })
   }
@@ -387,31 +358,28 @@ const HomeDashboard: React.FC = () => {
       return
     }
 
-    const task: LocalTask = {
-      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+    const task = createLocalTask({
       title,
       owner: activeProfile.name,
-      dueAt: new Date().toISOString(),
-      priority: 'Medium',
-      description: '',
-      done: false,
-      createdAt: new Date().toISOString(),
-    }
+    })
 
-    writeLocalTasks([task, ...readLocalTasks()])
+    if (!writeLocalTasks([task, ...readLocalTasks()])) {
+      showToast({ message: "We couldn't save your task. Please try again.", type: 'error' })
+      return
+    }
     setNewTaskTitle('')
     setRefreshKey((value) => value + 1)
     showToast({ message: 'Task added', type: 'success' })
   }
 
   const primaryLinks = [
-    { label: 'Home', icon: Home, route: '/home', active: true },
-    { label: 'My Tasks', icon: CheckSquare, route: '/home' },
-    { label: 'Projects', icon: Folder, route: '/dashboard/websites' },
-    { label: 'Messages', icon: MessageSquare, route: '/workspace' },
-    { label: 'Team', icon: Users, route: '/workspace' },
-    { label: 'Calendar', icon: CalendarClock, route: '/meetings' },
-    { label: 'Files', icon: FileText, route: '/dashboard/websites' },
+    { label: 'Home', icon: Home, action: () => navigate('/home'), active: true },
+    { label: 'My Tasks', icon: CheckSquare, action: () => navigate('/tasks') },
+    { label: 'Projects', icon: Folder, action: () => navigate('/dashboard/websites') },
+    { label: 'Messages', icon: MessageSquare, action: () => navigate('/workspace') },
+    { label: 'Team', icon: Users, action: () => navigate('/workspace') },
+    { label: 'Calendar', icon: CalendarClock, action: () => navigate('/meetings') },
+    { label: 'Files', icon: FileText, action: () => navigate('/dashboard/websites') },
   ]
 
   return (
@@ -426,7 +394,7 @@ const HomeDashboard: React.FC = () => {
             {primaryLinks.map((item) => {
               const Icon = item.icon
               return (
-                <button key={item.label} type="button" onClick={() => navigate(item.route)} className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${item.active ? 'bg-slate-950 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'}`}>
+                <button key={item.label} type="button" onClick={item.action} className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${item.active ? 'bg-slate-950 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'}`}>
                   <Icon className="h-5 w-5" />
                   {item.label}
                 </button>
@@ -512,7 +480,7 @@ const HomeDashboard: React.FC = () => {
                     {nextTask ? `${nextTask.owner} is responsible. Due ${new Date(nextTask.dueAt).toLocaleDateString()}.` : 'Tasks help everyone know what to do next.'}
                   </p>
                 </div>
-                <Button type="button" onClick={() => nextTask ? navigate(nextTask.route) : openCreate('task')} className="min-h-[44px] gap-2">
+                <Button type="button" onClick={() => navigate('/tasks')} className="min-h-[44px] gap-2">
                   {nextTask ? 'Open task' : 'Create your first task'}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -539,7 +507,7 @@ const HomeDashboard: React.FC = () => {
 
           <section className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {[
-              { label: 'Tasks due today', value: todayTasks.length, action: () => openCreate('task') },
+              { label: 'Tasks due today', value: todayTasks.length, action: () => navigate('/tasks') },
               { label: 'Active projects', value: workspaceTasks.length + websites.length, action: () => navigate('/dashboard/websites') },
               { label: 'New messages', value: recentMessages.length, action: () => navigate('/workspace') },
               { label: 'Upcoming meetings', value: upcomingMeetings, action: () => navigate('/meetings') },
@@ -557,10 +525,10 @@ const HomeDashboard: React.FC = () => {
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-black">My Tasks</h2>
-                  <p className="mt-1 text-sm text-slate-600">Add tasks like a simple to-do list.</p>
+                  <p className="mt-1 text-sm text-slate-600">Quick add here, or open the full to-do page.</p>
                 </div>
-                <button type="button" onClick={() => openCreate('task')} className={iconButton} aria-label="Create task" title="Create a task">
-                  <Plus className="h-5 w-5" />
+                <button type="button" onClick={() => navigate('/tasks')} className={iconButton} aria-label="Open My Tasks" title="Open My Tasks">
+                  <ArrowRight className="h-5 w-5" />
                 </button>
               </div>
               <div className="mb-4 flex gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
@@ -574,7 +542,7 @@ const HomeDashboard: React.FC = () => {
                     }
                   }}
                   className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-transparent bg-white px-3 text-sm font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
-                  placeholder="Add a task, like Call Sarah"
+                  placeholder="Add a task for later, like Call Sarah"
                   aria-label="Add a task"
                 />
                 <Button type="button" onClick={addTodoTask} className="min-h-[44px] shrink-0 gap-2">
@@ -671,7 +639,7 @@ const HomeDashboard: React.FC = () => {
         <div className="mx-auto grid max-w-lg grid-cols-5 gap-1">
           {[
             { label: 'Home', icon: Home, action: () => navigate('/home') },
-            { label: 'Tasks', icon: CheckSquare, action: () => openCreate('task') },
+            { label: 'Tasks', icon: CheckSquare, action: () => navigate('/tasks') },
             { label: 'Create', icon: Plus, action: () => openCreate('task'), primary: true },
             { label: 'Messages', icon: MessageSquare, action: () => navigate('/workspace') },
             { label: 'Profile', icon: Users, action: () => navigate('/profile') },

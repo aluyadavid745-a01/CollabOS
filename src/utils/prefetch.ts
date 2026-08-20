@@ -2,6 +2,7 @@ export type PrefetchTarget =
   | 'auth'
   | 'profile'
   | 'homeDashboard'
+  | 'myTasks'
   | 'notifications'
   | 'editProfile'
   | 'websiteDashboard'
@@ -26,6 +27,7 @@ const preloaders: Record<PrefetchTarget, () => Promise<unknown>> = {
     ]),
   profile: () => import('../pages/Profile'),
   homeDashboard: () => import('../pages/HomeDashboard'),
+  myTasks: () => import('../pages/MyTasks'),
   notifications: () => import('../pages/NotificationCenter'),
   editProfile: () => import('../pages/EditProfile'),
   websiteDashboard: () => import('../pages/WebsiteBuilderDashboard'),
