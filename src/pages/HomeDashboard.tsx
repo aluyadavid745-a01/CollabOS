@@ -6,22 +6,14 @@ import {
   Bot,
   CalendarClock,
   CheckCircle2,
-  CheckSquare,
   ChevronDown,
-  FileText,
-  Folder,
-  Globe2,
   HelpCircle,
-  Home,
-  MessageSquare,
   Plus,
   Search,
-  Settings,
-  Sparkles,
-  Users,
   X,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import AppShell from '../components/AppShell'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
 import { listHomeNotifications, markHomeNotificationRead } from '../services/homeNotifications'
@@ -32,7 +24,9 @@ import { createLocalTask, readLocalTasks, writeLocalTasks, type LocalTask } from
 import { readLocalCalendarEvents, readLocalFiles, readLocalMessages, readLocalTeamMembers } from '../utils/localWorkspace'
 import { readLocalActivity, recordLocalActivity } from '../utils/localActivity'
 import { loadSampleWorkspace } from '../utils/investorDemo'
+import { loadBeginnerWorkspaceFromCloud, syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { showToast } from '../utils/toast'
+import { trackAnalyticsEvent } from '../services/analytics'
 import type { HomeNotification, HomeTask } from '../types/home'
 
 type QuickCreateType = 'task' | 'project' | 'channel' | 'team' | 'document' | 'meeting'
@@ -105,6 +99,8 @@ const QuickCreateModal = ({
       }
       showToast({ message: 'Task created successfully', type: 'success' })
       recordLocalActivity({ type: 'task', title: 'Task created', detail: nextTask.title, route: '/tasks' })
+      trackAnalyticsEvent('first_task_created', { source: 'quick_create' })
+      void syncBeginnerWorkspaceToCloud()
       onCreated()
       onClose()
       return
@@ -121,6 +117,8 @@ const QuickCreateModal = ({
       })
       showToast({ message: 'Team space created', type: 'success' })
       recordLocalActivity({ type: 'team', title: 'Team space created', detail: cleanName, route: '/team' })
+      trackAnalyticsEvent('workspace_created', { source: 'quick_create' })
+      void syncBeginnerWorkspaceToCloud()
       onCreated()
       onClose()
       return
@@ -139,6 +137,8 @@ const QuickCreateModal = ({
       }
       showToast({ message: 'Project created', type: 'success' })
       recordLocalActivity({ type: 'project', title: 'Project created', detail: project.name, route: '/projects' })
+      trackAnalyticsEvent('first_project_created', { source: 'quick_create' })
+      void syncBeginnerWorkspaceToCloud()
       onCreated()
       navigate('/projects')
       return
@@ -255,7 +255,7 @@ const QuickCreateModal = ({
 
 const HomeDashboard: React.FC = () => {
   const navigate = useNavigate()
-  const { profile } = useAuth()
+  const { firebaseUser, profile } = useAuth()
   const activeProfile = React.useMemo(() => getActiveProfile(profile), [profile])
   const [query, setQuery] = React.useState('')
   const [refreshKey, setRefreshKey] = React.useState(0)
@@ -266,6 +266,21 @@ const HomeDashboard: React.FC = () => {
   const [aiAnswer, setAiAnswer] = React.useState('')
   const [newTaskTitle, setNewTaskTitle] = React.useState('')
   const [onboardingDismissed, setOnboardingDismissed] = React.useState(() => typeof window !== 'undefined' && window.localStorage.getItem(ONBOARDING_KEY) === '1')
+
+  React.useEffect(() => {
+    if (!firebaseUser) return
+
+    let cancelled = false
+    const loadCloudState = async () => {
+      const loaded = await loadBeginnerWorkspaceFromCloud()
+      if (!cancelled && loaded) setRefreshKey((value) => value + 1)
+    }
+
+    void loadCloudState()
+    return () => {
+      cancelled = true
+    }
+  }, [firebaseUser])
 
   const workspaces = React.useMemo(() => {
     void refreshKey
@@ -353,6 +368,7 @@ const HomeDashboard: React.FC = () => {
   }
 
   const askAi = () => {
+    trackAnalyticsEvent('ai_action_used', { source: 'home_dashboard' })
     const prompt = aiPrompt.toLowerCase()
     if (prompt.includes('create') && prompt.includes('project')) {
       openCreate('project')
@@ -400,6 +416,7 @@ const HomeDashboard: React.FC = () => {
     setRefreshKey((value) => value + 1)
     showToast({ message: 'Task completed', type: 'success' })
     recordLocalActivity({ type: 'task', title: 'Task completed', detail: updated.find((task) => task.id === taskId)?.title || 'Task', route: '/tasks' })
+    void syncBeginnerWorkspaceToCloud()
   }
 
   const addTodoTask = () => {
@@ -422,67 +439,25 @@ const HomeDashboard: React.FC = () => {
     setRefreshKey((value) => value + 1)
     showToast({ message: 'Task added', type: 'success' })
     recordLocalActivity({ type: 'task', title: 'Task added', detail: task.title, route: '/tasks' })
+    trackAnalyticsEvent('first_task_created', { source: 'dashboard_todo' })
+    void syncBeginnerWorkspaceToCloud()
   }
 
   const loadDemo = () => {
     const project = loadSampleWorkspace(activeProfile.name)
     setRefreshKey((value) => value + 1)
     showToast({ message: `${project.name} loaded`, type: 'success' })
+    void syncBeginnerWorkspaceToCloud()
   }
 
-  const primaryLinks = [
-    { label: 'Home', icon: Home, action: () => navigate('/home'), active: true },
-    { label: 'My Tasks', icon: CheckSquare, action: () => navigate('/tasks') },
-    { label: 'Projects', icon: Folder, action: () => navigate('/projects') },
-    { label: 'Messages', icon: MessageSquare, action: () => navigate('/messages') },
-    { label: 'Team', icon: Users, action: () => navigate('/team') },
-    { label: 'Calendar', icon: CalendarClock, action: () => navigate('/calendar') },
-    { label: 'Files', icon: FileText, action: () => navigate('/files') },
-    { label: 'AI', icon: Bot, action: () => navigate('/ai') },
-  ]
-
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto flex min-h-screen max-w-[1500px]">
-        <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white px-4 py-5 lg:block">
-          <button type="button" onClick={() => navigate('/home')} className="mb-6 flex items-center gap-3 rounded-xl px-2 py-2 text-left">
-            <img src="/lll.png" alt="" className="h-9 w-9 rounded-lg object-cover" />
-            <span className="text-xl font-black">CollabOS</span>
-          </button>
-          <nav className="space-y-1" aria-label="Main navigation">
-            {primaryLinks.map((item) => {
-              const Icon = item.icon
-              return (
-                <button key={item.label} type="button" onClick={item.action} className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${item.active ? 'bg-slate-950 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'}`}>
-                  <Icon className="h-5 w-5" />
-                  {item.label}
-                </button>
-              )
-            })}
-          </nav>
-          <div className="mt-6 border-t border-slate-200 pt-4">
-            {[
-              { label: 'Settings', icon: Settings, route: '/profile/edit' },
-              { label: 'Help', icon: HelpCircle, route: 'help' },
-              { label: 'Integrations', icon: Globe2, route: '/dashboard/websites' },
-              { label: 'Advanced features', icon: Sparkles, route: '/gift-cards' },
-            ].map((item) => {
-              const Icon = item.icon
-              return (
-                <button key={item.label} type="button" onClick={() => item.route === 'help' ? setIsHelpOpen(true) : navigate(item.route)} className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </button>
-              )
-            })}
-          </div>
-        </aside>
-
-        <section className="min-w-0 flex-1 px-4 pb-28 pt-4 sm:px-6 lg:px-8 lg:pb-8">
+    <AppShell>
+      <div className="mx-auto max-w-7xl">
           <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-black sm:text-4xl">{greeting()}, {activeProfile.name.split(' ')[0] || 'there'}</h1>
-              <p className="mt-2 text-slate-600">Here is what is happening today.</p>
+              <p className="text-sm font-black uppercase tracking-wider text-blue-700">Today</p>
+              <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">{greeting()}, {activeProfile.name.split(' ')[0] || 'there'}</h1>
+              <p className="mt-2 text-slate-600">Here&apos;s what&apos;s happening across your workspace.</p>
             </div>
             <div className="flex items-center gap-2">
               <button type="button" onClick={() => navigate('/notifications')} className={iconButton} aria-label="Notifications" title="See updates from your team">
@@ -536,7 +511,7 @@ const HomeDashboard: React.FC = () => {
             <article className={`${panel} p-5`}>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-black uppercase tracking-wider text-slate-500">Your next task</p>
+                  <p className="text-sm font-black uppercase tracking-wider text-slate-500">My Work</p>
                   <h2 className="mt-1 text-2xl font-black">{nextTask?.title || 'Create your first task'}</h2>
                   <p className="mt-2 text-slate-600">
                     {nextTask ? `${nextTask.owner} is responsible. Due ${new Date(nextTask.dueAt).toLocaleDateString()}.` : 'Tasks help everyone know what to do next.'}
@@ -551,12 +526,12 @@ const HomeDashboard: React.FC = () => {
 
             <article className={`${panel} p-5`}>
               <div className="flex items-start gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-950 text-white">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-700 text-white">
                   <Bot className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-xl font-black">Ask CollabOS AI</h2>
-                  <p className="mt-1 text-sm text-slate-600">Ask for your priorities or tell it to create a task or project.</p>
+                  <h2 className="text-xl font-black">AI Insights</h2>
+                  <p className="mt-1 text-sm text-slate-600">Ask for priorities, blockers, summaries, or workspace actions.</p>
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
@@ -583,6 +558,38 @@ const HomeDashboard: React.FC = () => {
                 <p className="text-3xl font-black">{item.value}</p>
                 <p className="mt-2 text-sm font-bold text-slate-600">{item.label}</p>
               </button>
+            ))}
+          </section>
+
+          <section className="mb-5 grid gap-5 xl:grid-cols-3">
+            {[
+              {
+                title: `${todayTasks.length} task${todayTasks.length === 1 ? '' : 's'} may affect today`,
+                detail: todayTasks.length ? 'Review due dates and owners before the day moves forward.' : 'Nothing urgent is due today.',
+                action: 'Review',
+                route: '/tasks',
+              },
+              {
+                title: `${projects.filter((project) => project.status === 'Active').length} active project${projects.filter((project) => project.status === 'Active').length === 1 ? '' : 's'}`,
+                detail: projects.length ? 'Open project plans to check progress, tasks, files, and recent activity.' : 'Create your first project to organize work from start to finish.',
+                action: projects.length ? 'View' : 'Create',
+                route: '/projects',
+              },
+              {
+                title: teamMembers.length ? `${teamMembers.length} teammate${teamMembers.length === 1 ? '' : 's'} in workspace` : 'Invite teammates when ready',
+                detail: teamMembers.length ? 'Keep roles, workload, and ownership clear.' : 'You can start alone and invite the team after the workspace is shaped.',
+                action: 'Take action',
+                route: '/team',
+              },
+            ].map((insight) => (
+              <article key={insight.title} className={`${panel} p-5`}>
+                <p className="text-sm font-black uppercase tracking-wider text-blue-700">AI Insight</p>
+                <h2 className="mt-2 text-xl font-black">{insight.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{insight.detail}</p>
+                <Button type="button" variant="secondary" size="sm" onClick={() => navigate(insight.route)} className="mt-4">
+                  {insight.action}
+                </Button>
+              </article>
             ))}
           </section>
 
@@ -667,7 +674,7 @@ const HomeDashboard: React.FC = () => {
 
             <article className={`${panel} p-5`}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-black">Messages and Updates</h2>
+                <h2 className="text-xl font-black">Important Messages</h2>
                 <button type="button" onClick={() => navigate('/notifications')} className="text-sm font-bold text-slate-700 hover:text-slate-950">View all</button>
               </div>
               <div className="mb-4 flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 px-3">
@@ -716,28 +723,7 @@ const HomeDashboard: React.FC = () => {
               )}
             </div>
           </section>
-        </section>
       </div>
-
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white px-2 pb-2 pt-2 shadow-2xl shadow-slate-900/10 lg:hidden" aria-label="Mobile navigation">
-        <div className="mx-auto grid max-w-lg grid-cols-5 gap-1">
-          {[
-            { label: 'Home', icon: Home, action: () => navigate('/home') },
-            { label: 'Tasks', icon: CheckSquare, action: () => navigate('/tasks') },
-            { label: 'Create', icon: Plus, action: () => openCreate('task'), primary: true },
-            { label: 'Messages', icon: MessageSquare, action: () => navigate('/messages') },
-            { label: 'Profile', icon: Users, action: () => navigate('/profile') },
-          ].map((item) => {
-            const Icon = item.icon
-            return (
-              <button key={item.label} type="button" onClick={item.action} className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl text-xs font-bold ${item.primary ? 'bg-slate-950 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'}`} aria-label={item.label}>
-                <Icon className="h-5 w-5" />
-                {item.label}
-              </button>
-            )
-          })}
-        </div>
-      </nav>
 
       <AnimatePresence>
         {isCreateOpen && createType && (
@@ -788,7 +774,7 @@ const HomeDashboard: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </main>
+    </AppShell>
   )
 }
 

@@ -24,6 +24,7 @@ const CalendarPage = React.lazy(() => import("./pages/CalendarPage"));
 const FilesPage = React.lazy(() => import("./pages/FilesPage"));
 const AiWorkspace = React.lazy(() => import("./pages/AiWorkspace"));
 const NotificationCenter = React.lazy(() => import("./pages/NotificationCenter"));
+const SettingsPage = React.lazy(() => import("./pages/SettingsPage"));
 const EditProfile = React.lazy(() => import("./pages/EditProfile"));
 const FeatureDetail = React.lazy(() => import("./pages/FeatureDetail"));
 const Profile = React.lazy(() => import("./pages/Profile"));
@@ -411,6 +412,15 @@ function App() {
           element={protectedRoute(
             <React.Suspense fallback={<RouteShell label="Opening notifications..." />}>
               <NotificationCenter />
+            </React.Suspense>,
+            "Checking account..."
+          )}
+        />
+        <Route
+          path="/settings/*"
+          element={protectedRoute(
+            <React.Suspense fallback={<RouteShell label="Opening settings..." />}>
+              <SettingsPage />
             </React.Suspense>,
             "Checking account..."
           )}

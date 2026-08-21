@@ -1,19 +1,19 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, CalendarClock, CheckCircle2, Circle, Plus, Trash2 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { CalendarClock, CheckCircle2, Circle, Plus, Trash2 } from 'lucide-react'
 import { Button } from '../components/Common/Button'
+import AppShell from '../components/AppShell'
 import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
 import { readLocalProjects } from '../utils/localProjects'
 import { createLocalTask, readLocalTasks, writeLocalTasks } from '../utils/localTasks'
 import { recordLocalActivity } from '../utils/localActivity'
+import { syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { showToast } from '../utils/toast'
 
 const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70'
 
 const MyTasks: React.FC = () => {
-  const navigate = useNavigate()
   const { profile } = useAuth()
   const activeProfile = profile || createDefaultProfile({ name: 'CollabOS User', email: '' })
   const [tasks, setTasks] = React.useState(() => readLocalTasks())
@@ -30,6 +30,7 @@ const MyTasks: React.FC = () => {
 
     setTasks(nextTasks)
     showToast({ message: successMessage, type: 'success' })
+    void syncBeginnerWorkspaceToCloud()
   }
 
   const addTask = () => {
@@ -46,7 +47,7 @@ const MyTasks: React.FC = () => {
       projectId: projectId || undefined,
     })
 
-    saveTasks([nextTask, ...tasks], 'Task added for later')
+    saveTasks([nextTask, ...tasks], `Task created successfully: ${nextTask.title}`)
     recordLocalActivity({ type: 'task', title: 'Task added', detail: nextTask.title, route: '/tasks' })
     setTitle('')
     setDueAt('')
@@ -54,30 +55,35 @@ const MyTasks: React.FC = () => {
   }
 
   const toggleTask = (taskId: string) => {
+    const selectedTask = tasks.find((task) => task.id === taskId)
     saveTasks(
       tasks.map((task) => task.id === taskId ? { ...task, done: !task.done } : task),
-      'Task updated'
+      selectedTask
+        ? `Task updated successfully: ${selectedTask.title} is ${selectedTask.done ? 'open' : 'done'}`
+        : 'Task updated successfully'
     )
     recordLocalActivity({ type: 'task', title: 'Task updated', detail: 'Task status changed', route: '/tasks' })
   }
 
   const deleteTask = (taskId: string) => {
-    saveTasks(tasks.filter((task) => task.id !== taskId), 'Task deleted')
-    recordLocalActivity({ type: 'task', title: 'Task deleted', detail: 'A task was removed', route: '/tasks' })
+    const selectedTask = tasks.find((task) => task.id === taskId)
+    if (!selectedTask) return
+
+    const confirmed = window.confirm(`Delete task?\n\nThis will permanently remove "${selectedTask.title}" from your task list.\n\nCancel keeps the task. OK deletes it.`)
+    if (!confirmed) return
+
+    saveTasks(tasks.filter((task) => task.id !== taskId), `Task deleted: ${selectedTask.title}`)
+    recordLocalActivity({ type: 'task', title: 'Task deleted', detail: selectedTask.title, route: '/tasks' })
   }
 
   const openTasks = tasks.filter((task) => !task.done)
   const doneTasks = tasks.filter((task) => task.done)
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-5 text-slate-950 sm:px-6 lg:px-10">
+    <AppShell>
       <div className="mx-auto max-w-5xl">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <button type="button" onClick={() => navigate('/home')} className="mb-4 inline-flex min-h-[44px] items-center gap-2 rounded-lg text-sm font-bold text-slate-600 hover:text-slate-950">
-              <ArrowLeft className="h-4 w-4" />
-              Home
-            </button>
             <h1 className="text-3xl font-black sm:text-4xl">My Tasks</h1>
             <p className="mt-2 max-w-2xl text-slate-600">Add anything you need to remember for later. Keep it simple, like a to-do list.</p>
           </div>
@@ -169,7 +175,7 @@ const MyTasks: React.FC = () => {
           </div>
         </section>
       </div>
-    </main>
+    </AppShell>
   )
 }
 

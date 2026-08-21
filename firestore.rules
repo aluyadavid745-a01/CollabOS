@@ -16,6 +16,10 @@ service cloud.firestore {
       match /websites/{siteId} {
         allow read, create, update, delete: if isOwner(userId);
       }
+
+      match /beginnerWorkspace/{docId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
     }
 
     match /publicWebsites/{siteId} {

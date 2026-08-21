@@ -8,7 +8,7 @@ import { Button } from '../Common/Button'
 import { GlassmorphicCard } from '../Common/GlassmorphicCard'
 import type { AuthUser } from '../../pages/AuthPage'
 import { prefetchRoute } from '../../utils/prefetch'
-import { aiCreditAddOn, formatNaira, pricingPlans } from '../../data/businessModel'
+import { aiCreditAddOn, formatUsd, pricingPlans } from '../../data/businessModel'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -173,11 +173,11 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
         {/* Pricing Cards */}
         <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
           {pricingPlans.map((plan) => {
-            const price = billingCycle === 'yearly' ? plan.yearlyPriceNgn : plan.monthlyPriceNgn
+            const price = billingCycle === 'yearly' ? plan.yearlyPriceUsd : plan.monthlyPriceUsd
             const monthlyEquivalent =
-              billingCycle === 'yearly' && plan.yearlyPriceNgn ? Math.round(plan.yearlyPriceNgn / 12) : null
-            const monthlyTotal = plan.monthlyPriceNgn ? plan.monthlyPriceNgn * 12 : null
-            const yearlySavings = monthlyTotal && plan.yearlyPriceNgn ? monthlyTotal - plan.yearlyPriceNgn : null
+              billingCycle === 'yearly' && plan.yearlyPriceUsd ? Math.round(plan.yearlyPriceUsd / 12) : null
+            const monthlyTotal = plan.monthlyPriceUsd ? plan.monthlyPriceUsd * 12 : null
+            const yearlySavings = monthlyTotal && plan.yearlyPriceUsd ? monthlyTotal - plan.yearlyPriceUsd : null
 
             return (
               <motion.div key={plan.id} className="pricing-card h-full">
@@ -206,7 +206,7 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
                 <div className="mb-8">
                   <div className="flex items-baseline">
                     <span className="text-3xl font-bold text-slate-950">
-                      {price === null ? 'Custom' : formatNaira(price)}
+                      {price === null ? 'Custom' : formatUsd(price)}
                     </span>
                     {price !== null && (
                       <span className="text-slate-500 text-sm ml-2">
@@ -216,10 +216,10 @@ const Pricing: React.FC<PricingProps> = ({ rememberedUser }) => {
                   </div>
                   {billingCycle === 'yearly' && monthlyEquivalent && yearlySavings && (
                     <p className="mt-2 text-sm font-semibold text-green-400">
-                      {formatNaira(monthlyEquivalent)}/month equivalent. Save {formatNaira(yearlySavings)}/year.
+                      {formatUsd(monthlyEquivalent)}/month equivalent. Save {formatUsd(yearlySavings)}/year.
                     </p>
                   )}
-                  {billingCycle === 'monthly' && plan.monthlyPriceNgn !== null && plan.monthlyPriceNgn > 0 && (
+                  {billingCycle === 'monthly' && plan.monthlyPriceUsd !== null && plan.monthlyPriceUsd > 0 && (
                     <p className="mt-2 text-sm text-slate-500">Switch to yearly for launch savings.</p>
                   )}
                   <p className="mt-3 text-sm font-bold text-slate-700">{plan.aiActionsPerMonth === null ? 'Custom AI usage' : `${plan.aiActionsPerMonth.toLocaleString()} AI actions/month`}</p>

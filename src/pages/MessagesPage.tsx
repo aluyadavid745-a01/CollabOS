@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
 import { readLocalProjects } from '../utils/localProjects'
 import { recordLocalActivity } from '../utils/localActivity'
+import { syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { createLocalMessage, readLocalMessages, writeLocalMessages } from '../utils/localWorkspace'
 import { showToast } from '../utils/toast'
 
@@ -37,6 +38,7 @@ const MessagesPage: React.FC = () => {
     setDraft('')
     setProjectId('')
     recordLocalActivity({ type: 'message', title: 'Message sent', detail: message.text, route: '/messages' })
+    void syncBeginnerWorkspaceToCloud()
     showToast({ message: 'Message sent', type: 'success' })
   }
 

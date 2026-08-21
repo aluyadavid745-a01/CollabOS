@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
 import { readLocalProjects } from '../utils/localProjects'
 import { recordLocalActivity } from '../utils/localActivity'
+import { syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { createLocalFileRecord, readLocalFiles, writeLocalFiles } from '../utils/localWorkspace'
 import { showToast } from '../utils/toast'
 
@@ -39,6 +40,7 @@ const FilesPage: React.FC = () => {
     setType('Document')
     setProjectId('')
     recordLocalActivity({ type: 'file', title: 'File saved', detail: file.name, route: '/files' })
+    void syncBeginnerWorkspaceToCloud()
     showToast({ message: 'File saved', type: 'success' })
   }
 
@@ -50,6 +52,7 @@ const FilesPage: React.FC = () => {
     }
     setFiles(nextFiles)
     recordLocalActivity({ type: 'file', title: 'File deleted', detail: 'A file was removed', route: '/files' })
+    void syncBeginnerWorkspaceToCloud()
     showToast({ message: 'File deleted', type: 'success' })
   }
 

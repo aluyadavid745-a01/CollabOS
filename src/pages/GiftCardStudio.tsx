@@ -189,6 +189,39 @@ function formatCardValue(draft: GiftCardDraft) {
   return airtimeValue
 }
 
+function buildSvgGradient(styleId: string) {
+  if (styleId === 'anniversary') {
+    return `<linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7ed" />
+      <stop offset="100%" stop-color="#fdf2f8" />
+    </linearGradient>`
+  }
+  if (styleId === 'birthday') {
+    return `<linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7ed" />
+      <stop offset="52%" stop-color="#fce7f3" />
+      <stop offset="100%" stop-color="#ede9fe" />
+    </linearGradient>`
+  }
+  if (styleId === 'corporate') {
+    return `<linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>`
+  }
+  if (styleId === 'photo') {
+    return `<linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>`
+  }
+  // Default: ceremonial
+  return `<linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#f8fafc" />
+    <stop offset="100%" stop-color="#eef2f7" />
+  </linearGradient>`
+}
+
 function buildCardSvg(card: GiftCardDraft, value: string) {
   const title = svgEscape(card.title || 'Gift card')
   const message = svgEscape(card.message)
@@ -197,13 +230,15 @@ function buildCardSvg(card: GiftCardDraft, value: string) {
   const image = card.imageDataUrl
     ? `<image href="${card.imageDataUrl}" x="462" y="0" width="298" height="400" preserveAspectRatio="${card.imageFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'}" />`
     : ''
+  const gradientDef = buildSvgGradient(card.styleId)
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="400" viewBox="0 0 760 400">
     <defs>
       <clipPath id="card-clip"><rect width="760" height="400" rx="14"/></clipPath>
+      ${gradientDef}
     </defs>
     <g clip-path="url(#card-clip)">
-      <rect width="760" height="400" fill="#f4f5f7"/>
+      <rect width="760" height="400" fill="url(#card-grad)"/>
       <text x="34" y="45" font-family="Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="4" fill="#334155">A GIFT FOR YOU</text>
       ${recipient ? `<text x="34" y="82" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="${style.accent}">For ${recipient}</text>` : ''}
       <text x="34" y="${recipient ? 128 : 102}" font-family="Arial, sans-serif" font-size="42" font-weight="900" fill="#0f172a">${title}</text>

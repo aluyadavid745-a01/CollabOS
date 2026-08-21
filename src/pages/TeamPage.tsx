@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, Trash2, UserPlus, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { recordLocalActivity } from '../utils/localActivity'
+import { syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { createLocalTeamMember, readLocalTeamMembers, writeLocalTeamMembers } from '../utils/localWorkspace'
 import { showToast } from '../utils/toast'
 
@@ -32,6 +33,7 @@ const TeamPage: React.FC = () => {
     setEmail('')
     setRole('Member')
     recordLocalActivity({ type: 'team', title: 'Team member added', detail: member.name, route: '/team' })
+    void syncBeginnerWorkspaceToCloud()
     showToast({ message: 'Team member added', type: 'success' })
   }
 
@@ -43,6 +45,7 @@ const TeamPage: React.FC = () => {
     }
     setMembers(nextMembers)
     recordLocalActivity({ type: 'team', title: 'Team member removed', detail: 'A person was removed', route: '/team' })
+    void syncBeginnerWorkspaceToCloud()
     showToast({ message: 'Team member removed', type: 'success' })
   }
 

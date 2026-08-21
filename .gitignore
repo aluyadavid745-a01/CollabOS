@@ -14,3 +14,4 @@ appsettings.Local.json
 backend/**/bin/
 backend/**/obj/
 .aider*
+.vercel

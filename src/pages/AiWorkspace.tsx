@@ -1,7 +1,8 @@
 import React from 'react'
-import { ArrowLeft, Bot, CalendarClock, CheckCircle2, FileText, Folder, MessageSquare, Plus } from 'lucide-react'
+import { Bot, CalendarClock, CheckCircle2, FileText, Folder, MessageSquare, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
+import AppShell from '../components/AppShell'
 import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
 import { trackAnalyticsEvent } from '../services/analytics'
@@ -21,6 +22,7 @@ const AiWorkspace: React.FC = () => {
   const activeProfile = profile || createDefaultProfile({ name: 'CollabOS User', email: '' })
   const [prompt, setPrompt] = React.useState('Create a marketing project for our new product.')
   const [answer, setAnswer] = React.useState('Tell CollabOS AI what you want to do in the workspace.')
+  const [pendingAction, setPendingAction] = React.useState<{ title: string; detail: string } | null>(null)
   const [refreshKey, setRefreshKey] = React.useState(0)
 
   const projects = React.useMemo(() => {
@@ -79,7 +81,27 @@ const AiWorkspace: React.FC = () => {
     if (lower.includes('create') && lower.includes('project')) {
       const project = createAiLaunchPlan(cleanPrompt, activeProfile.name)
       setRefreshKey((value) => value + 1)
+      setPendingAction(null)
       setAnswer(`Created "${project.name}" with tasks, a kickoff meeting, a file, and a team update.`)
+      return
+    }
+
+    if (lower.includes('move') && lower.includes('deadline')) {
+      const project = projects[0]
+      setPendingAction({
+        title: project ? `Move ${project.name} deadline` : 'Move project deadline',
+        detail: project ? `I've prepared this change for ${project.name}. Confirm before CollabOS changes a deadline.` : 'Create a project first, then Autopilot can prepare deadline changes.',
+      })
+      setAnswer("I've prepared this change. Important timeline changes require confirmation.")
+      return
+    }
+
+    if (lower.includes('delete') || lower.includes('remove permanently')) {
+      setPendingAction({
+        title: 'Destructive action blocked',
+        detail: 'Autopilot will never delete workspace data without an explicit confirmation screen and permission check.',
+      })
+      setAnswer('This is a destructive request. Review it carefully before taking action.')
       return
     }
 
@@ -109,20 +131,24 @@ const AiWorkspace: React.FC = () => {
       return
     }
 
-    setAnswer('I can create project plans, add task sets, summarize workspace activity, or list what needs attention today.')
+      setAnswer('I can create project plans, add task sets, summarize workspace activity, or list what needs attention today.')
+  }
+
+  const confirmPendingAction = () => {
+    if (!pendingAction) return
+    recordLocalActivity({ type: 'ai', title: 'AI action confirmed', detail: pendingAction.title, route: '/ai' })
+    setAnswer(`${pendingAction.title} confirmed. In production, this action should be checked against workspace permissions server-side.`)
+    setPendingAction(null)
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-5 text-slate-950 sm:px-6 lg:px-10">
+    <AppShell>
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <button type="button" onClick={() => navigate('/home')} className="mb-4 inline-flex min-h-[44px] items-center gap-2 rounded-lg text-sm font-bold text-slate-600 hover:text-slate-950">
-              <ArrowLeft className="h-4 w-4" />
-              Home
-            </button>
-            <h1 className="text-3xl font-black sm:text-4xl">AI Workspace Assistant</h1>
-            <p className="mt-2 max-w-2xl text-slate-600">Ask AI to operate your workspace, not just chat. It can create project plans, add task sets, and summarize real workspace activity.</p>
+            <p className="text-sm font-black uppercase tracking-wider text-blue-700">COLLABOS AUTOPILOT</p>
+            <h1 className="mt-1 text-3xl font-black sm:text-4xl">Tell CollabOS what needs to happen.</h1>
+            <p className="mt-2 max-w-2xl text-slate-600">Autopilot understands your workspace and helps you act: create projects, summarize work, find blockers, and prepare task changes with confirmation.</p>
           </div>
           <Button type="button" onClick={() => navigate('/projects')} className="gap-2">
             <Folder className="h-4 w-4" />
@@ -170,6 +196,17 @@ const AiWorkspace: React.FC = () => {
           <article className={`${panel} p-5`}>
             <h2 className="text-xl font-black">AI response</h2>
             <p className="mt-3 rounded-lg bg-slate-50 p-4 text-sm leading-6 text-slate-700">{answer}</p>
+            {pendingAction && (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm font-black text-amber-900">I've prepared this change.</p>
+                <h3 className="mt-1 font-black text-slate-950">{pendingAction.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-700">{pendingAction.detail}</p>
+                <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setPendingAction(null)}>Cancel</Button>
+                  <Button type="button" size="sm" onClick={confirmPendingAction}>Confirm</Button>
+                </div>
+              </div>
+            )}
             <p className="mt-3 text-xs font-bold uppercase tracking-wider text-slate-500">Actions use the current workspace and local/cloud sync foundations. Production LLM permissions should be enforced server-side.</p>
           </article>
 
@@ -199,7 +236,7 @@ const AiWorkspace: React.FC = () => {
           </article>
         </section>
       </div>
-    </main>
+    </AppShell>
   )
 }
 

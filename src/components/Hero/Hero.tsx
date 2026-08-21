@@ -73,10 +73,10 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
     { label: 'AI', icon: Bot },
   ]
 
-  const metrics = [
-    ['Today', '4 tasks'],
-    ['Projects', '2 active'],
-    ['Meetings', '1 next'],
+  const workflow = [
+    ['Meet', 'Capture context'],
+    ['Understand', 'Find decisions'],
+    ['Execute', 'Create follow-up'],
   ]
 
   return (
@@ -86,8 +86,8 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_50%_0%,rgba(15,23,42,0.08),transparent_58%)]" />
 
-      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 md:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:px-16">
-        <div>
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 px-4 md:px-8 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:px-10 xl:px-12">
+        <div className="min-w-0">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -100,7 +100,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
 
           <h1
             ref={titleRef}
-            className="max-w-4xl text-5xl font-black leading-[0.95] text-slate-950 sm:text-6xl lg:text-7xl"
+            className="max-w-4xl text-5xl font-black leading-[0.95] text-slate-950 sm:text-6xl lg:text-6xl xl:text-7xl"
           >
             The operating system for modern teams.
           </h1>
@@ -150,7 +150,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
           </div>
 
           <div className="mt-9 grid max-w-xl grid-cols-3 gap-3">
-            {metrics.map(([label, value]) => (
+            {workflow.map(([label, value]) => (
               <div key={label} className="rounded-xl border border-slate-200 bg-white/85 p-4 shadow-sm">
                 <p className="text-xs font-black uppercase tracking-wider text-slate-500">{label}</p>
                 <p className="mt-1 text-lg font-black text-slate-950">{value}</p>
@@ -164,7 +164,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
           initial={{ opacity: 0, scale: 0.97, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.85, delay: 0.55 }}
-          className="relative"
+          className="relative min-w-0 lg:ml-auto lg:w-full lg:max-w-[760px]"
         >
           <div className="rounded-[1.4rem] border border-slate-300/70 bg-white p-2 shadow-2xl shadow-slate-300/70">
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
@@ -182,8 +182,8 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
                 </div>
               </div>
 
-              <div className="grid min-h-[560px] lg:grid-cols-[220px_1fr]">
-                <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block">
+              <div className="grid min-h-[520px] lg:grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[210px_minmax(0,1fr)]">
+                <aside className="hidden border-r border-slate-200 bg-white p-3 xl:p-4 lg:block">
                   <button type="button" className="mb-5 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white">
                     <ArrowRight className="h-4 w-4" />
                     Create
@@ -198,7 +198,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
                   </nav>
                 </aside>
 
-                <div className="min-w-0 p-4 sm:p-5">
+                <div className="min-w-0 overflow-hidden p-4 sm:p-5">
                   <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <p className="text-xs font-black uppercase tracking-wider text-slate-500">Today</p>
@@ -207,7 +207,7 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
                     <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">AI ready</span>
                   </div>
 
-                  <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                  <div className="grid gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(210px,0.92fr)]">
                     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <div className="flex items-center justify-between gap-3">
                         <div>

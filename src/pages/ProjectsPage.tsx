@@ -1,12 +1,14 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, CalendarClock, CheckCircle2, Folder, Plus, Trash2, Users } from 'lucide-react'
+import { CalendarClock, CheckCircle2, Folder, Plus, Trash2, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
+import AppShell from '../components/AppShell'
 import { createLocalProject, readLocalProjects, writeLocalProjects, type LocalProjectStatus } from '../utils/localProjects'
 import { readLocalTasks } from '../utils/localTasks'
 import { createAiLaunchPlan } from '../utils/investorDemo'
 import { recordLocalActivity } from '../utils/localActivity'
+import { syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { showToast } from '../utils/toast'
 
 const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70'
@@ -35,6 +37,7 @@ const ProjectsPage: React.FC = () => {
 
     setProjects(nextProjects)
     showToast({ message, type: 'success' })
+    void syncBeginnerWorkspaceToCloud()
   }
 
   const addProject = () => {
@@ -52,7 +55,7 @@ const ProjectsPage: React.FC = () => {
       status: 'Planning',
     })
 
-    saveProjects([project, ...projects], 'Project created')
+    saveProjects([project, ...projects], `Project created successfully: ${project.name}`)
     recordLocalActivity({ type: 'project', title: 'Project created', detail: project.name, route: '/projects' })
     setName('')
     setDescription('')
@@ -61,16 +64,23 @@ const ProjectsPage: React.FC = () => {
   }
 
   const updateStatus = (projectId: string, status: LocalProjectStatus) => {
+    const selectedProject = projects.find((project) => project.id === projectId)
     saveProjects(
       projects.map((project) => project.id === projectId ? { ...project, status, updatedAt: new Date().toISOString() } : project),
-      'Project updated'
+      selectedProject ? `Project updated successfully: ${selectedProject.name} is ${status}` : 'Project updated successfully'
     )
-    recordLocalActivity({ type: 'project', title: 'Project updated', detail: status, route: '/projects' })
+    recordLocalActivity({ type: 'project', title: 'Project updated', detail: selectedProject ? `${selectedProject.name} is ${status}` : status, route: '/projects' })
   }
 
   const deleteProject = (projectId: string) => {
-    saveProjects(projects.filter((project) => project.id !== projectId), 'Project deleted')
-    recordLocalActivity({ type: 'project', title: 'Project deleted', detail: 'A project was removed', route: '/projects' })
+    const selectedProject = projects.find((project) => project.id === projectId)
+    if (!selectedProject) return
+
+    const confirmed = window.confirm(`Delete project?\n\nThis will permanently remove "${selectedProject.name}" from this workspace. Related tasks are not deleted.\n\nCancel keeps the project. OK deletes it.`)
+    if (!confirmed) return
+
+    saveProjects(projects.filter((project) => project.id !== projectId), `Project deleted: ${selectedProject.name}`)
+    recordLocalActivity({ type: 'project', title: 'Project deleted', detail: selectedProject.name, route: '/projects' })
   }
 
   const activeProjects = projects.filter((project) => project.status !== 'Done')
@@ -80,17 +90,14 @@ const ProjectsPage: React.FC = () => {
     setProjects(readLocalProjects())
     setRefreshKey((value) => value + 1)
     showToast({ message: `${project.name} plan created`, type: 'success' })
+    void syncBeginnerWorkspaceToCloud()
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-5 text-slate-950 sm:px-6 lg:px-10">
+    <AppShell>
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <button type="button" onClick={() => navigate('/home')} className="mb-4 inline-flex min-h-[44px] items-center gap-2 rounded-lg text-sm font-bold text-slate-600 hover:text-slate-950">
-              <ArrowLeft className="h-4 w-4" />
-              Home
-            </button>
             <h1 className="text-3xl font-black sm:text-4xl">Projects</h1>
             <p className="mt-2 max-w-2xl text-slate-600">Plan work in one place. Create a project, add who is involved, set a deadline, then add tasks.</p>
           </div>
@@ -231,7 +238,7 @@ const ProjectsPage: React.FC = () => {
           )}
         </section>
       </div>
-    </main>
+    </AppShell>
   )
 }
 

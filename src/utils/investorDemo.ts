@@ -15,6 +15,7 @@ import {
   writeLocalTeamMembers,
 } from './localWorkspace'
 import { recordLocalActivity } from './localActivity'
+import { syncBeginnerWorkspaceToCloud } from './beginnerWorkspaceSync'
 
 const daysFromNow = (days: number) => {
   const date = new Date()
@@ -79,6 +80,7 @@ export const createAiLaunchPlan = (prompt: string, ownerName: string) => {
   writeLocalFiles([file, ...readLocalFiles()])
   writeLocalMessages([message, ...readLocalMessages()])
   recordLocalActivity({ type: 'ai', title: 'AI project plan created', detail: project.name, route: '/projects' })
+  void syncBeginnerWorkspaceToCloud()
 
   return project
 }
@@ -127,6 +129,7 @@ export const loadSampleWorkspace = (ownerName: string) => {
   writeLocalCalendarEvents([...events, ...readLocalCalendarEvents()])
   writeLocalFiles([...files, ...readLocalFiles()])
   recordLocalActivity({ type: 'ai', title: 'Sample workspace loaded', detail: 'Investor Demo Launch is ready', route: '/home' })
+  void syncBeginnerWorkspaceToCloud()
 
   return project
 }

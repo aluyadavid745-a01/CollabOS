@@ -2,6 +2,7 @@ import React from 'react'
 import { ArrowLeft, Bell, CheckCheck, Filter, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
+import AppShell from '../components/AppShell'
 import { useAuth } from '../context/AuthContext'
 import { listHomeNotifications, markAllHomeNotificationsRead, markHomeNotificationRead } from '../services/homeNotifications'
 import type { HomeNotification, HomeNotificationType } from '../types/home'
@@ -43,7 +44,7 @@ const NotificationCenter: React.FC = () => {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-950 md:px-8 lg:px-12">
+    <AppShell>
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -133,7 +134,7 @@ const NotificationCenter: React.FC = () => {
           )}
         </section>
       </div>
-    </main>
+    </AppShell>
   )
 }
 

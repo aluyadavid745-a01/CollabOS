@@ -96,6 +96,11 @@ const AuthPage: React.FC<AuthPageProps> = ({
   const [notice, setNotice] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
   const [showPassword, setShowPassword] = React.useState(false)
+  const [signupStep, setSignupStep] = React.useState(0)
+  const [goals, setGoals] = React.useState<string[]>([])
+  const [teamSize, setTeamSize] = React.useState('2-5')
+  const [inviteEmails, setInviteEmails] = React.useState('')
+  const [startChoice, setStartChoice] = React.useState('Create a project')
   const [form, setForm] = React.useState({
     name: createdAccount?.name || rememberedUser?.name || '',
     email: lastEmail,
@@ -111,6 +116,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
     setStep('form')
     setError('')
     setNotice('')
+    setSignupStep(0)
   }, [mode])
 
   React.useEffect(() => {
@@ -353,8 +359,197 @@ const AuthPage: React.FC<AuthPageProps> = ({
     setStep('form')
     setError('')
     setNotice('')
+    setSignupStep(0)
     onNavigate(isSignup ? 'signin' : 'signup')
   }
+
+  const workspaceSlug = (form.workspace || 'your-workspace')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40)
+  const nameParts = form.name.trim().split(/\s+/).filter(Boolean)
+  const signupFirstName = nameParts[0] || ''
+  const signupLastName = nameParts.slice(1).join(' ')
+
+  const updateSignupName = (part: 'first' | 'last') => (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target.value
+    const nextFirst = part === 'first' ? value : signupFirstName
+    const nextLast = part === 'last' ? value : signupLastName
+    setForm((current) => ({ ...current, name: `${nextFirst.trim()} ${nextLast.trim()}`.trim() }))
+    setError('')
+  }
+
+  const toggleGoal = (goal: string) => {
+    setGoals((current) => current.includes(goal) ? current.filter((item) => item !== goal) : [...current, goal])
+  }
+
+  const nextSignupStep = () => {
+    setError('')
+    if (signupStep === 1 && (!signupFirstName.trim() || !signupLastName.trim())) {
+      setError('Enter your first and last name so your workspace feels personal.')
+      return
+    }
+    if (signupStep === 4 && !form.workspace.trim()) {
+      setError('Enter a workspace name to continue.')
+      return
+    }
+    setSignupStep((current) => Math.min(current + 1, 7))
+  }
+
+  const signupWizard = (
+    <div className="space-y-5">
+      <div className="mb-2 flex items-center gap-2">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <span key={index} className={`h-1.5 flex-1 rounded-full ${index <= signupStep ? 'bg-blue-700' : 'bg-slate-200'}`} />
+        ))}
+      </div>
+
+      {signupStep === 0 && (
+        <div>
+          <h3 className="text-2xl font-black">Welcome to CollabOS</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Let&apos;s set up your workspace. Projects, tasks, communication, files, meetings, and AI will connect in one simple place.</p>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={nextSignupStep}>Continue</Button>
+        </div>
+      )}
+
+      {signupStep === 1 && (
+        <div>
+          <h3 className="text-2xl font-black">What should we call you?</h3>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-700">First name</span>
+              <input value={signupFirstName} onChange={updateSignupName('first')} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" placeholder="Ada" />
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-700">Last name</span>
+              <input value={signupLastName} onChange={updateSignupName('last')} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" placeholder="Johnson" />
+            </label>
+          </div>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={nextSignupStep}>Continue</Button>
+        </div>
+      )}
+
+      {signupStep === 2 && (
+        <div>
+          <h3 className="text-2xl font-black">What are you here to accomplish?</h3>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            {['Manage a team', 'Manage projects', 'Organize my work', 'Run a business', 'Collaborate remotely', 'Other'].map((goal) => (
+              <button key={goal} type="button" onClick={() => toggleGoal(goal)} className={`min-h-[48px] rounded-lg border px-3 text-left text-sm font-bold ${goals.includes(goal) ? 'border-blue-700 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>
+                {goal}
+              </button>
+            ))}
+          </div>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={nextSignupStep}>Continue</Button>
+        </div>
+      )}
+
+      {signupStep === 3 && (
+        <div>
+          <h3 className="text-2xl font-black">What's your team size?</h3>
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {['1', '2-5', '6-10', '11-25', '26-100', '100+'].map((size) => (
+              <button key={size} type="button" onClick={() => setTeamSize(size)} className={`min-h-[48px] rounded-lg border px-3 text-sm font-bold ${teamSize === size ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>
+                {size}
+              </button>
+            ))}
+          </div>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={nextSignupStep}>Continue</Button>
+        </div>
+      )}
+
+      {signupStep === 4 && (
+        <div>
+          <h3 className="text-2xl font-black">Create your workspace</h3>
+          <label className="mt-5 block">
+            <span className="text-sm font-semibold text-slate-700">Workspace name</span>
+            <input value={form.workspace} onChange={updateForm('workspace')} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" placeholder="Acme Studio" />
+          </label>
+          <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+            <p className="text-xs font-black uppercase tracking-wider text-slate-500">Workspace URL preview</p>
+            <p className="mt-1 text-sm font-bold text-slate-700">collabos.com/{workspaceSlug || 'your-workspace'}</p>
+          </div>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={nextSignupStep}>Continue</Button>
+        </div>
+      )}
+
+      {signupStep === 5 && (
+        <div>
+          <h3 className="text-2xl font-black">Invite your team</h3>
+          <label className="mt-5 block">
+            <span className="text-sm font-semibold text-slate-700">Email addresses</span>
+            <textarea value={inviteEmails} onChange={(event) => setInviteEmails(event.target.value)} rows={4} className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" placeholder="david@company.com, sarah@company.com" />
+          </label>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <Button type="button" variant="secondary" size="lg" onClick={nextSignupStep}>Skip for now</Button>
+            <Button type="button" size="lg" onClick={nextSignupStep}>Continue</Button>
+          </div>
+        </div>
+      )}
+
+      {signupStep === 6 && (
+        <div>
+          <h3 className="text-2xl font-black">What would you like to start with?</h3>
+          <div className="mt-5 grid gap-2">
+            {['Create a project', 'Create a task', 'Start a team', 'Import existing work', 'Explore CollabOS'].map((choice) => (
+              <button key={choice} type="button" onClick={() => setStartChoice(choice)} className={`min-h-[48px] rounded-lg border px-3 text-left text-sm font-bold ${startChoice === choice ? 'border-blue-700 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>
+                {choice}
+              </button>
+            ))}
+          </div>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={nextSignupStep}>Continue</Button>
+        </div>
+      )}
+
+      {signupStep === 7 && (
+        <form onSubmit={submitForm} className="space-y-5">
+          <div>
+            <h3 className="text-2xl font-black">Your workspace is ready.</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Create secure account access for {form.workspace || 'your workspace'}. We will send a verification email before opening protected workspace data.</p>
+          </div>
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-700">Work email</span>
+            <input type="email" value={form.email} onChange={updateForm('email')} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" placeholder="you@company.com" />
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-700">Password</span>
+            <div className="relative mt-2">
+              <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={updateForm('password')} className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 pr-12 text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" placeholder="Enter password" />
+              <button type="button" onClick={() => setShowPassword((current) => !current)} className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-slate-500 hover:bg-slate-100" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </label>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+            <p><strong>Purpose:</strong> {goals.length ? goals.join(', ') : 'Explore CollabOS'}</p>
+            <p><strong>Team size:</strong> {teamSize}</p>
+            <p><strong>Start with:</strong> {startChoice}</p>
+            {inviteEmails.trim() && <p><strong>Invites prepared:</strong> {inviteEmails.split(',').filter(Boolean).length}</p>}
+          </div>
+          {notice && <p className="text-sm text-emerald-700">{notice}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button type="button" variant="secondary" size="lg" onClick={() => setSignupStep(6)}>Back</Button>
+            <Button type="submit" size="lg" disabled={submitting}>
+              {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+              Create account
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {signupStep > 0 && signupStep < 7 && (
+        <button type="button" onClick={() => setSignupStep((current) => Math.max(current - 1, 0))} className="w-full text-sm font-bold text-slate-600 hover:text-slate-950">
+          Back
+        </button>
+      )}
+
+      {error && signupStep < 7 && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  )
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -437,6 +632,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
             </div>
 
             {step === 'form' ? (
+              isSignup ? signupWizard : (
               <form onSubmit={submitForm} className="space-y-5">
                 <button
                   type="button"
@@ -555,6 +751,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                       : 'Sign in'}
                 </Button>
               </form>
+              )
             ) : (
               <div className="space-y-5">
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { readLocalProjects } from '../utils/localProjects'
 import { recordLocalActivity } from '../utils/localActivity'
+import { syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { createLocalCalendarEvent, readLocalCalendarEvents, writeLocalCalendarEvents } from '../utils/localWorkspace'
 import { showToast } from '../utils/toast'
 
@@ -35,6 +36,7 @@ const CalendarPage: React.FC = () => {
     setTime('')
     setProjectId('')
     recordLocalActivity({ type: 'calendar', title: 'Meeting added', detail: event.title, route: '/calendar' })
+    void syncBeginnerWorkspaceToCloud()
     showToast({ message: 'Meeting added', type: 'success' })
   }
 
@@ -46,6 +48,7 @@ const CalendarPage: React.FC = () => {
     }
     setEvents(nextEvents)
     recordLocalActivity({ type: 'calendar', title: 'Meeting deleted', detail: 'A meeting was removed', route: '/calendar' })
+    void syncBeginnerWorkspaceToCloud()
     showToast({ message: 'Meeting deleted', type: 'success' })
   }
 
