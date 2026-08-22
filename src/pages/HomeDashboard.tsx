@@ -33,8 +33,8 @@ type QuickCreateType = 'task' | 'project' | 'channel' | 'team' | 'document' | 'm
 
 const ONBOARDING_KEY = 'collabos:onboardingDismissed'
 
-const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70'
-const iconButton = 'grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2'
+const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60'
+const iconButton = 'grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2'
 
 const startOfToday = () => {
   const date = new Date()
@@ -450,33 +450,65 @@ const HomeDashboard: React.FC = () => {
     void syncBeginnerWorkspaceToCloud()
   }
 
+  const activeProjects = projects.filter((project) => project.status !== 'Done')
+  const completedTasks = localTasks.filter((task) => task.done).length
+  const taskCompletion = localTasks.length ? Math.round((completedTasks / localTasks.length) * 100) : 0
+  const statCards = [
+    { label: 'Open tasks', value: localTasks.filter((task) => !task.done).length, detail: `${todayTasks.length} due today`, icon: CheckCircle2, route: '/tasks' },
+    { label: 'Your focus', value: `${taskCompletion}%`, detail: localTasks.length ? `${completedTasks} of ${localTasks.length} complete` : 'No tasks yet', icon: CalendarClock, route: '/tasks' },
+    { label: 'Team activity', value: activity.length, detail: `${teamMembers.length} teammates`, icon: Bell, route: '/notifications' },
+    { label: 'Next milestone', value: activeProjects.length, detail: projects.length ? 'Active projects' : 'Create a project', icon: ArrowRight, route: '/projects' },
+  ]
+  const projectPulse = activeProjects.slice(0, 3).map((project, index) => {
+    const linkedTasks = localTasks.filter((task) => task.projectId === project.id)
+    const progress = linkedTasks.length
+      ? Math.round((linkedTasks.filter((task) => task.done).length / linkedTasks.length) * 100)
+      : project.status === 'Done'
+        ? 100
+        : [78, 54, 32][index] || 20
+    return { ...project, progress, color: ['bg-rose-400', 'bg-blue-500', 'bg-violet-400'][index] || 'bg-emerald-400' }
+  })
+
   return (
     <AppShell>
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1400px]">
           <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-black uppercase tracking-wider text-blue-700">Today</p>
-              <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">{greeting()}, {activeProfile.name.split(' ')[0] || 'there'}</h1>
-              <p className="mt-2 text-slate-600">Here&apos;s what&apos;s happening across your workspace.</p>
+              <p className="mb-2 text-sm font-medium text-blue-700">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+              <h1 className="text-balance text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">{greeting()}, {activeProfile.name.split(' ')[0] || 'there'}<span className="text-blue-700">.</span></h1>
+              <p className="mt-2 text-sm text-slate-500">Here&apos;s what&apos;s moving across your workspace.</p>
             </div>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => navigate('/notifications')} className={iconButton} aria-label="Notifications" title="See updates from your team">
-                <Bell className="h-5 w-5" />
-              </button>
               <button type="button" onClick={() => setIsHelpOpen(true)} className={iconButton} aria-label="Help" title="Search help and tutorials">
                 <HelpCircle className="h-5 w-5" />
               </button>
-              <div className="relative">
-                <Button type="button" onClick={() => openCreate('task')} className="min-h-[44px] gap-2">
-                  <Plus className="h-5 w-5" />
-                  Create
-                </Button>
-              </div>
-              <Button type="button" variant="secondary" onClick={loadDemo} className="min-h-[44px]">
+              <Button type="button" onClick={() => openCreate('task')} className="min-h-[40px] gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium">
+                <Plus className="h-4 w-4" />
+                New task
+              </Button>
+              <Button type="button" variant="secondary" onClick={loadDemo} className="min-h-[40px] rounded-lg px-3 text-sm">
                 Load Sample Workspace
               </Button>
             </div>
           </header>
+
+          <section className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {statCards.map((item) => {
+              const Icon = item.icon
+              return (
+                <button key={item.label} type="button" onClick={() => navigate(item.route)} className={`${panel} p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-500">{item.label}</span>
+                    <Icon className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold tracking-tight">{item.value}</span>
+                    <span className="text-xs text-slate-500">{item.detail}</span>
+                  </div>
+                </button>
+              )
+            })}
+          </section>
 
           {!onboardingDismissed && (
             <section className={`${panel} mb-5 overflow-hidden`}>
@@ -507,17 +539,17 @@ const HomeDashboard: React.FC = () => {
             </section>
           )}
 
-          <section className="mb-5 grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+          <section className="mb-5 grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
             <article className={`${panel} p-5`}>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-black uppercase tracking-wider text-slate-500">My Work</p>
-                  <h2 className="mt-1 text-2xl font-black">{nextTask?.title || 'Create your first task'}</h2>
-                  <p className="mt-2 text-slate-600">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Your work</p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight">{nextTask?.title || 'Create your first task'}</h2>
+                  <p className="mt-2 text-sm text-slate-500">
                     {nextTask ? `${nextTask.owner} is responsible. Due ${new Date(nextTask.dueAt).toLocaleDateString()}.` : 'Tasks help everyone know what to do next.'}
                   </p>
                 </div>
-                <Button type="button" onClick={() => navigate('/tasks')} className="min-h-[44px] gap-2">
+                <Button type="button" onClick={() => navigate('/tasks')} className="min-h-[40px] gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium">
                   {nextTask ? 'Open task' : 'Create your first task'}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -526,12 +558,12 @@ const HomeDashboard: React.FC = () => {
 
             <article className={`${panel} p-5`}>
               <div className="flex items-start gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-700 text-white">
+                <div className="grid h-10 w-10 place-items-center rounded-lg bg-slate-950 text-white">
                   <Bot className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-xl font-black">AI Insights</h2>
-                  <p className="mt-1 text-sm text-slate-600">Ask for priorities, blockers, summaries, or workspace actions.</p>
+                  <h2 className="font-semibold tracking-tight">AI Insights</h2>
+                  <p className="mt-1 text-xs text-slate-500">Ask for priorities, blockers, summaries, or workspace actions.</p>
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
@@ -545,66 +577,18 @@ const HomeDashboard: React.FC = () => {
             </article>
           </section>
 
-          <section className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-            {[
-              { label: 'Tasks due today', value: todayTasks.length, action: () => navigate('/tasks') },
-              { label: 'Active projects', value: projects.filter((project) => project.status !== 'Done').length, action: () => navigate('/projects') },
-              { label: 'Team members', value: teamMembers.length, action: () => navigate('/team') },
-              { label: 'New messages', value: recentMessages.length, action: () => navigate('/messages') },
-              { label: 'Upcoming meetings', value: upcomingMeetings, action: () => navigate('/calendar') },
-              { label: 'Saved files', value: files.length, action: () => navigate('/files') },
-            ].map((item) => (
-              <button key={item.label} type="button" onClick={item.action} className={`${panel} min-h-[110px] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md`}>
-                <p className="text-3xl font-black">{item.value}</p>
-                <p className="mt-2 text-sm font-bold text-slate-600">{item.label}</p>
-              </button>
-            ))}
-          </section>
-
-          <section className="mb-5 grid gap-5 xl:grid-cols-3">
-            {[
-              {
-                title: `${todayTasks.length} task${todayTasks.length === 1 ? '' : 's'} may affect today`,
-                detail: todayTasks.length ? 'Review due dates and owners before the day moves forward.' : 'Nothing urgent is due today.',
-                action: 'Review',
-                route: '/tasks',
-              },
-              {
-                title: `${projects.filter((project) => project.status === 'Active').length} active project${projects.filter((project) => project.status === 'Active').length === 1 ? '' : 's'}`,
-                detail: projects.length ? 'Open project plans to check progress, tasks, files, and recent activity.' : 'Create your first project to organize work from start to finish.',
-                action: projects.length ? 'View' : 'Create',
-                route: '/projects',
-              },
-              {
-                title: teamMembers.length ? `${teamMembers.length} teammate${teamMembers.length === 1 ? '' : 's'} in workspace` : 'Invite teammates when ready',
-                detail: teamMembers.length ? 'Keep roles, workload, and ownership clear.' : 'You can start alone and invite the team after the workspace is shaped.',
-                action: 'Take action',
-                route: '/team',
-              },
-            ].map((insight) => (
-              <article key={insight.title} className={`${panel} p-5`}>
-                <p className="text-sm font-black uppercase tracking-wider text-blue-700">AI Insight</p>
-                <h2 className="mt-2 text-xl font-black">{insight.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{insight.detail}</p>
-                <Button type="button" variant="secondary" size="sm" onClick={() => navigate(insight.route)} className="mt-4">
-                  {insight.action}
-                </Button>
-              </article>
-            ))}
-          </section>
-
-          <section className="grid gap-5 xl:grid-cols-3">
-            <article className={`${panel} p-5`}>
+          <section className="grid gap-5 xl:grid-cols-[1.7fr_0.9fr]">
+            <article className={`${panel} overflow-hidden`}>
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-black">My Tasks</h2>
-                  <p className="mt-1 text-sm text-slate-600">Quick add here, or open the full to-do page.</p>
+                  <h2 className="px-5 pt-5 text-lg font-semibold tracking-tight">Your work</h2>
+                  <p className="mt-1 px-5 text-sm text-slate-500">Tasks that need your attention.</p>
                 </div>
-                <button type="button" onClick={() => navigate('/tasks')} className={iconButton} aria-label="Open My Tasks" title="Open My Tasks">
+                <button type="button" onClick={() => navigate('/tasks')} className={`${iconButton} mr-5 mt-5`} aria-label="Open My Tasks" title="Open My Tasks">
                   <ArrowRight className="h-5 w-5" />
                 </button>
               </div>
-              <div className="mb-4 flex gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
+              <div className="mx-5 mb-4 flex gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
                 <input
                   value={newTaskTitle}
                   onChange={(event) => setNewTaskTitle(event.target.value)}
@@ -623,24 +607,27 @@ const HomeDashboard: React.FC = () => {
                   Add
                 </Button>
               </div>
-              <div className="space-y-3">
+              <div className="hidden grid-cols-[minmax(0,1.8fr)_1fr_130px_100px] gap-4 border-y border-slate-200 bg-slate-50/80 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 md:grid">
+                <span>Task</span>
+                <span>Status</span>
+                <span>Due</span>
+                <span>Priority</span>
+              </div>
+              <div>
                 {taskCards.length ? taskCards.map((task) => (
-                  <div key={task.id} className={`rounded-lg border p-3 ${task.status === 'Done' ? 'border-emerald-100 bg-emerald-50/70' : 'border-slate-200 bg-white'}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <button type="button" onClick={() => navigate(task.route)} className={`text-left font-bold hover:text-slate-700 ${task.status === 'Done' ? 'text-slate-500 line-through' : 'text-slate-950'}`}>{task.title}</button>
-                      {localTasks.some((item) => item.id === task.id) && (
-                        <button type="button" onClick={() => dismissTask(task.id)} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700 hover:bg-emerald-100 hover:text-emerald-700">
-                          {task.status === 'Done' ? 'Done' : 'Mark done'}
-                        </button>
-                      )}
+                  <div key={task.id} className="grid gap-3 border-b border-slate-200 px-4 py-4 last:border-0 md:grid-cols-[minmax(0,1.8fr)_1fr_130px_100px] md:items-center md:gap-4 md:px-5">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <button type="button" onClick={() => dismissTask(task.id)} className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${task.status === 'Done' ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 hover:border-slate-950'}`} aria-label={`Mark ${task.title} complete`}>
+                        {task.status === 'Done' && <CheckCircle2 className="h-3.5 w-3.5" />}
+                      </button>
+                      <button type="button" onClick={() => navigate(task.route)} className={`min-w-0 text-left text-sm font-medium hover:text-slate-700 ${task.status === 'Done' ? 'text-slate-500 line-through' : 'text-slate-950'}`}>{task.title}</button>
                     </div>
-                    <p className="mt-2 flex items-center gap-2 text-xs font-bold text-slate-500">
-                      <CalendarClock className="h-3.5 w-3.5" />
-                      {task.owner} - due {new Date(task.dueAt).toLocaleDateString()}
-                    </p>
+                    <div><span className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${task.status === 'Review' ? 'bg-violet-50 text-violet-700' : task.status === 'Done' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>{task.status}</span></div>
+                    <p className="text-xs text-slate-500">{new Date(task.dueAt).toLocaleDateString()}</p>
+                    <p className="text-xs font-medium text-slate-500">{localTasks.find((item) => item.id === task.id)?.priority || 'Medium'}</p>
                   </div>
                 )) : (
-                  <div className="rounded-lg border border-dashed border-slate-300 p-5">
+                  <div className="m-5 rounded-lg border border-dashed border-slate-300 p-5">
                     <h3 className="font-black">No tasks yet</h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600">Type your first to-do above, then press Add.</p>
                   </div>
@@ -650,16 +637,21 @@ const HomeDashboard: React.FC = () => {
 
             <article className={`${panel} p-5`}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-black">Projects</h2>
+                <h2 className="font-semibold tracking-tight">Project pulse</h2>
                 <button type="button" onClick={() => openCreate('project')} className={iconButton} aria-label="Create project" title="Create a project">
                   <Plus className="h-5 w-5" />
                 </button>
               </div>
-              <div className="space-y-3">
-                {projects.slice(0, 4).map((project) => (
-                  <button key={project.id} type="button" onClick={() => navigate('/projects')} className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:bg-slate-50">
-                    <p className="font-bold">{project.name}</p>
-                    <p className="mt-1 text-sm text-slate-600">{project.status}</p>
+              <div className="space-y-4">
+                {projectPulse.map((project) => (
+                  <button key={project.id} type="button" onClick={() => navigate('/projects')} className="w-full text-left">
+                    <div className="mb-2 flex justify-between text-xs">
+                      <span className="font-medium">{project.name}</span>
+                      <span className="text-slate-500">{project.progress}%</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                      <div className={`h-full rounded-full ${project.color}`} style={{ width: `${project.progress}%` }} />
+                    </div>
                   </button>
                 ))}
                 {!projects.length && (
@@ -674,7 +666,7 @@ const HomeDashboard: React.FC = () => {
 
             <article className={`${panel} p-5`}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-black">Important Messages</h2>
+                <h2 className="font-semibold tracking-tight">Important Messages</h2>
                 <button type="button" onClick={() => navigate('/notifications')} className="text-sm font-bold text-slate-700 hover:text-slate-950">View all</button>
               </div>
               <div className="mb-4 flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 px-3">
@@ -699,29 +691,53 @@ const HomeDashboard: React.FC = () => {
             </article>
           </section>
 
-          <section className={`${panel} mt-5 p-5`}>
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-xl font-black">Activity</h2>
-                <p className="mt-1 text-sm text-slate-600">Real updates from tasks, projects, messages, meetings, files, and team changes.</p>
+          <section className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <article className={`${panel} p-5`}>
+              <div className="mb-4">
+                <h2 className="font-semibold tracking-tight">Workspace totals</h2>
+                <p className="mt-1 text-xs text-slate-500">Live counts from your saved workspace.</p>
               </div>
-              <Button type="button" variant="secondary" size="sm" onClick={loadDemo}>Load sample</Button>
-            </div>
-            <div className="space-y-3">
-              {activity.slice(0, 6).map((item) => (
-                <button key={item.id} type="button" onClick={() => navigate(item.route)} className="w-full rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:bg-slate-50">
-                  <p className="font-bold">{item.title}</p>
-                  <p className="mt-1 text-sm text-slate-600">{item.detail}</p>
-                  <p className="mt-2 text-xs font-bold text-slate-400">{new Date(item.createdAt).toLocaleString()}</p>
-                </button>
-              ))}
-              {!activity.length && (
-                <div className="rounded-lg border border-dashed border-slate-300 p-5">
-                  <h3 className="font-black">No activity yet</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">Create a task, project, message, meeting, file, or team member and it will appear here.</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { label: 'Messages', value: recentMessages.length, route: '/messages' },
+                  { label: 'Meetings', value: upcomingMeetings, route: '/calendar' },
+                  { label: 'Files', value: files.length, route: '/files' },
+                ].map((item) => (
+                  <button key={item.label} type="button" onClick={() => navigate(item.route)} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-left hover:bg-white">
+                    <p className="text-2xl font-semibold">{item.value}</p>
+                    <p className="mt-1 text-xs font-medium text-slate-500">{item.label}</p>
+                  </button>
+                ))}
+              </div>
+            </article>
+
+            <article className="rounded-xl border border-slate-900 bg-slate-950 p-5 text-white shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold tracking-tight">Team activity</h2>
+                  <p className="mt-1 text-xs text-white/55">Real updates from your workspace.</p>
                 </div>
-              )}
-            </div>
+                <Button type="button" variant="secondary" size="sm" onClick={loadDemo} className="border-white/10 bg-white/10 text-white hover:bg-white/15">Load sample</Button>
+              </div>
+              <div className="space-y-4">
+                {activity.slice(0, 4).map((item) => (
+                  <button key={item.id} type="button" onClick={() => navigate(item.route)} className="flex w-full items-center gap-3 text-left">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[9px] font-semibold">{item.type.slice(0, 2).toUpperCase()}</span>
+                    <span className="min-w-0 flex-1 text-xs">
+                      <strong>{item.title}</strong>
+                      <span className="ml-1 text-white/50">{new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="mt-1 block truncate text-white/65">{item.detail}</span>
+                    </span>
+                  </button>
+                ))}
+                {!activity.length && (
+                  <div className="rounded-lg border border-white/10 p-5">
+                    <h3 className="font-semibold">No activity yet</h3>
+                    <p className="mt-2 text-sm leading-6 text-white/60">Create a task, project, message, meeting, file, or team member and it will appear here.</p>
+                  </div>
+                )}
+              </div>
+            </article>
           </section>
       </div>
 

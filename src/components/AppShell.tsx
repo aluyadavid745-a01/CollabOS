@@ -13,14 +13,13 @@ import {
   Plus,
   Search,
   Settings,
-  ShieldCheck,
   User,
   Users,
   X,
 } from 'lucide-react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from './Common/Button'
-import { Field, focusRing, surface } from './DesignSystem'
+import { Field, focusRing } from './DesignSystem'
 import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
 import { createLocalProject, readLocalProjects, writeLocalProjects } from '../utils/localProjects'
@@ -228,20 +227,28 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
   const [createOpen, setCreateOpen] = React.useState(false)
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `flex min-h-[44px] items-center gap-3 rounded-lg px-3 text-sm font-bold transition ${isActive ? 'bg-blue-700 text-white shadow-sm' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'}`
+    `flex min-h-[42px] items-center gap-3 rounded-lg px-3 text-sm font-semibold transition ${isActive ? 'bg-slate-950 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'}`
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white px-4 py-5 lg:flex lg:flex-col">
-          <button type="button" onClick={() => navigate('/home')} className="mb-6 flex items-center gap-3 rounded-lg px-2 py-2 text-left">
-            <img src="/lll.png" alt="" className="h-9 w-9 rounded-lg object-cover" />
+    <main className="min-h-screen bg-[#f7f6f3] text-slate-950">
+      <div className="flex min-h-screen">
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-slate-200 bg-[#fbfaf8] px-4 py-5 lg:flex lg:flex-col">
+          <button type="button" onClick={() => navigate('/home')} className="flex items-center gap-3 rounded-lg px-2 py-2 text-left">
+            <img src="/lll.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
             <div>
-              <p className="text-xl font-black leading-none">CollabOS</p>
-              <p className="mt-1 text-xs font-bold text-slate-500">Operating system for teams</p>
+              <p className="font-semibold leading-none tracking-tight">CollabOS</p>
+              <p className="mt-1 text-xs text-slate-500">Product workspace</p>
             </div>
           </button>
-          <nav className="space-y-1" aria-label="Main navigation">
+          <button type="button" onClick={() => navigate('/settings/workspace')} className="mt-8 flex min-h-[46px] items-center justify-between rounded-xl bg-slate-100 px-3 text-left transition hover:bg-slate-200/70">
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="h-6 w-6 shrink-0 rounded-md bg-blue-200" />
+              <span className="truncate text-sm font-medium">Northstar</span>
+            </span>
+            <Settings className="h-4 w-4 text-slate-500" />
+          </button>
+          <nav className="mt-7 space-y-1" aria-label="Main navigation">
+            <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Workspace</p>
             {primaryLinks.map((item) => {
               const Icon = item.icon
               return (
@@ -253,6 +260,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
             })}
           </nav>
           <nav className="mt-6 border-t border-slate-200 pt-4" aria-label="Support navigation">
+            <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Manage</p>
             {secondaryLinks.map((item) => {
               const Icon = item.icon
               return (
@@ -263,57 +271,59 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
               )
             })}
           </nav>
-          <div className={`${surface} mt-auto p-3`}>
+          <div className="mt-auto border-t border-slate-200 pt-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-lg bg-blue-700 text-sm font-black text-white">{activeProfile.name.slice(0, 1).toUpperCase()}</div>
+              <div className="grid h-8 w-8 place-items-center rounded-full bg-slate-950 text-xs font-semibold text-white">{activeProfile.name.slice(0, 1).toUpperCase()}</div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-black">{activeProfile.name}</p>
-                <p className="truncate text-xs font-bold text-slate-500">Workspace Admin</p>
+                <p className="truncate text-sm font-semibold">{activeProfile.name}</p>
+                <p className="truncate text-xs text-slate-500">Workspace Admin</p>
               </div>
             </div>
-            <button type="button" onClick={() => navigate('/settings/workspace')} className={`mt-3 flex min-h-[40px] w-full items-center justify-between rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-700 hover:bg-slate-50 ${focusRing}`}>
-              Workspace
-              <ShieldCheck className="h-4 w-4 text-emerald-600" />
-            </button>
           </div>
         </aside>
 
         <section className="min-w-0 flex-1 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 shadow-sm shadow-slate-200/50 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3">
+          <header className="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-[#f7f6f3]/90 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+            <div className="flex w-full items-center gap-3">
               <button type="button" onClick={() => navigate('/home')} className="flex items-center gap-2 lg:hidden">
                 <img src="/lll.png" alt="" className="h-9 w-9 rounded-lg object-cover" />
                 <span className="font-black">CollabOS</span>
               </button>
-              <button type="button" onClick={() => setSearchOpen(true)} className={`hidden min-h-[44px] min-w-0 flex-1 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 text-left text-sm font-semibold text-slate-500 sm:flex ${focusRing}`}>
-                <Search className="h-4 w-4" />
-                Search projects, tasks, messages, files, people, meetings
-              </button>
+              <div className="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
+                <span>Northstar</span>
+                <span>/</span>
+                <span className="font-medium text-slate-950">Overview</span>
+              </div>
               <div className="ml-auto flex items-center gap-2">
                 <button type="button" onClick={() => setSearchOpen(true)} className={`grid h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 sm:hidden ${focusRing}`} aria-label="Search">
                   <Search className="h-5 w-5" />
                 </button>
-                <Button type="button" onClick={() => setCreateOpen(true)} className="min-h-[44px] gap-2">
-                  <Plus className="h-5 w-5" />
-                  <span className="hidden sm:inline">Quick Create</span>
-                </Button>
-                <button type="button" onClick={() => navigate('/notifications')} className={`grid h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 ${focusRing}`} aria-label="Notifications">
-                  <Bell className="h-5 w-5" />
+                <button type="button" onClick={() => setSearchOpen(true)} className={`hidden min-h-[38px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-500 hover:bg-slate-50 sm:flex ${focusRing}`}>
+                  <Search className="h-4 w-4" />
+                  Search
                 </button>
-                <button type="button" onClick={() => navigate('/help')} className={`hidden h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 sm:grid ${focusRing}`} aria-label="Help">
+                <button type="button" onClick={() => setCreateOpen(true)} className={`hidden min-h-[38px] items-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex ${focusRing}`}>
+                  <Plus className="h-4 w-4" />
+                  New task
+                </button>
+                <button type="button" onClick={() => navigate('/notifications')} className={`relative grid h-10 w-10 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 ${focusRing}`} aria-label="Notifications">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                </button>
+                <button type="button" onClick={() => navigate('/help')} className={`hidden h-10 w-10 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 sm:grid ${focusRing}`} aria-label="Help">
                   <HelpCircle className="h-5 w-5" />
                 </button>
-                <button type="button" onClick={() => navigate('/profile')} className={`grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-sm font-black text-white ${focusRing}`} aria-label="Profile">
+                <button type="button" onClick={() => navigate('/profile')} className={`grid h-8 w-8 place-items-center rounded-full bg-slate-950 text-xs font-semibold text-white ${focusRing}`} aria-label="Profile">
                   {activeProfile.name.slice(0, 1).toUpperCase()}
                 </button>
-                <button type="button" onClick={() => navigate('/')} className={`hidden h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-slate-950 md:grid ${focusRing}`} aria-label="Log out">
+                <button type="button" onClick={() => navigate('/')} className={`hidden h-10 w-10 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-950 md:grid ${focusRing}`} aria-label="Log out">
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
             </div>
           </header>
 
-          <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+          <div className="px-5 py-7 lg:px-10 lg:py-10">{children}</div>
         </section>
       </div>
 
