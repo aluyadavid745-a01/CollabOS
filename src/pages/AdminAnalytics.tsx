@@ -1,5 +1,5 @@
 import React from 'react'
-import { BarChart3, Bot, CalendarClock, CreditCard, FileText, Folder, MessageSquare, ShieldAlert, Users } from 'lucide-react'
+import { BarChart3, Bot, CalendarClock, CheckCircle2, CreditCard, FileText, Folder, MessageSquare, ShieldAlert, TrendingUp, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Common/Button'
 import { useAuth } from '../context/AuthContext'
@@ -52,6 +52,12 @@ const AdminAnalytics: React.FC = () => {
     ['Churn', snapshot.churn === null ? null : `${snapshot.churn}%`],
     ['Retention', snapshot.retention === null ? null : `${snapshot.retention}%`],
   ]
+  const evidenceRows = [
+    ['Activation', snapshot.organizations > 0 || snapshot.projects > 0 || snapshot.tasks > 0, 'Workspace, project, and task creation events'],
+    ['Engagement', snapshot.messages > 0 || snapshot.meetings > 0 || snapshot.aiUsage > 0, 'Messages, meetings, and AI action usage'],
+    ['Monetization', snapshot.mrr !== null || (snapshot.paidAccounts ?? 0) > 0, 'Verified billing and subscription state'],
+    ['Retention', snapshot.retention !== null || snapshot.churn !== null, 'Cohort activity and churn history'],
+  ]
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-950 sm:px-6 lg:px-10">
@@ -66,6 +72,29 @@ const AdminAnalytics: React.FC = () => {
           </div>
           <Button type="button" variant="secondary" onClick={() => navigate('/home')}>Open workspace</Button>
         </header>
+
+        <section className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/70">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-wider text-blue-700">Investor evidence console</p>
+              <h2 className="mt-1 text-2xl font-black">Separate product usage from unverified business claims.</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                Workspace usage can be shown from local tracked activity. Revenue, retention, churn, and paid-account metrics remain explicit empty states until production billing and analytics are connected.
+              </p>
+            </div>
+            <div className="grid min-w-full gap-3 sm:grid-cols-2 lg:min-w-[420px]">
+              {evidenceRows.map(([label, ready, detail]) => (
+                <div key={String(label)} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-black text-slate-950">{label}</p>
+                    <CheckCircle2 className={`h-5 w-5 ${ready ? 'text-emerald-600' : 'text-slate-300'}`} />
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-slate-600">{detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <section className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric) => {
@@ -97,7 +126,10 @@ const AdminAnalytics: React.FC = () => {
           </article>
 
           <article className={metricCard}>
-            <h2 className="text-xl font-black">Recent analytics events</h2>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-slate-500" />
+              <h2 className="text-xl font-black">Recent analytics events</h2>
+            </div>
             {snapshot.events.length === 0 ? (
               <div className="mt-5 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5">
                 <p className="font-bold">No tracked events yet</p>

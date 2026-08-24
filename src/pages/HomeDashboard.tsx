@@ -1,6 +1,7 @@
 import React from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+  Activity,
   ArrowRight,
   Bell,
   Bot,
@@ -10,6 +11,8 @@ import {
   HelpCircle,
   Plus,
   Search,
+  ShieldCheck,
+  TrendingUp,
   X,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -453,6 +456,26 @@ const HomeDashboard: React.FC = () => {
   const activeProjects = projects.filter((project) => project.status !== 'Done')
   const completedTasks = localTasks.filter((task) => task.done).length
   const taskCompletion = localTasks.length ? Math.round((completedTasks / localTasks.length) * 100) : 0
+  const workspaceEntities = workspaces.length + projects.length + localTasks.length + teamMembers.length + calendarEvents.length + files.length + recentMessages.length
+  const readinessChecks = [
+    { label: 'Workspace created', done: workspaces.length > 0, route: '/settings/workspace' },
+    { label: 'Team directory started', done: teamMembers.length > 0, route: '/team' },
+    { label: 'Project pipeline active', done: projects.length > 0, route: '/projects' },
+    { label: 'Tasks assigned', done: localTasks.length > 0, route: '/tasks' },
+    { label: 'Files or docs saved', done: files.length > 0, route: '/files' },
+    { label: 'Meetings scheduled', done: calendarEvents.length > 0, route: '/calendar' },
+  ]
+  const readinessScore = Math.round((readinessChecks.filter((item) => item.done).length / readinessChecks.length) * 100)
+  const operatingSignals = [
+    { label: 'Live records', value: workspaceEntities, detail: 'Saved in this workspace', icon: Activity, route: '/notifications' },
+    { label: 'Execution health', value: `${taskCompletion}%`, detail: localTasks.length ? 'Task completion' : 'Add tasks to measure', icon: TrendingUp, route: '/tasks' },
+    { label: 'Investor proof', value: `${readinessScore}%`, detail: 'Operational readiness', icon: ShieldCheck, route: '/admin' },
+  ]
+  const boardroomNotes = [
+    projects.length ? `${activeProjects.length} active project${activeProjects.length === 1 ? '' : 's'} visible in the pipeline.` : 'Project pipeline is empty until the team creates or loads a workspace.',
+    localTasks.length ? `${localTasks.filter((task) => !task.done).length} open task${localTasks.filter((task) => !task.done).length === 1 ? '' : 's'} with ${todayTasks.length} due today.` : 'Task evidence is empty; create tasks before presenting execution metrics.',
+    activity.length ? `${activity.length} recorded workspace update${activity.length === 1 ? '' : 's'} available for audit.` : 'Activity log will populate from real workspace actions.',
+  ]
   const statCards = [
     { label: 'Open tasks', value: localTasks.filter((task) => !task.done).length, detail: `${todayTasks.length} due today`, icon: CheckCircle2, route: '/tasks' },
     { label: 'Your focus', value: `${taskCompletion}%`, detail: localTasks.length ? `${completedTasks} of ${localTasks.length} complete` : 'No tasks yet', icon: CalendarClock, route: '/tasks' },
@@ -491,6 +514,58 @@ const HomeDashboard: React.FC = () => {
               </Button>
             </div>
           </header>
+
+          <section className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
+            <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="p-5 sm:p-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">Investor-grade workspace</span>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600">Real data only</span>
+                </div>
+                <h2 className="mt-4 max-w-3xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+                  One operating view for work, proof, readiness, and next actions.
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                  These signals come from this saved workspace. Empty areas stay empty until your team creates work or loads the sample workspace.
+                </p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  {operatingSignals.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <button key={item.label} type="button" onClick={() => navigate(item.route)} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-300 hover:bg-white">
+                        <Icon className="h-5 w-5 text-slate-500" />
+                        <p className="mt-3 text-2xl font-semibold tracking-tight">{item.value}</p>
+                        <p className="mt-1 text-xs font-bold text-slate-500">{item.label}</p>
+                        <p className="mt-1 text-xs text-slate-500">{item.detail}</p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="border-t border-slate-200 bg-slate-50 p-5 sm:p-6 lg:border-l lg:border-t-0">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Readiness</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight">{readinessScore}% complete</h3>
+                  </div>
+                  <button type="button" onClick={loadDemo} className="min-h-[38px] rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 hover:bg-slate-100">
+                    Load Sample Workspace
+                  </button>
+                </div>
+                <div className="mt-4 h-2 rounded-full bg-white">
+                  <div className="h-full rounded-full bg-blue-700 transition-all duration-500" style={{ width: `${readinessScore}%` }} />
+                </div>
+                <div className="mt-5 grid gap-2">
+                  {readinessChecks.map((item) => (
+                    <button key={item.label} type="button" onClick={() => navigate(item.route)} className="flex min-h-[40px] items-center justify-between gap-3 rounded-lg bg-white px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                      <span>{item.label}</span>
+                      <CheckCircle2 className={`h-4 w-4 ${item.done ? 'text-emerald-600' : 'text-slate-300'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
 
           <section className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {statCards.map((item) => {
@@ -711,31 +786,73 @@ const HomeDashboard: React.FC = () => {
               </div>
             </article>
 
-            <article className="rounded-xl border border-slate-900 bg-slate-950 p-5 text-white shadow-sm">
+            <article className={`${panel} p-5`}>
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold tracking-tight">Team activity</h2>
-                  <p className="mt-1 text-xs text-white/55">Real updates from your workspace.</p>
+                  <p className="mt-1 text-xs text-slate-500">Real updates from your workspace.</p>
                 </div>
-                <Button type="button" variant="secondary" size="sm" onClick={loadDemo} className="border-white/10 bg-white/10 text-white hover:bg-white/15">Load sample</Button>
+                <Button type="button" variant="secondary" size="sm" onClick={loadDemo}>Load sample</Button>
               </div>
               <div className="space-y-4">
                 {activity.slice(0, 4).map((item) => (
                   <button key={item.id} type="button" onClick={() => navigate(item.route)} className="flex w-full items-center gap-3 text-left">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[9px] font-semibold">{item.type.slice(0, 2).toUpperCase()}</span>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[9px] font-semibold text-slate-600">{item.type.slice(0, 2).toUpperCase()}</span>
                     <span className="min-w-0 flex-1 text-xs">
                       <strong>{item.title}</strong>
-                      <span className="ml-1 text-white/50">{new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      <span className="mt-1 block truncate text-white/65">{item.detail}</span>
+                      <span className="ml-1 text-slate-400">{new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="mt-1 block truncate text-slate-500">{item.detail}</span>
                     </span>
                   </button>
                 ))}
                 {!activity.length && (
-                  <div className="rounded-lg border border-white/10 p-5">
+                  <div className="rounded-lg border border-dashed border-slate-300 p-5">
                     <h3 className="font-semibold">No activity yet</h3>
-                    <p className="mt-2 text-sm leading-6 text-white/60">Create a task, project, message, meeting, file, or team member and it will appear here.</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">Create a task, project, message, meeting, file, or team member and it will appear here.</p>
                   </div>
                 )}
+              </div>
+            </article>
+          </section>
+
+          <section className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+            <article className={`${panel} p-5`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Boardroom view</p>
+                  <h2 className="mt-1 font-semibold tracking-tight">Evidence notes</h2>
+                </div>
+                <ShieldCheck className="h-5 w-5 text-slate-400" />
+              </div>
+              <div className="mt-4 space-y-3">
+                {boardroomNotes.map((note) => (
+                  <div key={note} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+                    {note}
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className={`${panel} p-5`}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Monetization path</p>
+                  <h2 className="mt-1 font-semibold tracking-tight">What must be proven before paid scale</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">Billing, retention, and revenue are intentionally not claimed until production systems verify them.</p>
+                </div>
+                <Button type="button" variant="secondary" onClick={() => navigate('/admin')}>Open analytics</Button>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {[
+                  ['Billing', 'Flutterwave verification and subscription state'],
+                  ['Retention', 'Production analytics and cohort history'],
+                  ['Security', 'Admin controls, audit logs, and access review'],
+                ].map(([label, detail]) => (
+                  <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-black text-slate-950">{label}</p>
+                    <p className="mt-2 text-xs leading-5 text-slate-600">{detail}</p>
+                  </div>
+                ))}
               </div>
             </article>
           </section>

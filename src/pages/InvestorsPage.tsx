@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, BarChart3, Bot, Briefcase, Building2, CheckCircle2, LineChart, Mail, Map, Target, Users } from 'lucide-react'
+import { ArrowRight, BarChart3, Bot, Briefcase, Building2, CheckCircle2, LineChart, Mail, Map, ShieldCheck, Target, Users } from 'lucide-react'
 import { Button } from '../components/Common/Button'
 import { companyLinks, pricingPlans } from '../data/businessModel'
 
@@ -50,6 +50,17 @@ const InvestorsPage: React.FC = () => {
       body: 'Founder-led sales, product-led growth, startup communities, African technology communities, LinkedIn, referrals, partnerships, and content marketing.',
     },
   ]
+  const proofRails = [
+    ['Product surface', 'Authenticated workspace, tasks, projects, messages, files, meetings, profile, AI, admin analytics, and billing configuration are present in the app.'],
+    ['Truth standard', 'No fake customers, revenue, testimonials, logos, retention, or usage claims should be published before verification.'],
+    ['Scale unlocks', 'Production billing verification, real analytics, team-level permissions, audit logs, and two-account meeting proof are the next investor-grade evidence points.'],
+  ]
+  const operatingMilestones = [
+    'Convert early workspaces into measurable activation events',
+    'Connect subscription state to verified payment webhooks',
+    'Prove recurring team usage across tasks, meetings, files, and AI actions',
+    'Publish only customer-approved testimonials and case studies',
+  ]
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -63,7 +74,8 @@ const InvestorsPage: React.FC = () => {
         </div>
       </header>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
         <div className="max-w-3xl">
           <p className="text-sm font-black uppercase tracking-wider text-slate-500">Investor overview</p>
           <h1 className="mt-3 text-4xl font-black leading-tight sm:text-6xl">CollabOS</h1>
@@ -81,6 +93,27 @@ const InvestorsPage: React.FC = () => {
               Contact founders
             </a>
           </div>
+        </div>
+
+        <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/70">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-700">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">Proof discipline</p>
+              <h2 className="text-xl font-black">Investor-ready means verifiable.</h2>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3">
+            {proofRails.map(([label, detail]) => (
+              <div key={label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-black text-slate-950">{label}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p>
+              </div>
+            ))}
+          </div>
+        </aside>
         </div>
 
         <div className="mt-12 grid gap-5 md:grid-cols-2">
@@ -120,6 +153,27 @@ const InvestorsPage: React.FC = () => {
               Add verified founder and team details here before fundraising materials are shared externally. Do not publish invented biographies or advisors.
             </p>
           </article>
+        </section>
+
+        <section className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/70">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-wider text-slate-500">Execution milestones</p>
+              <h2 className="mt-2 text-2xl font-black">The next fundable proof points</h2>
+              <p className="mt-3 max-w-2xl leading-7 text-slate-600">
+                The product should move from credible foundation to investor proof by connecting payments, analytics, usage retention, security posture, and approved customer evidence.
+              </p>
+            </div>
+            <Button type="button" variant="secondary" onClick={() => navigate('/admin')}>Open analytics</Button>
+          </div>
+          <div className="mt-6 grid gap-3 md:grid-cols-2">
+            {operatingMilestones.map((item) => (
+              <div key={item} className="flex gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm font-bold text-slate-700">
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                {item}
+              </div>
+            ))}
+          </div>
         </section>
       </section>
     </main>

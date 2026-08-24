@@ -4,6 +4,7 @@ import {
   Bot,
   CalendarClock,
   CheckSquare,
+  Command,
   FileText,
   Folder,
   HelpCircle,
@@ -250,6 +251,17 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
             </span>
             <Settings className="h-4 w-4 text-slate-500" />
           </button>
+          <div className="mt-3 rounded-xl border border-blue-100 bg-white p-3 shadow-sm shadow-slate-200/70">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-50 text-blue-700">
+                <Command className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-blue-700">Command center</p>
+                <p className="mt-0.5 text-xs font-medium text-slate-500">Live workspace data</p>
+              </div>
+            </div>
+          </div>
           <nav className="mt-7 space-y-1" aria-label="Main navigation">
             <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Workspace</p>
             {primaryLinks.map((item) => {
@@ -296,6 +308,10 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                 <span>{workspaceName}</span>
                 <span>/</span>
                 <span className="font-medium text-slate-950">Overview</span>
+              </div>
+              <div className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 xl:flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Saved workspace
               </div>
               <div className="ml-auto flex items-center gap-2">
                 <button type="button" onClick={() => setSearchOpen(true)} className={`grid h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 sm:hidden ${focusRing}`} aria-label="Search">
