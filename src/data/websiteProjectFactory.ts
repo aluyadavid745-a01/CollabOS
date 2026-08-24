@@ -5,8 +5,8 @@ export const defaultTheme: WebsiteTheme = {
   accentColor: '#06b6d4',
   backgroundColor: '#ffffff',
   textColor: '#0f172a',
-  fontFamily: 'Inter, system-ui, sans-serif',
-  headingFont: 'Inter, system-ui, sans-serif',
+  fontFamily: 'Manrope, ui-sans-serif, system-ui, sans-serif',
+  headingFont: 'Manrope, ui-sans-serif, system-ui, sans-serif',
   buttonRadius: '12px',
   cardRadius: '16px',
   shadow: '0 20px 45px rgba(15, 23, 42, 0.08)',
@@ -162,7 +162,7 @@ export const createCodeWebsite = (ownerId = 'local-user') => {
   codeElement.name = 'Code Website'
   codeElement.content = {
     html: '<main class="page">\n  <nav class="nav">\n    <strong>CollabOS Site</strong>\n    <a href="#contact">Contact</a>\n  </nav>\n\n  <section class="hero">\n    <p class="eyebrow">Built with code</p>\n    <h1>Create your website with HTML, CSS, and JavaScript.</h1>\n    <p>Write code on the left and preview it live on the right inside CollabOS.</p>\n    <button id="ctaButton">Click me</button>\n  </section>\n\n  <section id="contact" class="panel">\n    <h2>Ready to launch?</h2>\n    <p>Edit this starter and publish your own custom website.</p>\n  </section>\n</main>',
-    css: 'body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f8fafc; color: #0f172a; }\n.page { min-height: 100vh; padding: 32px; }\n.nav { display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 0 auto 48px; }\n.nav a { color: #4f46e5; font-weight: 700; text-decoration: none; }\n.hero { max-width: 1120px; margin: 0 auto; padding: 72px 48px; border-radius: 28px; background: linear-gradient(135deg, #eef2ff, #ecfeff); box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12); }\n.eyebrow { color: #4f46e5; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }\nh1 { max-width: 780px; font-size: clamp(42px, 7vw, 78px); line-height: .95; margin: 12px 0 24px; }\n.hero p:not(.eyebrow) { max-width: 620px; font-size: 18px; line-height: 1.8; color: #475569; }\nbutton { margin-top: 24px; border: 0; border-radius: 14px; background: #4f46e5; color: white; padding: 14px 22px; font-weight: 800; cursor: pointer; }\n.panel { max-width: 1120px; margin: 24px auto 0; padding: 32px; border-radius: 20px; background: white; border: 1px solid #e2e8f0; }',
+    css: 'body { margin: 0; font-family: Manrope, ui-sans-serif, system-ui, sans-serif; background: #f8fafc; color: #0f172a; }\n.page { min-height: 100vh; padding: 32px; }\n.nav { display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 0 auto 48px; }\n.nav a { color: #4f46e5; font-weight: 700; text-decoration: none; }\n.hero { max-width: 1120px; margin: 0 auto; padding: 72px 48px; border-radius: 28px; background: linear-gradient(135deg, #eef2ff, #ecfeff); box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12); }\n.eyebrow { color: #4f46e5; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }\nh1 { max-width: 780px; font-size: clamp(42px, 7vw, 78px); line-height: .95; margin: 12px 0 24px; }\n.hero p:not(.eyebrow) { max-width: 620px; font-size: 18px; line-height: 1.8; color: #475569; }\nbutton { margin-top: 24px; border: 0; border-radius: 14px; background: #4f46e5; color: white; padding: 14px 22px; font-weight: 800; cursor: pointer; }\n.panel { max-width: 1120px; margin: 24px auto 0; padding: 32px; border-radius: 20px; background: white; border: 1px solid #e2e8f0; }',
     js: 'document.getElementById("ctaButton")?.addEventListener("click", () => {\n  alert("Your custom JavaScript is working inside CollabOS.");\n});',
   }
   codeElement.style = { ...codeElement.style, width: '100%', minHeight: '720px' }

@@ -81,12 +81,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ rememberedUser, onNavigate })
         '--site-primary': site.primary,
         '--site-secondary': site.secondary,
         background: site.bg,
-        fontFamily: '"Instrument Sans", ui-sans-serif, system-ui, sans-serif',
       } as React.CSSProperties}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-        .collab-site-mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .collab-site-mono { font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
         .collab-grid-bg {
           background-image:
             linear-gradient(rgba(255,255,255,0.055) 1px, transparent 1px),

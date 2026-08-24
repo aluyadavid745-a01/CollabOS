@@ -13,9 +13,9 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: #0f172a;
-  color: #f1f5f9;
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  background: #f7f9fc;
+  color: #0f172a;
   line-height: 1.6;
   overflow-x: hidden;
 }

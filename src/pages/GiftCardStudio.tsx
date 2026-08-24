@@ -239,14 +239,14 @@ function buildCardSvg(card: GiftCardDraft, value: string) {
     </defs>
     <g clip-path="url(#card-clip)">
       <rect width="760" height="400" fill="url(#card-grad)"/>
-      <text x="34" y="45" font-family="Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="4" fill="#334155">A GIFT FOR YOU</text>
-      ${recipient ? `<text x="34" y="82" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="${style.accent}">For ${recipient}</text>` : ''}
-      <text x="34" y="${recipient ? 128 : 102}" font-family="Arial, sans-serif" font-size="42" font-weight="900" fill="#0f172a">${title}</text>
-      <text x="34" y="182" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#64748b">${message}</text>
+      <text x="34" y="45" font-family="Manrope, ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="4" fill="#334155">A GIFT FOR YOU</text>
+      ${recipient ? `<text x="34" y="82" font-family="Manrope, ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="800" fill="${style.accent}">For ${recipient}</text>` : ''}
+      <text x="34" y="${recipient ? 128 : 102}" font-family="Manrope, ui-sans-serif, system-ui, sans-serif" font-size="42" font-weight="900" fill="#0f172a">${title}</text>
+      <text x="34" y="182" font-family="Manrope, ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="700" fill="#64748b">${message}</text>
       <rect x="34" y="292" width="215" height="48" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1"/>
       <text x="52" y="324" font-family="monospace" font-size="20" font-weight="900" letter-spacing="7" fill="#0f172a">.... .... ....</text>
-      <text x="270" y="328" font-family="Arial, sans-serif" font-size="34" font-weight="900" fill="#64748b">${svgEscape(value)}</text>
-      <text x="34" y="365" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#64748b">Dial *258*PIN# to load or redeem</text>
+      <text x="270" y="328" font-family="Manrope, ui-sans-serif, system-ui, sans-serif" font-size="34" font-weight="900" fill="#64748b">${svgEscape(value)}</text>
+      <text x="34" y="365" font-family="Manrope, ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#64748b">Dial *258*PIN# to load or redeem</text>
       ${image}
     </g>
   </svg>`

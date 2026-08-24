@@ -10,7 +10,7 @@ const tabs: CodeTab[] = ['html', 'css', 'js']
 
 const fallbackCode: CodeState = {
   html: '<main class="page">\n  <h1>Custom code website</h1>\n  <p>Start writing HTML, CSS, and JavaScript in CollabOS.</p>\n  <button id="demoButton">Click me</button>\n</main>',
-  css: 'body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f8fafc; color: #0f172a; }\n.page { padding: 64px; }\nbutton { border: 0; border-radius: 12px; padding: 12px 18px; background: #4f46e5; color: white; font-weight: 800; }',
+  css: 'body { margin: 0; font-family: Manrope, ui-sans-serif, system-ui, sans-serif; background: #f8fafc; color: #0f172a; }\n.page { padding: 64px; }\nbutton { border: 0; border-radius: 12px; padding: 12px 18px; background: #4f46e5; color: white; font-weight: 800; }',
   js: 'document.getElementById("demoButton")?.addEventListener("click", () => alert("JavaScript works."));',
 }
 
