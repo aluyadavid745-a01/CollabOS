@@ -1,3 +1,4 @@
+using CollabOS.Api.AI;
 using CollabOS.Api.Meetings;
 using CollabOS.Api.Team;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -76,6 +77,7 @@ builder.Services.AddSingleton<TeamStore>();
 builder.Services.AddSingleton<MeetingStore>();
 builder.Services.AddSingleton<MeetingService>();
 builder.Services.AddSingleton<MeetingEmailSender>();
+builder.Services.AddSingleton<AiGateway>();
 builder.Services.AddHostedService<MeetingReminderService>();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -100,6 +102,7 @@ app.MapHub<WhiteboardHub>("/Hub/WhiteboardHub").RequireAuthorization();
 app.MapHub<AIHub>("/Hub/AIHub").RequireAuthorization();
 
 app.MapTeamEndpoints();
+app.MapAiEndpoints();
 
 var meetings = app.MapGroup("/api/meetings").RequireAuthorization();
 

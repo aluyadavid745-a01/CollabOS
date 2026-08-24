@@ -6,7 +6,7 @@ import AppShell from '../components/AppShell'
 import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
 import { trackAnalyticsEvent } from '../services/analytics'
-import { createAiLaunchPlan } from '../utils/investorDemo'
+import { buildAiLaunchPlanPreview, createAiLaunchPlan, type AiLaunchPlanPreview } from '../utils/investorDemo'
 import { readLocalProjects } from '../utils/localProjects'
 import { createLocalTask, readLocalTasks, writeLocalTasks } from '../utils/localTasks'
 import { readLocalCalendarEvents, readLocalMessages } from '../utils/localWorkspace'
@@ -23,6 +23,7 @@ const AiWorkspace: React.FC = () => {
   const [prompt, setPrompt] = React.useState('Create a marketing project for our new product.')
   const [answer, setAnswer] = React.useState('Tell CollabOS AI what you want to do in the workspace.')
   const [pendingAction, setPendingAction] = React.useState<{ title: string; detail: string } | null>(null)
+  const [pendingPlan, setPendingPlan] = React.useState<AiLaunchPlanPreview | null>(null)
   const [refreshKey, setRefreshKey] = React.useState(0)
 
   const projects = React.useMemo(() => {
@@ -79,10 +80,10 @@ const AiWorkspace: React.FC = () => {
     const lower = cleanPrompt.toLowerCase()
 
     if (lower.includes('create') && lower.includes('project')) {
-      const project = createAiLaunchPlan(cleanPrompt, activeProfile.name)
-      setRefreshKey((value) => value + 1)
+      const plan = buildAiLaunchPlanPreview(cleanPrompt, activeProfile.name)
+      setPendingPlan(plan)
       setPendingAction(null)
-      setAnswer(`Created "${project.name}" with tasks, a kickoff meeting, a file, and a team update.`)
+      setAnswer(`I prepared "${plan.projectName}" for review. Approve it before CollabOS creates the project, tasks, kickoff meeting, file, and team update.`)
       return
     }
 
@@ -139,6 +140,15 @@ const AiWorkspace: React.FC = () => {
     recordLocalActivity({ type: 'ai', title: 'AI action confirmed', detail: pendingAction.title, route: '/ai' })
     setAnswer(`${pendingAction.title} confirmed. In production, this action should be checked against workspace permissions server-side.`)
     setPendingAction(null)
+  }
+
+  const approvePlan = () => {
+    if (!pendingPlan) return
+    const project = createAiLaunchPlan(prompt, activeProfile.name)
+    setRefreshKey((value) => value + 1)
+    setPendingPlan(null)
+    setAnswer(`Created "${project.name}" after your approval. Review the project, tasks, kickoff meeting, file, and team update before assigning work to others.`)
+    showToast({ message: `Project plan approved: ${project.name}`, type: 'success' })
   }
 
   return (
@@ -204,6 +214,31 @@ const AiWorkspace: React.FC = () => {
                 <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                   <Button type="button" variant="secondary" size="sm" onClick={() => setPendingAction(null)}>Cancel</Button>
                   <Button type="button" size="sm" onClick={confirmPendingAction}>Confirm</Button>
+                </div>
+              </div>
+            )}
+            {pendingPlan && (
+              <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                <p className="text-sm font-black uppercase tracking-wider text-blue-700">Review before execution</p>
+                <h3 className="mt-1 text-lg font-black text-slate-950">{pendingPlan.projectName}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-700">{pendingPlan.description}</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-blue-100 bg-white p-3">
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-500">Milestones</p>
+                    <ul className="mt-2 space-y-1 text-sm font-semibold text-slate-700">
+                      {pendingPlan.milestones.map((milestone) => <li key={milestone}>{milestone}</li>)}
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-blue-100 bg-white p-3">
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-500">Tasks</p>
+                    <ul className="mt-2 space-y-1 text-sm font-semibold text-slate-700">
+                      {pendingPlan.tasks.map((task) => <li key={task.title}>{task.title} - {task.owner}</li>)}
+                    </ul>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setPendingPlan(null)}>Cancel</Button>
+                  <Button type="button" size="sm" onClick={approvePlan}>Approve and create</Button>
                 </div>
               </div>
             )}

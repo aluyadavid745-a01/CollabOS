@@ -23,53 +23,90 @@ const daysFromNow = (days: number) => {
   return date.toISOString().slice(0, 10)
 }
 
-export const createAiLaunchPlan = (prompt: string, ownerName: string) => {
+export interface AiLaunchPlanPreview {
+  projectName: string
+  description: string
+  members: string[]
+  deadline: string
+  milestones: string[]
+  tasks: Array<{
+    title: string
+    owner: string
+    dueAt: string
+    priority: 'Low' | 'Medium' | 'High'
+  }>
+  meetingTitle: string
+  fileName: string
+  message: string
+}
+
+export const buildAiLaunchPlanPreview = (prompt: string, ownerName: string): AiLaunchPlanPreview => {
   const cleanPrompt = prompt.trim() || 'Launch our new product'
   const projectName = cleanPrompt
     .replace(/^create\s+/i, '')
     .replace(/^plan\s+/i, '')
     .replace(/\.$/, '')
 
-  const project = createLocalProject({
-    name: projectName,
-    description: `AI-generated launch plan for: ${cleanPrompt}`,
-    members: `${ownerName}, Product Lead, Designer, Developer`,
+  return {
+    projectName,
+    description: `AI-prepared launch plan for: ${cleanPrompt}`,
+    members: [ownerName, 'Product Lead', 'Designer', 'Developer'],
     deadline: daysFromNow(21),
-    status: 'Active',
-  })
-
-  const tasks = [
-    'Define launch goals and success metrics',
-    'Create landing page copy and visuals',
-    'Prepare announcement message',
-    'Test product flow end to end',
-    'Review launch checklist with team',
-  ].map((title, index) =>
-    createLocalTask({
+    milestones: ['Define launch scope', 'Build launch assets', 'Test the complete flow', 'Launch and review'],
+    tasks: [
+      'Define launch goals and success metrics',
+      'Create landing page copy and visuals',
+      'Prepare announcement message',
+      'Test product flow end to end',
+      'Review launch checklist with team',
+    ].map((title, index) => ({
       title,
       owner: index === 0 ? ownerName : ['Product Lead', 'Designer', 'Developer', ownerName][index - 1] || ownerName,
       dueAt: daysFromNow(index + 2),
       priority: index < 2 ? 'High' : 'Medium',
+    })),
+    meetingTitle: `${projectName} kickoff`,
+    fileName: `${projectName} launch brief`,
+    message: `AI prepared a launch plan for ${projectName}. Review the tasks and kickoff meeting.`,
+  }
+}
+
+export const createAiLaunchPlan = (prompt: string, ownerName: string) => {
+  const preview = buildAiLaunchPlanPreview(prompt, ownerName)
+  const project = createLocalProject({
+    name: preview.projectName,
+    description: preview.description.replace('AI-prepared', 'AI-approved'),
+    members: preview.members.join(', '),
+    deadline: preview.deadline,
+    status: 'Active',
+  })
+
+  const tasks = preview.tasks.map((task) =>
+    createLocalTask({
+      title: task.title,
+      owner: task.owner,
+      dueAt: task.dueAt,
+      priority: task.priority,
       projectId: project.id,
     })
   )
 
   const meeting = createLocalCalendarEvent({
-    title: `${project.name} kickoff`,
+    title: preview.meetingTitle,
     date: daysFromNow(1),
     time: '10:00',
     projectId: project.id,
   })
 
   const file = createLocalFileRecord({
-    name: `${project.name} launch brief`,
+    name: preview.fileName,
     type: 'Document',
     owner: ownerName,
     projectId: project.id,
   })
 
   const message = createLocalMessage({
-    text: `AI created a launch plan for ${project.name}. Review the tasks and kickoff meeting.`,
+    text: preview.message.replace('prepared', 'created'),
     sender: 'CollabOS AI',
     projectId: project.id,
   })

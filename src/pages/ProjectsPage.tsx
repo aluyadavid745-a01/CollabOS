@@ -6,7 +6,7 @@ import { Button } from '../components/Common/Button'
 import AppShell from '../components/AppShell'
 import { createLocalProject, readLocalProjects, writeLocalProjects, type LocalProjectStatus } from '../utils/localProjects'
 import { readLocalTasks } from '../utils/localTasks'
-import { createAiLaunchPlan } from '../utils/investorDemo'
+import { buildAiLaunchPlanPreview, createAiLaunchPlan, type AiLaunchPlanPreview } from '../utils/investorDemo'
 import { recordLocalActivity } from '../utils/localActivity'
 import { syncBeginnerWorkspaceToCloud } from '../utils/beginnerWorkspaceSync'
 import { showToast } from '../utils/toast'
@@ -23,6 +23,7 @@ const ProjectsPage: React.FC = () => {
   const [members, setMembers] = React.useState('')
   const [deadline, setDeadline] = React.useState('')
   const [aiPrompt, setAiPrompt] = React.useState('Plan a launch for our new app')
+  const [pendingPlan, setPendingPlan] = React.useState<AiLaunchPlanPreview | null>(null)
   const [refreshKey, setRefreshKey] = React.useState(0)
   const tasks = React.useMemo(() => {
     void refreshKey
@@ -86,10 +87,18 @@ const ProjectsPage: React.FC = () => {
   const activeProjects = projects.filter((project) => project.status !== 'Done')
 
   const generatePlan = () => {
+    const plan = buildAiLaunchPlanPreview(aiPrompt, 'You')
+    setPendingPlan(plan)
+    showToast({ message: 'Project plan prepared for review', type: 'success' })
+  }
+
+  const approvePlan = () => {
+    if (!pendingPlan) return
     const project = createAiLaunchPlan(aiPrompt, 'You')
     setProjects(readLocalProjects())
     setRefreshKey((value) => value + 1)
-    showToast({ message: `${project.name} plan created`, type: 'success' })
+    setPendingPlan(null)
+    showToast({ message: `${project.name} plan created after approval`, type: 'success' })
     void syncBeginnerWorkspaceToCloud()
   }
 
@@ -120,9 +129,38 @@ const ProjectsPage: React.FC = () => {
             <input value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} className="min-h-[48px] min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-4 font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
             <Button type="button" onClick={generatePlan} className="min-h-[48px] gap-2">
               <Plus className="h-5 w-5" />
-              Generate Plan
+              Review Plan
             </Button>
           </div>
+          {pendingPlan && (
+            <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-blue-700">Prepared by Autopilot</p>
+                  <h3 className="mt-1 text-lg font-black text-slate-950">{pendingPlan.projectName}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">{pendingPlan.description}</p>
+                </div>
+                <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setPendingPlan(null)}>Cancel</Button>
+                  <Button type="button" size="sm" onClick={approvePlan}>Approve and create</Button>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-lg border border-blue-100 bg-white p-3">
+                  <p className="text-xs font-black uppercase tracking-wider text-slate-500">Milestones</p>
+                  <ul className="mt-2 space-y-1 text-sm font-semibold text-slate-700">
+                    {pendingPlan.milestones.map((milestone) => <li key={milestone}>{milestone}</li>)}
+                  </ul>
+                </div>
+                <div className="rounded-lg border border-blue-100 bg-white p-3">
+                  <p className="text-xs font-black uppercase tracking-wider text-slate-500">Tasks</p>
+                  <ul className="mt-2 space-y-1 text-sm font-semibold text-slate-700">
+                    {pendingPlan.tasks.map((task) => <li key={task.title}>{task.title} - {task.owner}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className={`${panel} mb-5 p-4 sm:p-5`}>

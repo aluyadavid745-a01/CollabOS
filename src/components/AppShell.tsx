@@ -22,6 +22,7 @@ import { Button } from './Common/Button'
 import { Field, focusRing } from './DesignSystem'
 import { useAuth } from '../context/AuthContext'
 import { createDefaultProfile } from '../types/profile'
+import { listStoredTeamWorkspaces } from '../services/teamChat'
 import { createLocalProject, readLocalProjects, writeLocalProjects } from '../utils/localProjects'
 import { createLocalTask, readLocalTasks, writeLocalTasks, type LocalTask } from '../utils/localTasks'
 import { readLocalCalendarEvents, readLocalFiles, readLocalMessages, readLocalTeamMembers } from '../utils/localWorkspace'
@@ -33,8 +34,9 @@ type QuickCreateType = 'task' | 'project'
 
 const primaryLinks = [
   { label: 'Home', path: '/home', icon: Home },
-  { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
+  { label: 'Tasks', path: '/tasks', icon: CheckSquare },
   { label: 'Projects', path: '/projects', icon: Folder },
+  { label: 'Meetings', path: '/meetings', icon: CalendarClock },
   { label: 'Messages', path: '/messages', icon: MessageSquare },
   { label: 'Team', path: '/team', icon: Users },
   { label: 'Calendar', path: '/calendar', icon: CalendarClock },
@@ -223,6 +225,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   const { profile, firebaseUser } = useAuth()
   const activeProfile = profile || createDefaultProfile({ name: firebaseUser?.displayName || 'CollabOS User', email: firebaseUser?.email || '' })
+  const workspaceName = React.useMemo(() => listStoredTeamWorkspaces()[0]?.name || `${activeProfile.name.split(' ')[0] || 'CollabOS'} Workspace`, [activeProfile.name])
   const [searchOpen, setSearchOpen] = React.useState(false)
   const [createOpen, setCreateOpen] = React.useState(false)
 
@@ -237,13 +240,13 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
             <img src="/lll.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
             <div>
               <p className="font-semibold leading-none tracking-tight">CollabOS</p>
-              <p className="mt-1 text-xs text-slate-500">Product workspace</p>
+              <p className="mt-1 text-xs text-slate-500">Team operating system</p>
             </div>
           </button>
           <button type="button" onClick={() => navigate('/settings/workspace')} className="mt-8 flex min-h-[46px] items-center justify-between rounded-xl bg-slate-100 px-3 text-left transition hover:bg-slate-200/70">
             <span className="flex min-w-0 items-center gap-2">
               <span className="h-6 w-6 shrink-0 rounded-md bg-blue-200" />
-              <span className="truncate text-sm font-medium">Northstar</span>
+              <span className="truncate text-sm font-medium">{workspaceName}</span>
             </span>
             <Settings className="h-4 w-4 text-slate-500" />
           </button>
@@ -290,7 +293,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                 <span className="font-black">CollabOS</span>
               </button>
               <div className="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
-                <span>Northstar</span>
+                <span>{workspaceName}</span>
                 <span>/</span>
                 <span className="font-medium text-slate-950">Overview</span>
               </div>
