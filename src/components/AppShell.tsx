@@ -238,9 +238,8 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
       <div className="flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-slate-200 bg-[#fbfaf8] px-4 py-5 lg:flex lg:flex-col">
           <button type="button" onClick={() => navigate('/home')} className="flex items-center gap-3 rounded-lg px-2 py-2 text-left">
-            <img src="/lll.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
+            <img src="/collabos-logo.png" alt="CollabOS" className="h-8 w-32 object-contain object-left" />
             <div>
-              <p className="font-semibold leading-none tracking-tight">CollabOS</p>
               <p className="mt-1 text-xs text-slate-500">Team operating system</p>
             </div>
           </button>
@@ -301,8 +300,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
           <header className="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-[#f7f6f3]/90 px-4 backdrop-blur-md sm:px-6 lg:px-8">
             <div className="flex w-full items-center gap-3">
               <button type="button" onClick={() => navigate('/home')} className="flex items-center gap-2 lg:hidden">
-                <img src="/lll.png" alt="" className="h-9 w-9 rounded-lg object-cover" />
-                <span className="font-black">CollabOS</span>
+                <img src="/collabos-logo.png" alt="CollabOS" className="h-8 w-32 object-contain object-left" />
               </button>
               <div className="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
                 <span>{workspaceName}</span>

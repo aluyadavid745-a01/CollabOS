@@ -70,9 +70,8 @@ const Footer: React.FC = () => {
               transition={{ duration: 0.6 }}
               className="lg:col-span-1"
             >
-              <a href="/" className="flex items-center gap-2 text-xl font-bold mb-4">
-                <img src="/lll.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
-                <span className="text-slate-950">CollabOS</span>
+              <a href="/" className="mb-4 flex items-center">
+                <img src="/collabos-logo.png" alt="CollabOS" className="h-8 w-36 object-contain object-left" />
               </a>
               <p className="text-sm text-slate-500 mb-6">
                 The operating system for modern teams.

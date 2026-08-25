@@ -131,7 +131,7 @@ export async function startFlutterwavePayment({
       customizations: {
         title: 'CollabOS Gift Cards',
         description,
-        logo: `${window.location.origin}/collabos-icon.svg`,
+        logo: `${window.location.origin}/collabos-logo-512.png`,
       },
       configurations: {
         session_duration: 10,

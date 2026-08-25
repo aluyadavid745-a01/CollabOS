@@ -170,9 +170,8 @@ const Hero: React.FC<HeroProps> = ({ rememberedUser, onNavigate }) => {
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <img src="/lll.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
+                  <img src="/collabos-logo.png" alt="CollabOS" className="h-8 w-36 object-contain object-left" />
                   <div>
-                    <p className="text-sm font-black text-slate-950">CollabOS</p>
                     <p className="text-xs font-bold text-slate-500">Workspace command center</p>
                   </div>
                 </div>

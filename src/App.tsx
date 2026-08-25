@@ -5,6 +5,7 @@ import { useAuth } from "./context/AuthContext";
 import { showToast } from "./utils/toast";
 import { deleteCookie, getJsonCookie, hasCookieConsent, setCookie, setJsonCookie } from "./utils/cookies";
 import { prefetchRoutes, prefetchRoutesOnIdle } from "./utils/prefetch";
+import CollabLoader from "./components/Common/CollabLoader";
 
 const AppInstallPrompt = React.lazy(() => import("./components/AppInstallPrompt"));
 const CookieConsent = React.lazy(() => import("./components/CookieConsent"));
@@ -41,9 +42,7 @@ const InviteJoin = React.lazy(() => import("./pages/InviteJoin"));
 const GiftCardStudio = React.lazy(() => import("./pages/GiftCardStudio"));
 
 const RouteShell = ({ label = "Opening..." }: { label?: string }) => (
-  <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-500">
-    <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold">{label}</span>
-  </main>
+  <CollabLoader label={label} description="Preparing your CollabOS workspace..." fullScreen />
 );
 
 const AUTH_REDIRECT_KEY = "collabos:post-auth-redirect";
