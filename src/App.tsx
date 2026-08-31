@@ -45,6 +45,7 @@ const RouteShell = ({ label = "Opening..." }: { label?: string }) => (
   <CollabLoader label={label} description="Preparing your CollabOS workspace..." fullScreen />
 );
 
+const STARTUP_LOADING_MS = 5000;
 const AUTH_REDIRECT_KEY = "collabos:post-auth-redirect";
 
 function readStoredUser(key: string): AuthUser | null {
@@ -110,6 +111,7 @@ function App() {
   const navigateRouter = useNavigate();
   const location = useLocation();
   const { firebaseUser, loading: authLoading, profile, setLocalProfileSeed } = useAuth();
+  const [startupLoading, setStartupLoading] = React.useState(true);
   const view = getViewFromPath(location.pathname);
   const [user, setUser] = React.useState<AuthUser | null>(null);
   const [createdAccount, setCreatedAccount] = React.useState<AuthUser | null>(() =>
@@ -136,6 +138,11 @@ function App() {
 
     return user;
   }, [firebaseUser, profile, user]);
+
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => setStartupLoading(false), STARTUP_LOADING_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   React.useEffect(() => {
     if (!user) {
@@ -249,6 +256,10 @@ function App() {
     if (!firebaseUser) return <AuthRedirect from={`${location.pathname}${location.search}`} />;
     return element;
   };
+
+  if (startupLoading) {
+    return <CollabLoader label="Loading CollabOS" description="Preparing your workspace..." fullScreen />;
+  }
 
   if (view !== "home") {
     return (

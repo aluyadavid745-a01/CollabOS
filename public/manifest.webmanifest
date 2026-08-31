@@ -9,13 +9,13 @@
   "theme_color": "#4f46e5",
   "icons": [
     {
-      "src": "/collabos-logo-192.png?v=3",
+      "src": "/loadings-192.png?v=4",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/collabos-logo-512.png?v=3",
+      "src": "/loadings-512.png?v=4",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

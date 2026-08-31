@@ -135,7 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="group flex items-center text-xl font-bold text-slate-950">
-          <img src="/collabos-logo.png" alt="CollabOS" className="h-8 w-36 object-contain object-left transition-transform group-hover:scale-105" />
+          <img src="/loadings.png" alt="CollabOS" className="h-8 w-36 object-contain object-left transition-transform group-hover:scale-105" />
         </a>
 
         {/* Desktop Navigation */}

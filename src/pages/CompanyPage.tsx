@@ -83,7 +83,7 @@ const CompanyPage: React.FC = () => {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center">
-            <img src="/collabos-logo.png" alt="CollabOS" className="h-8 w-36 object-contain object-left" />
+            <img src="/loadings.png" alt="CollabOS" className="h-8 w-36 object-contain object-left" />
           </Link>
           <Button type="button" size="sm" onClick={() => navigate('/get-started')}>Get Started Free</Button>
         </div>

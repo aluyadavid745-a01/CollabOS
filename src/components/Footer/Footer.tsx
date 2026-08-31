@@ -71,7 +71,7 @@ const Footer: React.FC = () => {
               className="lg:col-span-1"
             >
               <a href="/" className="mb-4 flex items-center">
-                <img src="/collabos-logo.png" alt="CollabOS" className="h-8 w-36 object-contain object-left" />
+                <img src="/loadings.png" alt="CollabOS" className="h-8 w-36 object-contain object-left" />
               </a>
               <p className="text-sm text-slate-500 mb-6">
                 The operating system for modern teams.
