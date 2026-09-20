@@ -24,9 +24,17 @@ SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=your-email@gmail.com
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-5
 ```
 
-Do not put `LIVEKIT_API_SECRET` in the React app or commit it to source control.
+Do not put `LIVEKIT_API_SECRET` or `OPENAI_API_KEY` in the React app or commit either secret to source control.
+
+To connect the React app to this API during local development, set this in the app environment:
+
+```bash
+VITE_API_BASE_URL=http://127.0.0.1:7040
+```
 
 From the app root, start the backend with:
 
@@ -41,5 +49,6 @@ Endpoints:
 - `POST /api/meetings/join`
 - `GET /api/meetings/{roomId}`
 - `DELETE /api/meetings/{roomId}`
+- `POST /api/ai/command`
 
 All endpoints require `Authorization: Bearer <authenticated-user-jwt>`.

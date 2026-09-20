@@ -16,17 +16,21 @@ public static class AiEndpoints
             });
         });
 
-        ai.MapPost("/command", (AiCommandRequest request, AiGateway gateway, HttpContext context) =>
+        ai.MapPost("/command", async (AiCommandRequest request, AiGateway gateway, HttpContext context, CancellationToken cancellationToken) =>
         {
             try
             {
-                return Results.Ok(gateway.Handle(request, context.User));
+                return Results.Ok(await gateway.HandleAsync(request, context.User, cancellationToken));
             }
             catch (UnauthorizedAccessException)
             {
                 return Results.Forbid();
             }
             catch (ArgumentException error)
+            {
+                return Results.BadRequest(error.Message);
+            }
+            catch (InvalidOperationException error)
             {
                 return Results.BadRequest(error.Message);
             }

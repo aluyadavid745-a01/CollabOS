@@ -112,6 +112,7 @@ function App() {
   const location = useLocation();
   const { firebaseUser, loading: authLoading, profile, setLocalProfileSeed } = useAuth();
   const [startupLoading, setStartupLoading] = React.useState(true);
+  const [startupProgress, setStartupProgress] = React.useState(0);
   const view = getViewFromPath(location.pathname);
   const [user, setUser] = React.useState<AuthUser | null>(null);
   const [createdAccount, setCreatedAccount] = React.useState<AuthUser | null>(() =>
@@ -140,8 +141,23 @@ function App() {
   }, [firebaseUser, profile, user]);
 
   React.useEffect(() => {
-    const timeoutId = window.setTimeout(() => setStartupLoading(false), STARTUP_LOADING_MS);
-    return () => window.clearTimeout(timeoutId);
+    const startedAt = Date.now();
+
+    const updateProgress = () => {
+      const elapsed = Date.now() - startedAt;
+      const nextProgress = Math.min(100, (elapsed / STARTUP_LOADING_MS) * 100);
+
+      setStartupProgress(nextProgress);
+
+      if (nextProgress >= 100) {
+        setStartupLoading(false);
+        window.clearInterval(intervalId);
+      }
+    };
+
+    const intervalId = window.setInterval(updateProgress, 50);
+    updateProgress();
+    return () => window.clearInterval(intervalId);
   }, []);
 
   React.useEffect(() => {
@@ -258,7 +274,7 @@ function App() {
   };
 
   if (startupLoading) {
-    return <CollabLoader label="Loading CollabOS" description="Preparing your workspace..." fullScreen />;
+    return <CollabLoader fullScreen progress={startupProgress} />;
   }
 
   if (view !== "home") {

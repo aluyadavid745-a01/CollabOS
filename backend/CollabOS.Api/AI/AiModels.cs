@@ -3,7 +3,8 @@ namespace CollabOS.Api.AI;
 public sealed record AiCommandRequest(
     string Prompt,
     string WorkspaceId,
-    string[]? RequestedTools
+    string[]? RequestedTools,
+    string? WorkspaceContext = null
 );
 
 public sealed record AiToolDefinition(
@@ -17,7 +18,8 @@ public sealed record AiCommandResponse(
     string Status,
     string Message,
     IReadOnlyCollection<AiToolDefinition> AvailableTools,
-    AiProposedAction? ProposedAction
+    AiProposedAction? ProposedAction,
+    string? Model = null
 );
 
 public sealed record AiProposedAction(
@@ -26,4 +28,3 @@ public sealed record AiProposedAction(
     bool RequiresApproval,
     IReadOnlyDictionary<string, object> Arguments
 );
-

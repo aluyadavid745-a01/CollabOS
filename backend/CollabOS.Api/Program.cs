@@ -77,7 +77,7 @@ builder.Services.AddSingleton<TeamStore>();
 builder.Services.AddSingleton<MeetingStore>();
 builder.Services.AddSingleton<MeetingService>();
 builder.Services.AddSingleton<MeetingEmailSender>();
-builder.Services.AddSingleton<AiGateway>();
+builder.Services.AddHttpClient<AiGateway>();
 builder.Services.AddHostedService<MeetingReminderService>();
 builder.Services.AddEndpointsApiExplorer();
 

@@ -231,21 +231,21 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
   const [createOpen, setCreateOpen] = React.useState(false)
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `flex min-h-[42px] items-center gap-3 rounded-lg px-3 text-sm font-semibold transition ${isActive ? 'bg-slate-950 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'}`
+    `flex min-h-[42px] items-center gap-3 rounded-lg px-3 text-sm font-semibold transition ${isActive ? 'bg-blue-700 text-white shadow-sm shadow-blue-700/20' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'}`
 
   return (
-    <main className="min-h-screen bg-[#f7f6f3] text-slate-950">
+    <main className="min-h-screen bg-[#f7f9fc] text-slate-950">
       <div className="flex min-h-screen">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-slate-200 bg-[#fbfaf8] px-4 py-5 lg:flex lg:flex-col">
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-slate-200 bg-white px-4 py-5 lg:flex lg:flex-col">
           <button type="button" onClick={() => navigate('/home')} className="flex items-center gap-3 rounded-lg px-2 py-2 text-left">
             <img src="/loadings.png" alt="CollabOS" className="h-8 w-32 object-contain object-left" />
             <div>
               <p className="mt-1 text-xs text-slate-500">Team operating system</p>
             </div>
           </button>
-          <button type="button" onClick={() => navigate('/settings/workspace')} className="mt-8 flex min-h-[46px] items-center justify-between rounded-xl bg-slate-100 px-3 text-left transition hover:bg-slate-200/70">
+          <button type="button" onClick={() => navigate('/settings/workspace')} className="mt-8 flex min-h-[46px] items-center justify-between rounded-xl border border-blue-100 bg-blue-50 px-3 text-left transition hover:border-blue-200 hover:bg-white">
             <span className="flex min-w-0 items-center gap-2">
-              <span className="h-6 w-6 shrink-0 rounded-md bg-blue-200" />
+              <span className="h-6 w-6 shrink-0 rounded-md bg-blue-700" />
               <span className="truncate text-sm font-medium">{workspaceName}</span>
             </span>
             <Settings className="h-4 w-4 text-slate-500" />
@@ -287,7 +287,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
           </nav>
           <div className="mt-auto border-t border-slate-200 pt-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-8 w-8 place-items-center rounded-full bg-slate-950 text-xs font-semibold text-white">{activeProfile.name.slice(0, 1).toUpperCase()}</div>
+              <div className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-xs font-semibold text-white">{activeProfile.name.slice(0, 1).toUpperCase()}</div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{activeProfile.name}</p>
                 <p className="truncate text-xs text-slate-500">Workspace Admin</p>
@@ -297,7 +297,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
         </aside>
 
         <section className="min-w-0 flex-1 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-[#f7f6f3]/90 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+          <header className="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-[#f7f9fc]/90 px-4 backdrop-blur-md sm:px-6 lg:px-8">
             <div className="flex w-full items-center gap-3">
               <button type="button" onClick={() => navigate('/home')} className="flex items-center gap-2 lg:hidden">
                 <img src="/loadings.png" alt="CollabOS" className="h-8 w-32 object-contain object-left" />
@@ -307,8 +307,8 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                 <span>/</span>
                 <span className="font-medium text-slate-950">Overview</span>
               </div>
-              <div className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 xl:flex">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <div className="hidden items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-1 text-xs font-black text-blue-700 shadow-sm xl:flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-700" />
                 Saved workspace
               </div>
               <div className="ml-auto flex items-center gap-2">
@@ -319,7 +319,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                   <Search className="h-4 w-4" />
                   Search
                 </button>
-                <button type="button" onClick={() => setCreateOpen(true)} className={`hidden min-h-[38px] items-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex ${focusRing}`}>
+                <button type="button" onClick={() => setCreateOpen(true)} className={`hidden min-h-[38px] items-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md sm:flex ${focusRing}`}>
                   <Plus className="h-4 w-4" />
                   New task
                 </button>
@@ -330,7 +330,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                 <button type="button" onClick={() => navigate('/help')} className={`hidden h-10 w-10 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 sm:grid ${focusRing}`} aria-label="Help">
                   <HelpCircle className="h-5 w-5" />
                 </button>
-                <button type="button" onClick={() => navigate('/profile')} className={`grid h-8 w-8 place-items-center rounded-full bg-slate-950 text-xs font-semibold text-white ${focusRing}`} aria-label="Profile">
+                <button type="button" onClick={() => navigate('/profile')} className={`grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-xs font-semibold text-white ${focusRing}`} aria-label="Profile">
                   {activeProfile.name.slice(0, 1).toUpperCase()}
                 </button>
                 <button type="button" onClick={() => navigate('/')} className={`hidden h-10 w-10 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-950 md:grid ${focusRing}`} aria-label="Log out">

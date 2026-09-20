@@ -12,6 +12,7 @@ export type AnalyticsEventName =
   | 'first_task_created'
   | 'first_teammate_invited'
   | 'first_message_sent'
+  | 'landing_dashboard_preview_clicked'
   | 'ai_action_used'
 
 export interface AnalyticsEvent {

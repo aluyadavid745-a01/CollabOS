@@ -190,7 +190,7 @@ const QuickCreateModal = ({
             ['meeting', 'Meeting'],
             ['channel', 'Channel'],
           ].map(([value, label]) => (
-            <button key={value} type="button" onClick={() => setType(value as QuickCreateType)} className={`min-h-[44px] rounded-lg border px-3 py-2 text-sm font-bold transition ${type === value ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>
+            <button key={value} type="button" onClick={() => setType(value as QuickCreateType)} className={`min-h-[44px] rounded-lg border px-3 py-2 text-sm font-bold transition ${type === value ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-blue-100 hover:bg-blue-50 hover:text-blue-700'}`}>
               {label}
             </button>
           ))}
@@ -198,22 +198,22 @@ const QuickCreateModal = ({
 
         <label className="block">
           <span className="text-sm font-bold text-slate-700">{type === 'team' ? 'Team space name' : type === 'task' ? 'Task name' : 'Name'}</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+          <input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" />
         </label>
 
         {type === 'task' && (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm font-bold text-slate-700">Person responsible</span>
-              <input value={owner} onChange={(event) => setOwner(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+              <input value={owner} onChange={(event) => setOwner(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" />
             </label>
             <label className="block">
               <span className="text-sm font-bold text-slate-700">Due date</span>
-              <input type="date" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+              <input type="date" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" />
             </label>
             <label className="block sm:col-span-2">
               <span className="text-sm font-bold text-slate-700">Priority</span>
-              <select value={priority} onChange={(event) => setPriority(event.target.value as LocalTask['priority'])} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10">
+              <select value={priority} onChange={(event) => setPriority(event.target.value as LocalTask['priority'])} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10">
                 <option>Low</option>
                 <option>Medium</option>
                 <option>High</option>
@@ -226,11 +226,11 @@ const QuickCreateModal = ({
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm font-bold text-slate-700">Team members</span>
-              <input value={owner} onChange={(event) => setOwner(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" placeholder="Sarah, David, Alex" />
+              <input value={owner} onChange={(event) => setOwner(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" placeholder="Sarah, David, Alex" />
             </label>
             <label className="block">
               <span className="text-sm font-bold text-slate-700">Deadline</span>
-              <input type="date" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+              <input type="date" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" />
             </label>
           </div>
         )}
@@ -243,7 +243,7 @@ const QuickCreateModal = ({
         {showMore && (
           <label className="mt-2 block">
             <span className="text-sm font-bold text-slate-700">Description</span>
-            <textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} className="mt-2 w-full resize-none rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+            <textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} className="mt-2 w-full resize-none rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" />
           </label>
         )}
 
@@ -489,7 +489,7 @@ const HomeDashboard: React.FC = () => {
       : project.status === 'Done'
         ? 100
         : [78, 54, 32][index] || 20
-    return { ...project, progress, color: ['bg-rose-400', 'bg-blue-500', 'bg-violet-400'][index] || 'bg-emerald-400' }
+    return { ...project, progress, color: ['bg-blue-700', 'bg-blue-500', 'bg-blue-300'][index] || 'bg-blue-600' }
   })
 
   return (
@@ -505,7 +505,7 @@ const HomeDashboard: React.FC = () => {
               <button type="button" onClick={() => setIsHelpOpen(true)} className={iconButton} aria-label="Help" title="Search help and tutorials">
                 <HelpCircle className="h-5 w-5" />
               </button>
-              <Button type="button" onClick={() => openCreate('task')} className="min-h-[40px] gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium">
+              <Button type="button" onClick={() => openCreate('task')} className="min-h-[40px] gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium hover:bg-blue-700">
                 <Plus className="h-4 w-4" />
                 New task
               </Button>
@@ -596,7 +596,7 @@ const HomeDashboard: React.FC = () => {
                 <div className="min-w-[220px]">
                   <p className="text-sm font-bold text-slate-700">{completedOnboarding} of 4 completed - {onboardingProgress}%</p>
                   <div className="mt-2 h-2 rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-slate-950 transition-all duration-500" style={{ width: `${onboardingProgress}%` }} />
+                    <div className="h-full rounded-full bg-blue-700 transition-all duration-500" style={{ width: `${onboardingProgress}%` }} />
                   </div>
                 </div>
               </div>
@@ -624,7 +624,7 @@ const HomeDashboard: React.FC = () => {
                     {nextTask ? `${nextTask.owner} is responsible. Due ${new Date(nextTask.dueAt).toLocaleDateString()}.` : 'Tasks help everyone know what to do next.'}
                   </p>
                 </div>
-                <Button type="button" onClick={() => navigate('/tasks')} className="min-h-[40px] gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium">
+                <Button type="button" onClick={() => navigate('/tasks')} className="min-h-[40px] gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium hover:bg-blue-700">
                   {nextTask ? 'Open task' : 'Create your first task'}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -633,7 +633,7 @@ const HomeDashboard: React.FC = () => {
 
             <article className={`${panel} p-5`}>
               <div className="flex items-start gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-lg bg-slate-950 text-white">
+                <div className="grid h-10 w-10 place-items-center rounded-lg bg-blue-700 text-white">
                   <Bot className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -642,7 +642,7 @@ const HomeDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <input value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" aria-label="Ask CollabOS AI" />
+                <input value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10" aria-label="Ask CollabOS AI" />
                 <Button type="button" onClick={askAi}>Ask</Button>
               </div>
               {aiAnswer && <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-700">{aiAnswer}</p>}
@@ -673,7 +673,7 @@ const HomeDashboard: React.FC = () => {
                       addTodoTask()
                     }
                   }}
-                  className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-transparent bg-white px-3 text-sm font-semibold outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+                  className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-transparent bg-white px-3 text-sm font-semibold outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10"
                   placeholder="Add a task for later, like Call Sarah"
                   aria-label="Add a task"
                 />
@@ -692,12 +692,12 @@ const HomeDashboard: React.FC = () => {
                 {taskCards.length ? taskCards.map((task) => (
                   <div key={task.id} className="grid gap-3 border-b border-slate-200 px-4 py-4 last:border-0 md:grid-cols-[minmax(0,1.8fr)_1fr_130px_100px] md:items-center md:gap-4 md:px-5">
                     <div className="flex min-w-0 items-start gap-3">
-                      <button type="button" onClick={() => dismissTask(task.id)} className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${task.status === 'Done' ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 hover:border-slate-950'}`} aria-label={`Mark ${task.title} complete`}>
+                      <button type="button" onClick={() => dismissTask(task.id)} className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${task.status === 'Done' ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-300 hover:border-blue-700'}`} aria-label={`Mark ${task.title} complete`}>
                         {task.status === 'Done' && <CheckCircle2 className="h-3.5 w-3.5" />}
                       </button>
                       <button type="button" onClick={() => navigate(task.route)} className={`min-w-0 text-left text-sm font-medium hover:text-slate-700 ${task.status === 'Done' ? 'text-slate-500 line-through' : 'text-slate-950'}`}>{task.title}</button>
                     </div>
-                    <div><span className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${task.status === 'Review' ? 'bg-violet-50 text-violet-700' : task.status === 'Done' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>{task.status}</span></div>
+                    <div><span className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${task.status === 'Done' ? 'bg-slate-100 text-slate-700' : 'bg-blue-50 text-blue-700'}`}>{task.status}</span></div>
                     <p className="text-xs text-slate-500">{new Date(task.dueAt).toLocaleDateString()}</p>
                     <p className="text-xs font-medium text-slate-500">{localTasks.find((item) => item.id === task.id)?.priority || 'Medium'}</p>
                   </div>
@@ -750,7 +750,7 @@ const HomeDashboard: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {filteredNotifications.slice(0, 3).map((item) => (
-                  <button key={item.id} type="button" onClick={() => openNotification(item)} className={`w-full rounded-lg border p-3 text-left transition ${item.read ? 'border-slate-200 bg-white hover:bg-slate-50' : 'border-slate-950 bg-slate-50'}`}>
+                  <button key={item.id} type="button" onClick={() => openNotification(item)} className={`w-full rounded-lg border p-3 text-left transition ${item.read ? 'border-slate-200 bg-white hover:bg-slate-50' : 'border-blue-200 bg-blue-50'}`}>
                     <p className="font-bold">{item.title}</p>
                     <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-600">{item.body}</p>
                   </button>
